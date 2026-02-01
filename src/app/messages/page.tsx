@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, Suspense } from 'react';
 import { Header } from '@/components/header';
 import { createClient } from '@/utils/supabase/client';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -32,7 +32,7 @@ interface Message {
     reply_to?: string | null;
 }
 
-export default function MessagesPage() {
+function MessagesContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const supabase = createClient();
@@ -617,5 +617,13 @@ export default function MessagesPage() {
                 />
             )}
         </div>
+    );
+}
+
+export default function MessagesPage() {
+    return (
+        <Suspense fallback={<div className="h-screen bg-black flex items-center justify-center text-white">Loading messages...</div>}>
+            <MessagesContent />
+        </Suspense>
     );
 }
