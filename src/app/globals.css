@@ -1,0 +1,432 @@
+@import "tailwindcss";
+
+:root {
+  /* Cinematic Deep Blacks & Enhanced Contrast */
+  --background: #000000;
+  /* Pure black for cinematic depth */
+  --foreground: #ffffff;
+  /* Pure white foreground */
+  --card: #0a0a0a;
+  /* Slightly lifted from pure black */
+  --card-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --muted: #1a1a1a;
+  --muted-foreground: #a1a1aa;
+  /* Lighter gray for better visibility */
+  --accent: #34d399;
+  /* Brighter emerald (emerald-400) */
+  --accent-glow: #34d39960;
+  /* Stronger glow base */
+  --border: #1f1f1f;
+
+  /* Cinematic Lighting Effects */
+  --spotlight: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16, 185, 129, 0.15), transparent);
+  --ambient-glow: rgba(16, 185, 129, 0.05);
+}
+
+.theme-midnight {
+  --background: #020617;
+  /* Slate 950 */
+  --foreground: #f8fafc;
+  /* Slate 50 */
+  --card: #0f172a;
+  /* Slate 900 */
+  --card-foreground: #f1f5f9;
+  /* Slate 100 */
+  --muted: #1e293b;
+  /* Slate 800 */
+  --muted-foreground: #94a3b8;
+  /* Slate 400 */
+  --accent: #60a5fa;
+  /* Blue 400 */
+  --accent-glow: rgba(96, 165, 250, 0.5);
+  --border: #334155;
+  /* Slate 700 */
+}
+
+.theme-obsidian {
+  --background: #000000;
+  --foreground: #e5e5e5;
+  --card: #111111;
+  --card-foreground: #d4d4d4;
+  --muted: #262626;
+  --muted-foreground: #737373;
+  --accent: #f5f5f5;
+  /* Near white accent */
+  --accent-glow: rgba(255, 255, 255, 0.3);
+  --border: #404040;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Cinematic Film Grain */
+@keyframes grain {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  10% {
+    transform: translate(-5%, -10%);
+  }
+
+  20% {
+    transform: translate(-15%, 5%);
+  }
+
+  30% {
+    transform: translate(7%, -25%);
+  }
+
+  40% {
+    transform: translate(-5%, 25%);
+  }
+
+  50% {
+    transform: translate(-15%, 10%);
+  }
+
+  60% {
+    transform: translate(15%, 0%);
+  }
+
+  70% {
+    transform: translate(0%, 15%);
+  }
+
+  80% {
+    transform: translate(3%, 35%);
+  }
+
+  90% {
+    transform: translate(-10%, 10%);
+  }
+}
+
+/* Smooth Cinematic Transitions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.5);
+  }
+}
+
+@keyframes flicker {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+
+  25% {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+
+  75% {
+    opacity: 0.5;
+    transform: scale(0.92);
+  }
+}
+
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+@keyframes blue-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+  }
+
+  50% {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.8);
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Global Polish */
+
+/* Premium Text Selection */
+::selection {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+/* Disable Image Dragging for App-like feel */
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* Custom Cinematic Scrollbar - Refined */
+::-webkit-scrollbar {
+  width: 6px;
+  /* Slimmer */
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Focus Ring Polish */
+:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* Mobile Touch Optimizations */
+@media (max-width: 768px) {
+
+  /* Ensure minimum touch target size */
+  button,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent text size adjustment */
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Better tap highlighting */
+  * {
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Smooth momentum scrolling on iOS */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* --- LUCIUS DESIGN LANGUAGE (Aura · Motion · Typography · States) --- */
+
+:root {
+  /* Deeper Void Colors */
+  --lucius-void-900: #050505;
+  --lucius-void-800: #0a0a0a;
+  --lucius-void-700: #121212;
+
+  /* Ash / Silver Accent */
+  --lucius-ash-500: rgba(168, 172, 184, 0.1);
+  --lucius-ash-600: rgba(168, 172, 184, 0.15);
+
+  /* Cinematic Text */
+  --lucius-text-primary: #e5e5e5;
+  --lucius-text-muted: #737373;
+
+  /* Aura strength */
+  --lucius-aura-opacity-min: 0.02;
+  --lucius-aura-opacity-max: 0.05;
+
+  /* Breathing cycle */
+  --lucius-breath-duration: 8s;
+  --lucius-breath-ease: ease-in-out;
+
+  /* Aura geometry */
+  --lucius-aura-radius: 100%;
+  --lucius-aura-offset-x: 50%;
+  --lucius-aura-offset-y: 50%;
+
+  /* Typography Logic */
+  --lucius-font-weight: 400;
+  --lucius-letter-spacing: 0.02em;
+  --lucius-line-height: 1.6;
+}
+
+/* Aura Background Implementation (Field Distortion) */
+.lucius-aura {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 40%,
+      rgba(30, 40, 60, var(--lucius-aura-opacity-max)),
+      rgba(10, 10, 10, var(--lucius-aura-opacity-min)) 60%,
+      transparent 90%);
+
+  animation: lucius-breathe var(--lucius-breath-duration) var(--lucius-breath-ease) infinite;
+  transition: opacity 1000ms ease;
+  will-change: opacity, transform;
+}
+
+/* Breathing Animation (Sub-Visual) */
+@keyframes lucius-breathe {
+  0% {
+    opacity: 0.85;
+  }
+
+  45% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.85;
+  }
+}
+
+/* Motion Suppression (Lucius Yields to User) */
+.lucius-freeze {
+  animation-play-state: paused !important;
+}
+
+/* Consciousness Mode (Stillness) */
+.lucius-conscious .lucius-aura {
+  animation: none;
+}
+
+/* Lucius Icon / Sigil */
+.lucius-sigil {
+  width: 22px;
+  height: 22px;
+  opacity: 0.55;
+  filter: blur(0.3px);
+  transition: opacity 400ms ease;
+}
+
+.lucius-sigil:hover {
+  opacity: 0.65;
+}
+
+/* Entry & Exit Transitions */
+.lucius-enter {
+  opacity: 0;
+  filter: blur(4px);
+  transition: opacity 420ms ease, filter 420ms ease;
+}
+
+.lucius-enter-active {
+  opacity: 1;
+  filter: blur(0);
+}
+
+.lucius-exit {
+  opacity: 0;
+  filter: blur(6px);
+  transition: opacity 360ms ease, filter 360ms ease;
+}
+
+/* Typography Tokens (Carved, Not Generated) */
+.lucius-text {
+  font-weight: var(--lucius-font-weight);
+  letter-spacing: var(--lucius-letter-spacing);
+  line-height: var(--lucius-line-height);
+  color: var(--lucius-text-primary);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* Mirror Timeline (Sparse Checkpoints) */
+.lucius-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lucius-checkpoint {
+  font-size: 0.85rem;
+  color: var(--lucius-text-muted);
+}
+
+.lucius-checkpoint.active {
+  color: var(--lucius-text-primary);
+}
+
+/* State-Based Modulation (Subtle) */
+.lucius-state-drifting .lucius-aura {
+  opacity: 0.95;
+}
+
+.lucius-state-distant .lucius-aura {
+  opacity: 1;
+}
+
+.lucius-state-returning .lucius-aura {
+  animation-timing-function: linear;
+}
+
+/* Chat Response Delay */
+.lucius-response {
+  transition-delay: 700ms;
+}
+
+.lucius-collapse {
+  transform: scale(0.96);
+  opacity: 0;
+  transition: transform 280ms ease, opacity 280ms ease;
+}
