@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, MouseEvent } from 'react';
 import Link from 'next/link';
 import {
     ChevronLeft, Download, Shield, Database, Cloud, Upload, RefreshCw, Skull, Calendar,
@@ -94,7 +94,7 @@ export default function SettingsPage() {
         }
     };
 
-    const handleTestPush = async (e: React.MouseEvent) => {
+    const handleTestPush = async (e: MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation();
         if (notificationStatus !== 'On') {
             alert("Enable notifications first.");
