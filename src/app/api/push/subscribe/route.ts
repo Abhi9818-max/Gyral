@@ -1,34 +1,32 @@
 import { createClient } from '@/utils/supabase/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: Request) {
-    try {
-        const { subscription } = await request.json();
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+export async function POST(req: NextRequest) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        if (!subscription) {
-            return NextResponse.json({ error: 'No subscription provided' }, { status: 400 });
-        }
-
-        const { error } = await supabase
-            .from('push_subscriptions')
-            .insert({
-                user_id: user.id,
-                subscription: subscription
-            });
-
-        if (error) {
-            console.error("DB Error:", error);
-            return NextResponse.json({ error: error.message }, { status: 500 });
-        }
-
-        return NextResponse.json({ success: true });
-    } catch (e: any) {
-        return NextResponse.json({ error: e.message }, { status: 500 });
+    if (!user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const { subscription } = await req.json();
+
+    if (!subscription || !subscription.endpoint) {
+        return NextResponse.json({ error: 'Invalid subscription' }, { status: 400 });
+    }
+
+    // Upsert subscription
+    const { error } = await supabase.from('push_subscriptions').upsert({
+        user_id: user.id,
+        endpoint: subscription.endpoint,
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth
+    }, { onConflict: 'user_id, endpoint' });
+
+    if (error) {
+        console.error('Error saving subscription:', error);
+        return NextResponse.json({ error: 'Database error' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
 }

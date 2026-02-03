@@ -31,7 +31,7 @@ export function FilterBar() {
     };
 
     return (
-        <div className="relative z-20">
+        <div className="relative z-50">
             {/* Backdrop for closing */}
             {isOpen && (
                 <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
@@ -42,7 +42,7 @@ export function FilterBar() {
                     setIsOpen(!isOpen);
                     setClickCount(prev => prev + 1);
                 }}
-                className={`w-full bg-white/5 border border-white/20 rounded-xl px-4 md:px-4 py-4 md:py-3 flex justify-between items-center cursor-pointer transition-all duration-200 shadow-[0_0_10px_rgba(0,0,0,0.5)] hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] active:scale-[0.98] group backdrop-blur-xl relative z-20 ${isOpen ? 'bg-white/10 ring-1 ring-accent/50' : 'hover:bg-white/10'}`}
+                className={`w-full bg-white/5 border border-white/20 rounded-xl px-4 md:px-4 py-4 md:py-3 flex justify-between items-center cursor-pointer transition-all duration-200 shadow-[0_0_10px_rgba(0,0,0,0.5)] hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] active:scale-[0.98] group backdrop-blur-xl relative z-50 ${isOpen ? 'bg-white/10 ring-1 ring-accent/50' : 'hover:bg-white/10'}`}
             >
                 <div className="flex items-center gap-2 text-base md:text-sm text-white font-bold tracking-wide group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-all duration-200">
                     <Filter className="w-5 h-5 md:w-4 md:h-4 group-hover:text-accent transition-colors duration-200 drop-shadow-[0_0_5px_currentColor]" />

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { X, Snowflake, Sword, Shield, Flame, Skull, Ghost } from 'lucide-react';
+import { useState } from 'react';
+import { X, Snowflake, Sword, Shield, Flame, Skull, Ghost, ChevronRight } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,7 +13,7 @@ interface NightsWatchModalProps {
 export function NightsWatchModal({ isOpen, onClose }: NightsWatchModalProps) {
     const { vows, addVow, completeVowDaily } = useUserData();
     const [newVowText, setNewVowText] = useState("");
-    const [activeTab, setActiveTab] = useState<'watch' | 'broken'>('watch');
+    const [view, setView] = useState<'watch' | 'broken'>('watch');
 
     if (!isOpen) return null;
 
@@ -33,145 +33,201 @@ export function NightsWatchModal({ isOpen, onClose }: NightsWatchModalProps) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
             <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="w-full max-w-2xl bg-[#0a0a0b] border border-slate-800 rounded-lg shadow-[0_0_50px_rgba(100,200,255,0.05)] overflow-hidden relative"
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+                className="w-full max-w-3xl bg-[#030303] border border-white/5 shadow-[0_0_100px_rgba(255,255,255,0.02)] overflow-hidden relative rounded-sm flex flex-col max-h-[90vh]"
             >
-                {/* Snow Effect Overlay */}
-                <div className="absolute inset-0 pointer-events-none opacity-5 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+                {/* Cinematic Letterbox Effects */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-slate-800/30 to-transparent opacity-50" />
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-slate-800/30 to-transparent opacity-50" />
 
-                {/* Header */}
-                <div className="relative p-6 border-b border-slate-800 bg-gradient-to-b from-slate-900/50 to-transparent">
-                    <button
-                        onClick={onClose}
-                        className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
+                {/* Snow Effect Overlay - localized */}
+                <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+
+                {/* Close Button - Minimal */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-6 right-6 text-zinc-600 hover:text-zinc-300 transition-colors z-20 group"
+                >
+                    <X className="w-6 h-6 group-hover:rotate-90 transition-transform duration-500" />
+                </button>
+
+                {/* Header Section */}
+                <div className="relative pt-16 pb-8 px-8 text-center bg-gradient-to-b from-zinc-900/20 to-transparent">
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="flex justify-center mb-6"
                     >
-                        <X className="w-5 h-5" />
-                    </button>
+                        <Shield className="w-12 h-12 text-slate-400/80 drop-shadow-[0_0_15px_rgba(148,163,184,0.3)]" strokeWidth={1} />
+                    </motion.div>
 
-                    <div className="flex items-center gap-3 mb-2">
-                        <Shield className="w-6 h-6 text-slate-300" />
-                        <h2 className="text-2xl font-bold text-slate-100 tracking-wider font-serif">THE NIGHT'S WATCH</h2>
-                    </div>
-                    <p className="text-slate-400 text-sm italic">
-                        "Night gathers, and now my watch begins. It shall not end until my death."
-                    </p>
+                    <motion.h2
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 }}
+                        className="text-4xl md:text-5xl font-serif font-medium text-slate-200 tracking-wider mb-3 drop-shadow-lg"
+                    >
+                        THE NIGHT'S WATCH
+                    </motion.h2>
+
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                        className="flex justify-center items-center gap-6 text-xs font-mono uppercase tracking-[0.2em] text-zinc-600"
+                    >
+                        <button
+                            onClick={() => setView('watch')}
+                            className={`transition-colors duration-300 ${view === 'watch' ? 'text-slate-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 'hover:text-zinc-400'}`}
+                        >
+                            Active Oaths
+                        </button>
+                        <span className="text-zinc-800">|</span>
+                        <button
+                            onClick={() => setView('broken')}
+                            className={`transition-colors duration-300 ${view === 'broken' ? 'text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]' : 'hover:text-zinc-400'}`}
+                        >
+                            The Fallen
+                        </button>
+                    </motion.div>
                 </div>
 
-                {/* Content */}
-                <div className="p-6">
-                    {/* Tabs */}
-                    <div className="flex items-center gap-4 mb-6 border-b border-slate-800/50 pb-2">
-                        <button
-                            onClick={() => setActiveTab('watch')}
-                            className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors relative ${activeTab === 'watch' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}
-                        >
-                            <Sword className="w-4 h-4" /> The Watch ({activeVows.length})
-                            {activeTab === 'watch' && <motion.div layoutId="tab-indicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-200" />}
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('broken')}
-                            className={`flex items-center gap-2 pb-2 text-sm font-medium transition-colors relative ${activeTab === 'broken' ? 'text-red-400' : 'text-slate-500 hover:text-slate-300'}`}
-                        >
-                            <Skull className="w-4 h-4" /> The Fallen ({brokenVows.length})
-                            {activeTab === 'broken' && <motion.div layoutId="tab-indicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-900" />}
-                        </button>
-                    </div>
+                {/* Main Content */}
+                <div className="flex-1 overflow-y-auto px-6 md:px-12 pb-12 custom-scrollbar">
 
-                    {activeTab === 'watch' && (
-                        <div className="space-y-6">
-                            {/* Add Vow Input */}
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={newVowText}
-                                    onChange={(e) => setNewVowText(e.target.value)}
-                                    placeholder="I vow to..."
-                                    className="flex-1 bg-black/20 border border-slate-800 rounded px-4 py-2 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-slate-500 transition-colors"
-                                    onKeyDown={(e) => e.key === 'Enter' && handleTakeVow()}
-                                />
-                                <button
-                                    onClick={handleTakeVow}
-                                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 rounded transition-colors text-sm font-medium flex items-center gap-2"
-                                >
-                                    <Snowflake className="w-4 h-4" /> Take Vow
-                                </button>
-                            </div>
-
-                            {/* Vows List */}
-                            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                                {activeVows.length === 0 ? (
-                                    <div className="text-center py-10 text-slate-600">
-                                        <Ghost className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                                        <p>The Watch is empty.</p>
-                                    </div>
-                                ) : (
-                                    activeVows.map((vow) => {
-                                        const completed = isCompletedToday(vow.lastCompletedDate);
-
-                                        return (
-                                            <div
-                                                key={vow.id}
-                                                className={`group relative p-4 rounded border transition-all duration-300 ${completed ? 'bg-slate-900/30 border-slate-800/50' : 'bg-black/40 border-slate-800 hover:border-slate-600'}`}
-                                            >
-                                                <div className="flex justify-between items-start">
-                                                    <div>
-                                                        <p className="text-slate-200 font-medium text-lg leading-relaxed">"{vow.text}"</p>
-                                                        <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
-                                                            <span className="flex items-center gap-1"><Flame className="w-3 h-3 text-blue-400" /> Streak: {vow.currentStreak} days</span>
-                                                            <span>•</span>
-                                                            <span>Started: {new Date(vow.startDate).toLocaleDateString()}</span>
+                    <AnimatePresence mode="wait">
+                        {view === 'watch' ? (
+                            <motion.div
+                                key="watch"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="space-y-12"
+                            >
+                                {/* Active Vows List */}
+                                <div className="space-y-4">
+                                    {activeVows.length === 0 ? (
+                                        <div className="text-center py-12 border border-zinc-900 bg-zinc-950/30">
+                                            <p className="font-serif text-xl text-zinc-500 italic mb-2">"And now my watch begins..."</p>
+                                            <p className="text-xs text-zinc-700 uppercase tracking-widest">No active oaths taken</p>
+                                        </div>
+                                    ) : (
+                                        activeVows.map((vow) => {
+                                            const completed = isCompletedToday(vow.lastCompletedDate);
+                                            return (
+                                                <div
+                                                    key={vow.id}
+                                                    className="group relative flex flex-col md:flex-row items-center justify-between gap-6 p-6 border-b border-zinc-900 hover:border-zinc-800 transition-colors bg-gradient-to-r from-transparent via-transparent hover:via-zinc-900/20 to-transparent"
+                                                >
+                                                    <div className="text-center md:text-left flex-1">
+                                                        <h3 className="text-xl md:text-2xl font-serif text-slate-300 tracking-wide group-hover:text-white transition-colors">
+                                                            "{vow.text}"
+                                                        </h3>
+                                                        <div className="flex items-center justify-center md:justify-start gap-4 mt-3 text-[10px] md:text-xs font-mono uppercase tracking-widest text-zinc-600 group-hover:text-zinc-500 transition-colors">
+                                                            <span className="flex items-center gap-1.5">
+                                                                <Flame className={`w-3 h-3 ${vow.currentStreak > 0 ? 'text-blue-500 animate-pulse' : 'text-zinc-700'}`} />
+                                                                {vow.currentStreak} Days
+                                                            </span>
+                                                            <span className="w-1 h-1 bg-zinc-800 rounded-full" />
+                                                            <span>Since {new Date(vow.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                                                         </div>
                                                     </div>
 
                                                     <button
                                                         onClick={() => !completed && completeVowDaily(vow.id)}
                                                         disabled={completed}
-                                                        className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider transition-all duration-300 ${completed
-                                                                ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-transparent'
-                                                                : 'bg-slate-100 text-black hover:bg-white hover:scale-105 shadow-[0_0_15px_rgba(255,255,255,0.1)]'
-                                                            }`}
+                                                        className={`
+                                                            relative px-6 py-3 min-w-[160px] flex items-center justify-center gap-3
+                                                            font-mono text-xs font-bold uppercase tracking-widest transition-all duration-500
+                                                            ${completed
+                                                                ? 'text-zinc-600 bg-transparent border border-zinc-900 cursor-not-allowed'
+                                                                : 'text-orange-100 bg-orange-900/10 border border-orange-500/30 hover:bg-orange-900/20 hover:border-orange-500/60 hover:shadow-[0_0_30px_-5px_rgba(249,115,22,0.3)]'
+                                                            }
+                                                        `}
                                                     >
-                                                        {completed ? "Vigil Kept" : "Hold the Wall"}
+                                                        {completed ? (
+                                                            <>
+                                                                <Shield className="w-3 h-3" /> Vigil Kept
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Flame className="w-3 h-3 text-orange-500" /> Hold Wall
+                                                            </>
+                                                        )}
                                                     </button>
                                                 </div>
-                                            </div>
-                                        );
-                                    })
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'broken' && (
-                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                            {brokenVows.length === 0 ? (
-                                <div className="text-center py-10 text-slate-600">
-                                    <p>No vows have been broken... yet.</p>
+                                            );
+                                        })
+                                    )}
                                 </div>
-                            ) : (
-                                brokenVows.map((vow) => (
-                                    <div key={vow.id} className="p-4 rounded border border-red-900/20 bg-red-950/5 relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 p-2 opacity-10">
-                                            <Skull className="w-12 h-12 text-red-500" />
-                                        </div>
-                                        <p className="text-red-400/80 font-medium line-through decoration-red-900">"{vow.text}"</p>
-                                        <div className="flex items-center gap-3 mt-2 text-xs text-red-900/60">
-                                            <span>Broken after {vow.maxStreak} days</span>
-                                            <span>•</span>
-                                            <span>{vow.brokenOn ? new Date(vow.brokenOn).toLocaleDateString() : 'Unknown'}</span>
-                                        </div>
-                                        <div className="mt-2 text-xs text-red-500 font-mono uppercase tracking-widest opacity-60">
-                                            OATHBREAKER
-                                        </div>
+
+                                {/* New Vow Input Area */}
+                                <div className="pt-8 border-t border-zinc-900/50">
+                                    <h4 className="text-center text-xs font-mono text-zinc-600 uppercase tracking-[0.3em] mb-6">Speak a New Oath</h4>
+                                    <div className="relative max-w-lg mx-auto group">
+                                        <div className="absolute inset-x-0 bottom-0 h-[1px] bg-zinc-800 group-focus-within:bg-slate-500 transition-colors duration-500" />
+                                        <input
+                                            type="text"
+                                            value={newVowText}
+                                            onChange={(e) => setNewVowText(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleTakeVow()}
+                                            className="w-full bg-transparent p-4 text-center text-lg font-serif text-slate-300 placeholder:text-zinc-800 focus:outline-none focus:placeholder:text-zinc-700 transition-all"
+                                            placeholder="I shall..."
+                                        />
+                                        <button
+                                            onClick={handleTakeVow}
+                                            disabled={!newVowText.trim()}
+                                            className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-zinc-600 hover:text-white disabled:opacity-0 transition-all duration-300"
+                                        >
+                                            <ChevronRight className="w-5 h-5" />
+                                        </button>
                                     </div>
-                                ))
-                            )}
-                        </div>
-                    )}
+                                </div>
+
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="broken"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="grid gap-4"
+                            >
+                                {brokenVows.length === 0 ? (
+                                    <div className="text-center py-20">
+                                        <p className="font-serif text-lg text-zinc-700 italic">"Honor remains intact."</p>
+                                    </div>
+                                ) : (
+                                    brokenVows.map((vow) => (
+                                        <div key={vow.id} className="p-6 bg-red-950/5 border border-red-900/10 flex items-center justify-between gap-4 grayscale hover:grayscale-0 transition-all duration-500 group">
+                                            <div className="opacity-50 group-hover:opacity-80 transition-opacity">
+                                                <p className="font-serif text-lg text-red-300/60 line-through decoration-red-900/50">"{vow.text}"</p>
+                                                <div className="text-[10px] font-mono text-red-900 uppercase tracking-widest mt-1">
+                                                    Broken {vow.brokenOn ? new Date(vow.brokenOn).toLocaleDateString() : 'Unknown'} • Max Streak: {vow.maxStreak}
+                                                </div>
+                                            </div>
+                                            <Skull className="w-6 h-6 text-red-900/20 group-hover:text-red-900/50 transition-colors" />
+                                        </div>
+                                    ))
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Footer Quote */}
+                <div className="py-6 text-center border-t border-white/5 bg-[#050505]">
+                    <p className="font-serif text-zinc-700 text-sm italic tracking-wide">
+                        "I am the sword in the darkness."
+                    </p>
                 </div>
             </motion.div>
         </div>

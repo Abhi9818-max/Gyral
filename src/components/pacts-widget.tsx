@@ -48,7 +48,7 @@ export function PactWidget() {
         }
     };
 
-    const showInput = currentPacts.length === 0 || isAdding;
+    const showInput = isAdding;
 
     return (
         <div className="w-full max-w-2xl mx-auto">
@@ -62,11 +62,13 @@ export function PactWidget() {
                             {displayDate}'s Pacts
                         </h2>
                         <p className="text-zinc-500 font-medium text-sm mt-1">
-                            {completedCount === totalCount && totalCount > 0
-                                ? "All pacts sealed."
-                                : completedCount > 0
-                                    ? "Momentum building..."
-                                    : "What will you conquer?"}
+                            {totalCount === 0
+                                ? "What will you conquer?"
+                                : completedCount === totalCount
+                                    ? "All pacts sealed."
+                                    : completedCount > 0
+                                        ? "Momentum building..."
+                                        : "The path is set."}
                         </p>
                     </div>
 
@@ -148,7 +150,7 @@ export function PactWidget() {
                         <button
                             type="submit"
                             disabled={!newPactText.trim()}
-                            className="absolute right-2 top-2 p-1.5 bg-white text-black rounded-lg disabled:opacity-50 disabled:bg-zinc-800 disabled:text-zinc-600 transition-all hover:scale-105"
+                            className="absolute right-2 top-2 p-1.5 bg-white text-black rounded-lg disabled:opacity-50 disabled:bg-zinc-800 disabled:text-zinc-600 transition-all hover:scale-105 flex items-center justify-center"
                         >
                             <Plus className="w-4 h-4" />
                         </button>

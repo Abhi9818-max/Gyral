@@ -18,6 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 import { PWAInit } from "@/components/pwa-init";
+import { ServiceWorkerRegister } from "@/components/service-worker-register";
 
 export const metadata: Metadata = {
   title: "Gyral",
@@ -40,6 +41,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <PWAInit />
+        <ServiceWorkerRegister />
         <UserDataProvider>
           <StoriesProvider>
             <MessageNotificationProvider>

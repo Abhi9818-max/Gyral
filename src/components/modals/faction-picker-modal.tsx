@@ -1,6 +1,6 @@
 "use client";
 
-import { useUserData } from "@/context/user-data-context";
+import { useUserData, DEFAULT_FACTIONS } from "@/context/user-data-context";
 import { Shield, Check, X, Flame, Snowflake, Leaf, Waves, Cloud, Sun, Zap, Fish, PawPrint } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -377,6 +377,9 @@ export function FactionPickerModal({ isOpen, onClose }: FactionPickerModalProps)
     const { factions, currentFaction, setFaction } = useUserData();
     const [selectedId, setSelectedId] = useState<string | null>(currentFaction?.id || null);
 
+    // Robust Fallback: If context factions are missing, use defaults
+    const displayFactions = (factions && factions.length > 0) ? factions : DEFAULT_FACTIONS;
+
     if (!isOpen) return null;
 
     const handleConfirm = async () => {
@@ -399,7 +402,7 @@ export function FactionPickerModal({ isOpen, onClose }: FactionPickerModalProps)
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {factions.map((f) => {
+                    {displayFactions.map((f) => {
                         const isSelected = selectedId === f.id;
                         return (
                             <motion.button

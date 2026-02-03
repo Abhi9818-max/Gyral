@@ -65,7 +65,7 @@ export default function ProfilePage() {
                 <Header />
             </div>
 
-            <div className="max-w-4xl mx-auto md:pt-8 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto md:pt-28 px-4 sm:px-6 lg:px-8">
 
                 {/* Mobile-First Profile Header */}
                 <div className="flex items-start gap-5 mb-6 pt-4">

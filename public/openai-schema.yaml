@@ -1,0 +1,79 @@
+openapi: 3.1.0
+info:
+  title: Diogenes AI Interface
+  description: API for AI agents to interact with the Diogenes Lifecycle System.
+  version: 1.0.0
+servers:
+  - url: https://<YOUR_DEPLOYED_URL>
+    description: Production Server
+paths:
+  /api/ai/context:
+    get:
+      operationId: getContext
+      summary: Retrieve User Context
+      description: Fetches the current user's profile, active vows, daily habits, recent logs, and pending pacts. Use this to understand the user's current state.
+      responses:
+        "200":
+          description: Context data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      name: { type: string }
+                      bio: { type: string }
+                  active_vows:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        text: { type: string }
+                        status: { type: string }
+                        current_streak: { type: integer }
+                  daily_habits:
+                     type: array
+                     items:
+                       type: object
+                       properties:
+                         name: { type: string }
+                         metric: { type: object }
+                  pending_pacts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        text: { type: string }
+                        date: { type: string }
+  /api/ai/pact:
+    post:
+      operationId: createPact
+      summary: Create a new Pact (Todo)
+      description: Adds a new item to the user's Pact list.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: The content of the pact/task.
+                date:
+                  type: string
+                  description: Due date (YYYY-MM-DD). Defaults to today if omitted.
+              required:
+                - text
+      responses:
+         "200":
+           description: Pact created successfully.
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - BearerAuth: []

@@ -8,12 +8,12 @@ import { SettingsModal } from '@/components/modals/settings-modal';
 import { AddLifeEventModal } from '@/components/modals/add-life-event-modal';
 
 export default function MementoPage() {
-    const { birthDate, lifeEvents, deleteLifeEvent } = useUserData();
+    const { birthDate, lifeEvents, deleteLifeEvent, mementoViewMode } = useUserData();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
     // Interaction State
-    const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+    const [selectedId, setSelectedId] = useState<number | null>(null); // Week or Day index
     const [hoveredEvent, setHoveredEvent] = useState<LifeEvent | null>(null);
 
     // Detect mobile screen size
@@ -27,39 +27,72 @@ export default function MementoPage() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    const calculateLifeStats = () => {
+    const calculateStats = () => {
         if (!birthDate) return null;
         const birth = new Date(birthDate);
         const today = new Date();
-        const diffTime = Math.abs(today.getTime() - birth.getTime());
-        const weeksLived = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
-        const totalWeeks = 90 * 52; // Assuming 90 years
-        const percentage = (weeksLived / totalWeeks) * 100;
 
-        return { weeksLived, totalWeeks, percentage };
+        if (mementoViewMode === 'year') {
+            const startOfYear = new Date(today.getFullYear(), 0, 1);
+            const isLeap = (year: number) => (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+            const totalDays = isLeap(today.getFullYear()) ? 366 : 365;
+
+            // Days passed since start of year
+            const diffTime = today.getTime() - startOfYear.getTime();
+            const daysPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            return {
+                passed: daysPassed,
+                total: totalDays,
+                percentage: (daysPassed / totalDays) * 100,
+                labelPassed: 'Days Passed',
+                labelRemaining: 'Days Remaining',
+                labelTotal: 'Year Progress'
+            };
+        } else {
+            // Life View (Weeks)
+            const diffTime = Math.abs(today.getTime() - birth.getTime());
+            const weeksLived = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+            const totalWeeks = 90 * 52; // Assuming 90 years
+            return {
+                passed: weeksLived,
+                total: totalWeeks,
+                percentage: (weeksLived / totalWeeks) * 100,
+                labelPassed: 'Weeks Lived',
+                labelRemaining: 'Weeks Remaining',
+                labelTotal: 'Life Complete'
+            };
+        }
     };
 
-    const stats = calculateLifeStats();
+    const stats = calculateStats();
 
-    // Helper to find event for a week
-    // We match roughly by week index. A real app involves precise date math.
-    // Here: week event date falls into.
-    const getEventForWeek = (weekIndex: number) => {
+    const getEventForIndex = (index: number) => {
         if (!birthDate || !lifeEvents.length) return null;
-        const birth = new Date(birthDate);
 
-        // Range for this week
-        const weekStart = new Date(birth);
-        weekStart.setDate(birth.getDate() + (weekIndex * 7));
+        if (mementoViewMode === 'year') {
+            // Check if any event falls on this day of the current year
+            // index 0 = Jan 1st
+            const today = new Date();
+            const year = today.getFullYear();
+            const targetDate = new Date(year, 0, 1);
+            targetDate.setDate(targetDate.getDate() + index);
+            const targetDateStr = targetDate.toISOString().split('T')[0];
 
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
+            return lifeEvents.find(e => e.event_date === targetDateStr);
+        } else {
+            // Life mode (Weeks)
+            const birth = new Date(birthDate);
+            const weekStart = new Date(birth);
+            weekStart.setDate(birth.getDate() + (index * 7));
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
 
-        // Find event in this range
-        return lifeEvents.find(e => {
-            const eDate = new Date(e.event_date);
-            return eDate >= weekStart && eDate <= weekEnd;
-        });
+            return lifeEvents.find(e => {
+                const eDate = new Date(e.event_date);
+                return eDate >= weekStart && eDate <= weekEnd;
+            });
+        }
     };
 
     return (
@@ -72,6 +105,9 @@ export default function MementoPage() {
                 </Link>
 
                 <div className="flex items-center gap-4">
+                    <div className="px-3 py-1 bg-zinc-800 rounded-full text-xs font-mono text-zinc-400 border border-white/10">
+                        {mementoViewMode === 'year' ? 'YEAR VIEW' : 'LIFE VIEW'}
+                    </div>
                     <button
                         onClick={() => setIsSettingsOpen(true)}
                         className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm text-zinc-400 hover:text-white"
@@ -92,7 +128,9 @@ export default function MementoPage() {
                         MEMENTO MORI
                     </h1>
                     <p className="text-zinc-500 text-sm md:text-base lg:text-lg max-w-xl mx-auto px-4">
-                        Your life is a finite grit. Click a square to etch a memory or set a goal.
+                        {mementoViewMode === 'year'
+                            ? "A single orbit around the sun. Make today count."
+                            : "Your life is a finite grit. Click a square to etch a memory or set a goal."}
                     </p>
                 </div>
 
@@ -114,38 +152,29 @@ export default function MementoPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="p-6 rounded-2xl bg-zinc-900/50 border border-white/5 text-center group hover:border-white/20 transition-colors">
                                 <div className="text-3xl font-black text-white mb-1 group-hover:scale-110 transition-transform duration-300">
-                                    {stats?.weeksLived.toLocaleString()}
+                                    {stats?.passed.toLocaleString()}
                                 </div>
-                                <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Weeks Lived</div>
+                                <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{stats?.labelPassed}</div>
                             </div>
                             <div className="p-6 rounded-2xl bg-zinc-900/50 border border-white/5 text-center group hover:border-white/20 transition-colors">
                                 <div className="text-3xl font-black text-white mb-1 group-hover:scale-110 transition-transform duration-300">
-                                    {(stats!.totalWeeks - stats!.weeksLived).toLocaleString()}
+                                    {stats && (stats.total - stats.passed).toLocaleString()}
                                 </div>
-                                <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Weeks Remaining</div>
+                                <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{stats?.labelRemaining}</div>
                             </div>
                             <div className="p-6 rounded-2xl bg-zinc-900/50 border border-white/5 text-center group hover:border-white/20 transition-colors">
                                 <div className="text-3xl font-black text-white mb-1 group-hover:scale-110 transition-transform duration-300">
                                     {stats?.percentage.toFixed(1)}%
                                 </div>
-                                <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Life Complete</div>
+                                <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{stats?.labelTotal}</div>
                             </div>
                         </div>
 
                         {/* The Grid */}
                         <div className="p-4 md:p-8 bg-zinc-950 border border-white/10 rounded-2xl md:rounded-3xl shadow-2xl relative overflow-hidden">
-                            {/* Hover info tooltip */}
-                            {hoveredEvent && (
-                                <div className="fixed z-50 pointer-events-none transform -translate-x-1/2 -translate-y-[120%]"
-                                    style={{
-                                        // This is tricky without ref, simple tooltip is better
-                                        // Let's settle for a "Info Bar" at the top of the grid
-                                    }}>
-                                </div>
-                            )}
 
                             <div className="flex justify-between items-center mb-4 md:mb-6">
-                                <div className="text-[10px] font-mono text-zinc-700">YEAR 0</div>
+                                <div className="text-[10px] font-mono text-zinc-700">{mementoViewMode === 'year' ? 'JAN 1' : 'YEAR 0'}</div>
 
                                 {/* Active Event Display on Hover/Selection */}
                                 <div className="h-6 flex items-center justify-center">
@@ -160,11 +189,11 @@ export default function MementoPage() {
                                             <span className="text-[10px] md:text-xs text-zinc-500">({hoveredEvent.event_date})</span>
                                         </div>
                                     ) : (
-                                        <span className="text-[10px] md:text-xs text-zinc-800">Hover squares to inspect</span>
+                                        <span className="text-[10px] md:text-xs text-zinc-800">Hover {mementoViewMode === 'year' ? 'days' : 'squares'} to inspect</span>
                                     )}
                                 </div>
 
-                                <div className="text-[10px] font-mono text-zinc-700">YEAR 90</div>
+                                <div className="text-[10px] font-mono text-zinc-700">{mementoViewMode === 'year' ? 'DEC 31' : 'YEAR 90'}</div>
                             </div>
 
                             {/* Grid container - scrollable on mobile */}
@@ -172,14 +201,16 @@ export default function MementoPage() {
                                 {/* Mobile: 26 columns (half), Desktop: 52 columns (full) */}
                                 <div
                                     className="grid gap-[4px] w-full"
-                                    style={{ gridTemplateColumns: `repeat(${isMobile ? 26 : 52}, minmax(0, 1fr))` }}
+                                    style={{
+                                        gridTemplateColumns: `repeat(${isMobile ? 26 : 52}, minmax(0, 1fr))`
+                                    }}
                                 >
-                                    {Array.from({ length: stats!.totalWeeks }).map((_, i) => {
-                                        const isLived = i < stats!.weeksLived;
-                                        const isCurrent = i === stats!.weeksLived;
+                                    {Array.from({ length: stats!.total }).map((_, i) => {
+                                        const isLived = i < stats!.passed;
+                                        const isCurrent = i === stats!.passed;
 
                                         // Check for event
-                                        const event = getEventForWeek(i);
+                                        const event = getEventForIndex(i);
 
                                         let cellClass = "bg-zinc-900 border-transparent opacity-50";
 
@@ -197,15 +228,16 @@ export default function MementoPage() {
                                         return (
                                             <button
                                                 key={i}
-                                                onClick={() => setSelectedWeek(i)}
+                                                onClick={() => setSelectedId(i)}
                                                 onMouseEnter={() => event && setHoveredEvent(event)}
                                                 onMouseLeave={() => setHoveredEvent(null)}
                                                 className={`
-                                                    aspect-square rounded-sm transition-all duration-200 relative
+                                                    aspect-square rounded-full transition-all duration-200 relative
                                                     ${cellClass}
                                                     active:scale-110
                                                 `}
-                                                style={{ minWidth: isMobile ? '10px' : '8px', minHeight: isMobile ? '10px' : '8px' }}
+                                                style={{ minWidth: isMobile ? '8px' : '10px', minHeight: isMobile ? '8px' : '10px' }}
+                                                title={mementoViewMode === 'year' ? `Day ${i + 1}` : `Week ${i + 1}`}
                                             />
                                         );
                                     })}
@@ -220,9 +252,9 @@ export default function MementoPage() {
 
             {/* Add/View Event Modal */}
             <AddLifeEventModal
-                isOpen={selectedWeek !== null}
-                onClose={() => setSelectedWeek(null)}
-                weekIndex={selectedWeek || 0}
+                isOpen={selectedId !== null}
+                onClose={() => setSelectedId(null)}
+                weekIndex={selectedId || 0}
                 birthDate={birthDate || new Date().toISOString()}
             />
         </main>

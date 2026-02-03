@@ -5,15 +5,23 @@ import { X, Check, ChevronDown } from 'lucide-react';
 import { useUserData, MetricConfig } from '@/context/user-data-context';
 import { METRIC_TEMPLATES } from '@/data/metric-templates';
 
-/* Cinematic Deep Colors */
+/* Cinematic Deep Colors - Expanded & Vibrant */
 const PRESET_COLORS = [
     { name: 'Emerald', value: '#10b981' },
-    { name: 'Red', value: '#ef4444' },
     { name: 'Blue', value: '#3b82f6' },
     { name: 'Purple', value: '#a855f7' },
     { name: 'Amber', value: '#f59e0b' },
     { name: 'Pink', value: '#ec4899' },
     { name: 'Cyan', value: '#06b6d4' },
+    { name: 'Red', value: '#ef4444' },
+    { name: 'Lime', value: '#84cc16' },
+    { name: 'Fuchsia', value: '#d946ef' },
+    { name: 'Indigo', value: '#6366f1' },
+    { name: 'Orange', value: '#f97316' },
+    { name: 'Teal', value: '#14b8a6' },
+    { name: 'Rose', value: '#f43f5e' },
+    { name: 'Violet', value: '#8b5cf6' },
+    { name: 'Sky', value: '#0ea5e9' },
 ];
 
 interface AddTaskModalProps {
@@ -34,15 +42,34 @@ export function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
     const [metricUnit, setMetricUnit] = useState('');
     const [metricPhases, setMetricPhases] = useState<MetricConfig['phases']>([]);
 
+    const getSmartColor = () => {
+        // Collect currently used colors
+        const usedColors = new Set(tasks.filter(t => !t.isArchived).map(t => t.color));
+
+        // Find first color in preset that isn't used
+        const availableColor = PRESET_COLORS.find(c => !usedColors.has(c.value));
+
+        // If all used, pick random or cycle? Let's pick random to allow duplicates eventually but minimize them
+        if (availableColor) return availableColor.value;
+
+        // Fallback: Random from presets
+        return PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)].value;
+    };
+
     // Reset state when modal opens/closes
     useEffect(() => {
         if (!isOpen) {
             resetForm();
+        } else if (!isEditing) {
+            // When opening fresh, pick a smart color
+            setSelectedColor(getSmartColor());
         }
     }, [isOpen]);
 
     const resetForm = () => {
         setTaskName('');
+        // We defer color selection to when modal opens to ensure it checks latest tasks
+        // or we set it here if we want immediate readiness
         setSelectedColor(PRESET_COLORS[0].value);
         setIsEditing(null);
         setIsDeleteConfirm(null);
@@ -225,8 +252,8 @@ export function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
                                         {metricPhases.map((phase, idx) => (
                                             <div key={idx} className="flex items-center gap-2 bg-white/5 p-2 rounded border border-white/5">
                                                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-black shrink-0 ${idx === 0 ? 'bg-yellow-400' :
-                                                        idx === 1 ? 'bg-orange-500' :
-                                                            idx === 2 ? 'bg-red-500' : 'bg-blue-500'
+                                                    idx === 1 ? 'bg-orange-500' :
+                                                        idx === 2 ? 'bg-red-500' : 'bg-blue-500'
                                                     }`}>
                                                     {idx + 1}
                                                 </div>

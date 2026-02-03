@@ -283,6 +283,8 @@ interface UserDataContextType {
     // Memento Mori
     birthDate: string | null;
     setBirthDate: (date: string | null) => void;
+    mementoViewMode: 'life' | 'year';
+    toggleMementoViewMode: () => void;
 
     // Preferences
     showStatsCard: boolean;
@@ -327,6 +329,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const [pacts, setPacts] = useState<PactsMap>({});
     const [notes, setNotes] = useState<Note[]>([]);
     const [birthDate, setBirthDate] = useState<string | null>(null);
+    const [mementoViewMode, setMementoViewMode] = useState<'life' | 'year'>('life');
     const [showStatsCard, setShowStatsCard] = useState(true);
     const [theme, setThemeState] = useState('dark');
     const [language, setLanguageState] = useState('en');
@@ -485,7 +488,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
                             // Re-fetch to get new IDs
                             const { data: reFetched } = await supabase.from('factions').select('*');
-                            const available = reFetched || dbFactions;
+                            const available = reFetched || dbFactions || [];
                             const mapped = DEFAULT_FACTIONS.map(df => {
                                 const dbMatch = available.find(f => f.name === df.name);
                                 return dbMatch ? { ...df, id: dbMatch.id } : df;
@@ -518,9 +521,18 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                             setNavPreferences(profileData.navigation_preferences as NavItemKey[]);
                         }
                         if (profileData.faction_id) {
-                            // Use a safe reference to the fetched data
+                            // Try to find in fetched dbFactions
                             const finalDbFactions = (await supabase.from('factions').select('*')).data || dbFactions || [];
-                            const dbMatch = finalDbFactions.find((f: any) => f.id === profileData.faction_id);
+                            let dbMatch = finalDbFactions.find((f: any) => f.id === profileData.faction_id);
+
+                            // Fallback: If not found by ID (maybe RLS issue), try matching by name from local defaults if possible, 
+                            // OR just try to use localStorage as a fail-safe if the ID exists but we can't resolve it.
+                            if (!dbMatch) {
+                                // Last ditch: check if we have a saved local faction that matches the ID? 
+                                // Or more likely, if we can't load factions table, we can't verify ID.
+                                // Let's rely on Guest Mode-style local storage check as a backup below if DB fails.
+                            }
+
                             if (dbMatch) {
                                 const localMatch = DEFAULT_FACTIONS.find(df => df.name === dbMatch.name);
                                 if (localMatch) {
@@ -528,6 +540,18 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                                 }
                             }
                         }
+                    }
+
+                    // Always allow local storage override/backup if DB failed to produce a faction but we have one saved locally
+                    // This handles the "I selected it but it's not showing" case if DB update worked but read failed
+                    const savedLocalFaction = localStorage.getItem('diogenes-current-faction');
+                    if (savedLocalFaction && !currentFaction) {
+                        try {
+                            // Only use local if we didn't find one from DB, OR if we trust local more for immediate UI
+                            const parsed = JSON.parse(savedLocalFaction);
+                            // If we haven't set a faction from DB yet, use this
+                            setCurrentFaction((prev) => prev || parsed);
+                        } catch (e) { console.error(e); }
                     }
 
                     const { data: dbSettingsExile } = await supabase.from('user_settings').select('is_exiled, exiled_until').single();
@@ -609,6 +633,10 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                 if (savedLang) setLanguageState(savedLang);
                 const savedNav = localStorage.getItem('diogenes-nav-prefs');
                 if (savedNav) try { setNavPreferences(JSON.parse(savedNav)); } catch (e) { console.error(e); }
+                const savedFaction = localStorage.getItem('diogenes-current-faction');
+                if (savedFaction) try { setCurrentFaction(JSON.parse(savedFaction)); } catch (e) { console.error(e); }
+                const savedMementoMode = localStorage.getItem('diogenes-memento-mode');
+                if (savedMementoMode) setMementoViewMode(savedMementoMode as 'life' | 'year');
             }
             setIsLoaded(true);
         };
@@ -1145,6 +1173,16 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+
+
+    const toggleMementoViewMode = () => {
+        setMementoViewMode(prev => {
+            const next = prev === 'life' ? 'year' : 'life';
+            localStorage.setItem('diogenes-memento-mode', next);
+            return next;
+        });
+    };
+
     const completeVowDaily = async (id: string) => {
         const today = new Date().toISOString().split('T')[0];
         setVows(prev => prev.map(v => {
@@ -1224,7 +1262,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             lastCompletion, setLastCompletion, getStreakForDate, showLossModal, setShowLossModal, pacts, addPact, togglePact, deletePact, notes, addNote, updateNote, deleteNote,
             restoreData, birthDate, setBirthDate: updateBirthDate, showStatsCard, toggleStatsCard, theme, setTheme, language, setLanguage, user, lifeEvents, addLifeEvent, deleteLifeEvent,
             debts, addDebt, payDebt, vows, addVow, completeVowDaily, isExiled, exiledUntil, redeemExile, factions, currentFaction, setFaction, investments, addInvestment, completeInvestment,
-            navPreferences, updateNavPreferences, ALL_NAV_ITEMS, profile, setProfile, onboardingCompleted, completeOnboarding
+            navPreferences, updateNavPreferences, ALL_NAV_ITEMS, profile, setProfile, onboardingCompleted, completeOnboarding, mementoViewMode, toggleMementoViewMode
         }}>
             {children}
         </UserDataContext.Provider>

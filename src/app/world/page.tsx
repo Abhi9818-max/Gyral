@@ -126,7 +126,7 @@ export default function WorldPage() {
     return (
         <div className="min-h-screen flex flex-col bg-black text-white font-sans selection:bg-purple-500/30">
             {/* Custom Header for World Page (Adverse Style) */}
-            <div className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
+            <div className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5 hidden md:block">
                 <div className="flex items-center justify-between px-6 py-4 max-w-md mx-auto md:max-w-4xl">
                     <div className="flex items-center gap-2">
                         <Sparkles className="w-6 h-6 text-transparent bg-clip-text bg-gradient-to-tr from-yellow-400 to-purple-600 fill-current" />

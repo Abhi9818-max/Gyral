@@ -1,21 +1,87 @@
 {
-  "name": "Gyral",
-  "short_name": "Gyral",
+  "name": "Diogenes",
+  "short_name": "Diogenes",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
-  "description": "Advanced cognitive architecture and habit formation system.",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "/icon.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Log Water",
+      "short_name": "Water",
+      "description": "Quickly log hydration",
+      "url": "/?action=log-water",
+      "icons": [
+        {
+          "src": "/icons/water-shortcut.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "My Pacts",
+      "short_name": "Pacts",
+      "description": "View today's pacts",
+      "url": "/citadel",
+      "icons": [
+        {
+          "src": "/icons/pact-shortcut.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Night's Watch",
+      "short_name": "Vows",
+      "description": "Review your vows",
+      "url": "/?open=watch",
+      "icons": [
+        {
+          "src": "/icons/shield-shortcut.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "name": "Hydration Tracker",
+      "description": "Log your water intake",
+      "tag": "hydration",
+      "template": "hydration-widget",
+      "ms_ac_template": "hydration-widget",
+      "data": {
+        "content_type": "widget"
+      },
+      "type": "application/json",
+      "screenshots": [
+        {
+          "src": "/icons/water-shortcut.png",
+          "sizes": "96x96",
+          "label": "Widget Preview"
+        }
+      ],
+      "icons": [
+        {
+          "src": "/icons/water-shortcut.png",
+          "sizes": "96x96"
+        }
+      ],
+      "auth": false,
+      "update": 86400
     }
   ]
 }

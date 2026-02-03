@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, Shield, ScrollText, ClipboardList, Flag, Settings, Plus, Flame, Globe, Ghost, Skull, Coins, Menu, X, Search, MessageCircle, Bell, Sword, Home, User, Brain } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
 import { createClient } from '@/utils/supabase/client';
@@ -38,6 +39,8 @@ export function Header() {
   const { unreadCount, friendRequestCount } = useMessageNotifications();
 
   // Smart Header Logic
+  const pathname = usePathname();
+  const isHome = pathname === '/';
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -102,7 +105,7 @@ export function Header() {
 
   return (
     <>
-      <header className={`flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-white/10 bg-black/90 backdrop-blur-3xl fixed top-0 w-full z-50 shadow-[0_4px_30px_rgba(0,0,0,0.8)] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] transform-gpu ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
+      <header className={`${isHome ? 'flex' : 'hidden md:flex'} items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-white/10 bg-black/90 backdrop-blur-3xl fixed top-0 w-full z-50 shadow-[0_4px_30px_rgba(0,0,0,0.8)] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] transform-gpu ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
         <div className="flex items-center gap-3 relative group cursor-default">
           {/* Logo Glow */}
           <div className="absolute -inset-2 bg-white/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -136,15 +139,6 @@ export function Header() {
 
         <div className="flex items-center gap-2 md:gap-4">
 
-          {/* Faction Sigil - Profile Style */}
-          {currentFaction && (
-            <button
-              onClick={() => setIsFactionModalOpen(true)}
-              className="flex w-9 h-9 rounded-xl bg-zinc-900 border border-white/10 items-center justify-center overflow-hidden hover:border-white/30 transition-all p-1"
-            >
-              <img src={currentFaction.sigilUrl} alt={currentFaction.name} className="w-full h-full object-cover rounded-lg" />
-            </button>
-          )}
 
           {/* Desktop Settings Link */}
           <Link
@@ -230,9 +224,9 @@ export function Header() {
             )}
           </button>
 
-          {/* Desktop Menu Button - Three Dots */}
+          {/* Desktop Menu Button - Three Dots / Sigil */}
           <button
-            className="hidden md:flex w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 items-center justify-center text-zinc-400 hover:text-white transition-all border border-transparent hover:border-white/20 relative"
+            className={`hidden md:flex w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 items-center justify-center text-zinc-400 hover:text-white transition-all border border-transparent hover:border-white/20 relative ${currentFaction ? 'p-1 hover:scale-105' : ''}`}
             onClick={() => {
               // Create a temporary div to hold the menu
               const menuDiv = document.createElement('div');
@@ -350,15 +344,20 @@ export function Header() {
               });
             }}
           >
-            <Menu className="w-5 h-5" />
-            {friendRequestCount > 0 && (
+            {currentFaction ? (
+              <img src={currentFaction.sigilUrl} alt={currentFaction.name} className="w-full h-full object-cover rounded-full" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
+
+            {(friendRequestCount > 0 && !currentFaction) && (
               <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-black animate-pulse"></span>
             )}
           </button>
 
           {/* Mobile Menu Button - Moved to end for better mobile UX */}
           <button
-            className="md:hidden w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-all border border-transparent hover:border-white/20 relative"
+            className={`md:hidden w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-all border border-transparent hover:border-white/20 relative ${currentFaction ? 'p-1' : ''}`}
             onClick={() => {
               // Create a temporary div to hold the menu
               const menuDiv = document.createElement('div');
@@ -481,7 +480,11 @@ export function Header() {
               });
             }}
           >
-            <Menu className="w-5 h-5" />
+            {currentFaction ? (
+              <img src={currentFaction.sigilUrl} alt={currentFaction.name} className="w-full h-full object-cover rounded-full" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
             {(friendRequestCount > 0 || unreadCount > 0) && (
               <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-black animate-pulse"></span>
             )}

@@ -6,6 +6,7 @@ import { StatsCard } from "@/components/stats-card";
 import { FilterBar } from "@/components/filter-bar";
 import { Heatmap } from "@/components/heatmap";
 import { WeeklyProgress } from "@/components/weekly-progress";
+import { HydrationWidget } from "@/components/hydration-widget";
 import { StreakSuccessModal } from "@/components/modals/streak-success-modal";
 import { StreakLossModal } from "@/components/modals/streak-loss-modal";
 import { RitualModal } from "@/components/modals/ritual-modal";
@@ -114,7 +115,9 @@ export default function Home() {
           <Heatmap />
         </div>
 
-        <div className="pt-6 md:pt-8">
+
+        <div className="pt-6 md:pt-8 space-y-6">
+          <HydrationWidget />
           <WeeklyProgress />
         </div>
       </main>

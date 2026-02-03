@@ -3,10 +3,11 @@
 import { useRef, useState, useEffect } from 'react';
 import {
     X, Download, Shield, Database, Cloud, Upload, RefreshCw, Skull, Calendar,
-    User, Lock, Bell, Globe, Moon, ChevronRight, Eye, EyeOff, FileJson, Trash2, LogOut
+    User, Lock, Bell, Globe, Moon, ChevronRight, Eye, EyeOff, FileJson, Trash2, LogOut, TestTube
 } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
 import { getUserAvatar } from '@/utils/avatar-helpers';
+import { subscribeUserToPush } from '@/lib/push-notifications';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -19,12 +20,21 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         currentStreak, longestStreak, consistencyScore, streakTier, streakStrength,
         restoreData,
         birthDate, setBirthDate,
+        mementoViewMode, toggleMementoViewMode,
         showStatsCard, toggleStatsCard,
         user, profile
     } = useUserData();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [localBirthDate, setLocalBirthDate] = useState('');
+    const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default');
+    const [isTestingPush, setIsTestingPush] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+            setNotifPermission(Notification.permission);
+        }
+    }, [isOpen]); // Re-check when modal opens
 
     useEffect(() => {
         if (birthDate) setLocalBirthDate(birthDate);
@@ -37,6 +47,34 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         setLocalBirthDate(newValue);
         if (newValue) {
             setBirthDate(newValue);
+        }
+    };
+
+    const handleToggleNotifications = async () => {
+        if (notifPermission === 'granted') {
+            // Cannot programmatically disable standard web push permissions
+            alert("To disable notifications, please reset permissions in your browser's site settings.");
+            return;
+        }
+
+        const success = await subscribeUserToPush();
+        if (success) {
+            setNotifPermission('granted');
+        } else if (Notification.permission === 'denied') {
+            alert("Notifications are blocked. Please enable them in your browser settings.");
+        }
+    };
+
+    const testPush = async (type: 'morning' | 'evening') => {
+        setIsTestingPush(true);
+        try {
+            await fetch(`/api/cron/${type}`, { method: 'POST' });
+            alert(`Simulated ${type} push sent! Check your notifications.`);
+        } catch (e) {
+            console.error(e);
+            alert("Failed to send test push.");
+        } finally {
+            setIsTestingPush(false);
         }
     };
 
@@ -196,7 +234,22 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     <SettingsGroup title="Account">
                         <SettingsItem icon={User} label="Manage Profile" />
                         <SettingsItem icon={Lock} label="Password & Security" />
-                        <SettingsItem icon={Bell} label="Notifications" isLast />
+                        <SettingsItem
+                            icon={Bell}
+                            label="Notifications"
+                            isLast
+                            action={
+                                <button
+                                    onClick={handleToggleNotifications}
+                                    className={`text-xs font-bold px-3 py-1 rounded-full border transition-colors ${notifPermission === 'granted'
+                                            ? 'bg-green-500/10 text-green-500 border-green-500/20'
+                                            : 'bg-zinc-800 text-zinc-400 border-white/5 hover:bg-zinc-700'
+                                        }`}
+                                >
+                                    {notifPermission === 'granted' ? 'Enabled' : 'Enable'}
+                                </button>
+                            }
+                        />
                     </SettingsGroup>
 
                     {/* Preferences */}
@@ -216,6 +269,18 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             }
                         />
                         <SettingsItem
+                            icon={Calendar}
+                            label="Memento View"
+                            action={
+                                <button
+                                    onClick={toggleMementoViewMode}
+                                    className="px-3 py-1 bg-zinc-800 rounded-lg text-xs font-bold text-zinc-300 hover:text-white transition-colors border border-white/10 hover:border-white/20"
+                                >
+                                    {mementoViewMode === 'life' ? 'Whole Life' : 'Year Left'}
+                                </button>
+                            }
+                        />
+                        <SettingsItem
                             icon={showStatsCard ? Eye : EyeOff}
                             label="30-Day Activity Card"
                             onClick={toggleStatsCard}
@@ -227,6 +292,25 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             isLast
                         />
                     </SettingsGroup>
+
+                    {/* Notification Tests (Dev / Admin) */}
+                    {notifPermission === 'granted' && (
+                        <SettingsGroup title="Notification Tests">
+                            <SettingsItem
+                                icon={TestTube}
+                                label="Morning Briefing"
+                                onClick={() => testPush('morning')}
+                                action={<span className="text-xs text-zinc-600">Send</span>}
+                            />
+                            <SettingsItem
+                                icon={TestTube}
+                                label="Evening Evaluation"
+                                onClick={() => testPush('evening')}
+                                isLast
+                                action={<span className="text-xs text-zinc-600">Send</span>}
+                            />
+                        </SettingsGroup>
+                    )}
 
                     {/* System / Data */}
                     <SettingsGroup title="Data Management">
