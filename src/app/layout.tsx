@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   icons: {
     icon: '/icons/icon-192.png',
     shortcut: '/icons/icon-192.png',
-    apple: '/icon.png', // Assuming home.png as launcher for iOS
+    apple: '/icons/icon-512.png',
   }
 };
 
