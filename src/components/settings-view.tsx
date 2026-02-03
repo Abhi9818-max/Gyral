@@ -10,6 +10,7 @@ import {
 import { useUserData, ALL_NAV_ITEMS, NavItemKey } from '@/context/user-data-context';
 import { subscribeUserToPush } from '@/lib/push-notifications';
 import { useInstallPrompt } from '@/hooks/use-install-prompt';
+import { getUserAvatar } from '@/utils/avatar-helpers';
 
 const ICON_MAP = {
     Home, Globe, Flame, Coins, Shield, Sword,
@@ -220,10 +221,10 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
     const SettingsItem = ({
         icon: Icon, label, value, onClick, isLast, danger, action, customHeight
     }: {
-        icon: any, label: string, value?: string | React.ReactNode, onClick?: () => void, isLast?: boolean, danger?: boolean, action?: React.ReactNode, customHeight?: boolean
+        icon: any, label: string, value?: string | React.ReactNode, onClick?: (e: React.MouseEvent) => void | Promise<void>, isLast?: boolean, danger?: boolean, action?: React.ReactNode, customHeight?: boolean
     }) => (
         <div
-            onClick={onClick}
+            onClick={(e) => onClick?.(e)}
             className={`flex items-center justify-between p-4 cursor-pointer hover:bg-white/10 transition-colors ${!isLast ? 'border-b border-white/5' : ''} ${customHeight ? 'py-5' : ''}`}
         >
             <div className="flex items-center gap-4">
@@ -482,12 +483,12 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                             <SettingsItem
                                 icon={TestTube}
                                 label="Test Morning Briefing"
-                                onClick={(e) => handleTestPush(undefined, 'morning')}
+                                onClick={() => handleTestPush(undefined, 'morning')}
                             />
                             <SettingsItem
                                 icon={TestTube}
                                 label="Test Evening Evaluation"
-                                onClick={(e) => handleTestPush(undefined, 'evening')}
+                                onClick={() => handleTestPush(undefined, 'evening')}
                                 isLast
                             />
                         </SettingsGroup>

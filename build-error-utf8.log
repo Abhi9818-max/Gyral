@@ -1,0 +1,94 @@
+﻿
+> diogenes@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+node.exe : ΓÜá The 
+"middleware" file 
+convention is 
+deprecated. Please 
+use "proxy" instead. 
+Learn more: https://n
+extjs.org/docs/messag
+es/middleware-to-prox
+y
+At line:1 char:1
++ & "C:\Program Files
+\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (ΓÜá The   
+  "middle...lewar    
+e-to-proxy:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 24.1s
+  Running TypeScript ...
+Failed to compile.
+
+./src/components/sett
+ings-view.tsx:486:33
+Type error: Type 
+'(e: any) => 
+Promise<void>' is 
+not assignable to 
+type '() => void'.
+  Target signature 
+provides too few 
+arguments. Expected 
+1 or more, but got 0.
+
+[0m [90m 484 
+|[39m               
+                  ico
+n[33m=[39m{[33mTes
+tTube[39m}
+ [90m 485 |[39m    
+                     
+        label[33m=[
+39m[32m"Test 
+Morning 
+Briefing"[39m
+[31m[1m>[22m[39m
+[90m 486 |[39m      
+                     
+      onClick[33m=[
+39m{(e) [33m=>[39m 
+handleTestPush(undefi
+ned[33m,[39m 
+[32m'morning'[39m)}
+ [90m     |[39m    
+                     
+        
+[31m[1m^[22m[39m
+ [90m 487 |[39m    
+                     
+    [33m/[39m[33m>
+[39m
+ [90m 488 |[39m    
+                     
+    [33m<[39m[33mS
+ettingsItem[39m
+ [90m 489 |[39m    
+                     
+        icon[33m=[3
+9m{[33mTestTube[39m
+}[0m
+Next.js build worker 
+exited with code: 1 
+and signal: null
+
