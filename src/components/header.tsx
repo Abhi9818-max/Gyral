@@ -110,7 +110,7 @@ export function Header() {
           {/* Logo Glow */}
           <div className="absolute -inset-2 bg-white/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <Link href="/" className="relative flex items-center gap-2 md:gap-3">
-            <Brain className="w-5 h-5 md:w-6 md:h-6 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+            <img src="/icons/icon-192.png" alt="Gyral Logo" className="w-6 h-6 md:w-8 md:h-8 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
             <span className="text-lg md:text-xl font-bold tracking-[0.2em] text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">GYRAL</span>
           </Link>
         </div>

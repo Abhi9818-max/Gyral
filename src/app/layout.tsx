@@ -24,6 +24,11 @@ export const metadata: Metadata = {
   title: "Gyral",
   description: "Advanced cognitive architecture and habit formation system.",
   manifest: "/manifest.json",
+  icons: {
+    icon: '/icons/icon-192.png',
+    shortcut: '/icons/icon-192.png',
+    apple: '/icon.png', // Assuming home.png as launcher for iOS
+  }
 };
 
 import { ExileOverlay } from "@/components/global/exile-overlay";
