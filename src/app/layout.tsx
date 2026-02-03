@@ -18,12 +18,12 @@ const geistMono = Geist_Mono({
 });
 
 import { PWAInit } from "@/components/pwa-init";
-import { ServiceWorkerRegister } from "@/components/service-worker-register";
 
 export const metadata: Metadata = {
   title: "Gyral",
   description: "Advanced cognitive architecture and habit formation system.",
   manifest: "/manifest.json",
+  themeColor: "#000000",
   icons: {
     icon: '/icons/icon-192.png',
     shortcut: '/icons/icon-192.png',
@@ -46,7 +46,6 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <PWAInit />
-        <ServiceWorkerRegister />
         <UserDataProvider>
           <StoriesProvider>
             <MessageNotificationProvider>

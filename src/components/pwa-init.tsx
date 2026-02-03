@@ -13,7 +13,13 @@ export function PWAInit() {
             window.addEventListener('beforeinstallprompt', handlePrompt);
 
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW Error:', err));
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js').then(reg => {
+                        console.log('SW registered:', reg.scope);
+                    }).catch(err => {
+                        console.error('SW Error:', err);
+                    });
+                });
             }
         }
     }, []);

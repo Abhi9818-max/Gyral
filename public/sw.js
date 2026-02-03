@@ -23,3 +23,10 @@ self.addEventListener('notificationclick', function (event) {
         clients.openWindow(event.notification.data.url)
     );
 });
+
+// Mandatory fetch handler for PWA installability
+self.addEventListener('fetch', (event) => {
+    // We can add caching logic here later, but for now, 
+    // simply having the listener is enough for Chrome to grant WebAPK status.
+    event.respondWith(fetch(event.request));
+});
