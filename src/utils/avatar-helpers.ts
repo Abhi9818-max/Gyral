@@ -14,8 +14,8 @@ export function getDefaultAvatar(gender: string | null | undefined, userId: stri
     // Fallback if no userId provided
     if (!userId) {
         return gender === 'female'
-            ? '/avatars/default-female1.jpeg.jpeg'
-            : '/avatars/default-male1.jpeg.jpeg';
+            ? '/avatars/default-female1.jpeg'
+            : '/avatars/default-male1.jpeg';
     }
 
     const hash = hashUserId(userId);
@@ -23,7 +23,7 @@ export function getDefaultAvatar(gender: string | null | undefined, userId: stri
     if (gender === 'female') {
         const femaleCount = 15;
         const index = (hash % femaleCount) + 1;
-        return `/avatars/default-female${index}.jpeg.jpeg`;
+        return `/avatars/default-female${index}.jpeg`;
     }
 
     // Default to male avatar for 'male', 'other', or null
@@ -34,7 +34,7 @@ export function getDefaultAvatar(gender: string | null | undefined, userId: stri
     if (index >= 14) {
         index = index + 1;
     }
-    return `/avatars/default-male${index}.jpeg.jpeg`;
+    return `/avatars/default-male${index}.jpeg`;
 }
 
 // Helper function to get user avatar with fallback to default
