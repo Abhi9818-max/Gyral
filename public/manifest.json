@@ -1,6 +1,6 @@
 {
-  "name": "Diogenes",
-  "short_name": "Diogenes",
+  "name": "Gyral",
+  "short_name": "Gyral",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
@@ -54,34 +54,6 @@
           "sizes": "96x96"
         }
       ]
-    }
-  ],
-  "widgets": [
-    {
-      "name": "Hydration Tracker",
-      "description": "Log your water intake",
-      "tag": "hydration",
-      "template": "hydration-widget",
-      "ms_ac_template": "hydration-widget",
-      "data": {
-        "content_type": "widget"
-      },
-      "type": "application/json",
-      "screenshots": [
-        {
-          "src": "/icons/water-shortcut.png",
-          "sizes": "96x96",
-          "label": "Widget Preview"
-        }
-      ],
-      "icons": [
-        {
-          "src": "/icons/water-shortcut.png",
-          "sizes": "96x96"
-        }
-      ],
-      "auth": false,
-      "update": 86400
     }
   ]
 }
