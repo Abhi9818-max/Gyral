@@ -247,7 +247,7 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
         <div className={`w-full ${isModal ? 'pb-8' : ''}`}>
             {/* Identity Card */}
             <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 mb-8 backdrop-blur-sm flex items-center gap-5">
-                <div className="w-20 h-20 rounded-full border-2 border-white/10 overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-purple-900/20">
+                <div className="w-20 h-20 shrink-0 rounded-full border-2 border-white/10 overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-purple-900/20">
                     {user?.id ? (
                         <img
                             src={getUserAvatar(profile?.avatar_url, profile?.gender, user.id)}
@@ -260,11 +260,11 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                         </span>
                     )}
                 </div>
-                <div>
-                    <h3 className="text-xl font-bold text-white tracking-tight">
+                <div className="min-w-0 flex-1">
+                    <h3 className="text-xl font-bold text-white tracking-tight truncate">
                         {profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Traveler'}
                     </h3>
-                    <p className="text-sm text-zinc-500 font-mono">
+                    <p className="text-sm text-zinc-500 font-mono truncate">
                         {user?.email || 'diogenes@example.com'}
                     </p>
                 </div>
