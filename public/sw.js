@@ -26,16 +26,18 @@ self.addEventListener('notificationclick', function (event) {
 
 // Mandatory fetch handler for PWA installability
 self.addEventListener('fetch', (event) => {
+    // Basic fetch handler that supports offline fallback
     event.respondWith(
-        fetch(event.request).catch(() => {
-            // If the fetch fails (e.g. offline), we could return a cached offline page.
-            // For now, ensuring we don't just crash is a good start.
-            // A simple refinement: check if it's a navigation request and return a fallback.
+        fetch(event.request).catch(async () => {
+            // If this is a navigation request (for a page)
             if (event.request.mode === 'navigate') {
-                // ideally we return a cached offline.html here
-                // for now leaving as is but catching the error prevents unhandled rejections
-                return new Response('Offline', { headers: { 'Content-Type': 'text/plain' } });
+                // Return a simple offline page
+                return new Response('<!DOCTYPE html><html><body><h1>You are offline</h1><p>Please check your connection to the Neural Link.</p></body></html>', {
+                    headers: { 'Content-Type': 'text/html' }
+                });
             }
+            // For images/other assets, we could return placeholders, but for now just fail gracefully
+            return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
         })
     );
 });

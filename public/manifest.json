@@ -32,43 +32,5 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ],
-  "shortcuts": [
-    {
-      "name": "Log Water",
-      "short_name": "Water",
-      "description": "Quickly log hydration",
-      "url": "/?action=log-water",
-      "icons": [
-        {
-          "src": "/icons/water-shortcut.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "My Pacts",
-      "short_name": "Pacts",
-      "description": "View today's pacts",
-      "url": "/citadel",
-      "icons": [
-        {
-          "src": "/icons/pact-shortcut.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Night's Watch",
-      "short_name": "Vows",
-      "description": "Review your vows",
-      "url": "/?open=watch",
-      "icons": [
-        {
-          "src": "/icons/shield-shortcut.png",
-          "sizes": "96x96"
-        }
-      ]
-    }
   ]
 }
