@@ -26,7 +26,16 @@ self.addEventListener('notificationclick', function (event) {
 
 // Mandatory fetch handler for PWA installability
 self.addEventListener('fetch', (event) => {
-    // We can add caching logic here later, but for now, 
-    // simply having the listener is enough for Chrome to grant WebAPK status.
-    event.respondWith(fetch(event.request));
+    event.respondWith(
+        fetch(event.request).catch(() => {
+            // If the fetch fails (e.g. offline), we could return a cached offline page.
+            // For now, ensuring we don't just crash is a good start.
+            // A simple refinement: check if it's a navigation request and return a fallback.
+            if (event.request.mode === 'navigate') {
+                // ideally we return a cached offline.html here
+                // for now leaving as is but catching the error prevents unhandled rejections
+                return new Response('Offline', { headers: { 'Content-Type': 'text/plain' } });
+            }
+        })
+    );
 });

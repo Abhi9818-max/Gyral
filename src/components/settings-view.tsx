@@ -252,7 +252,7 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                         <img
                             src={getUserAvatar(profile?.avatar_url, profile?.gender, user.id)}
                             alt="Profile"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover rounded-full"
                         />
                     ) : (
                         <span className="text-3xl font-bold text-white">
