@@ -140,10 +140,11 @@ export function LogActivityModal({ isOpen, onClose, dateStr }: LogActivityModalP
                             if (!task) return null;
 
                             const isExpanded = expandedRecords.has(record.taskId);
-                            const hasValue = record.value !== undefined && record.value !== null;
+                            // Check for persistence of value (ensure not NaN)
+                            const hasValue = record.value !== undefined && record.value !== null && !Number.isNaN(record.value);
 
                             return (
-                                <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 group hover:border-white/30 transition-all">
+                                <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 group hover:border-white/30 transition-all select-none">
                                     <div className="flex items-center gap-3">
                                         <div
                                             className="w-3 h-3 rounded-full shadow-[0_0_8px_currentColor]"
@@ -155,30 +156,29 @@ export function LogActivityModal({ isOpen, onClose, dateStr }: LogActivityModalP
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        {(hasValue && isExpanded) ? (
+                                        {isExpanded ? (
                                             <div
-                                                className="text-sm font-bold text-accent select-none cursor-pointer"
+                                                className="text-sm font-bold text-accent cursor-pointer animate-[fadeIn_0.2s_ease-out]"
                                                 onDoubleClick={() => toggleRecordView(record.taskId)}
-                                                title="Double-click to see phases"
+                                                title="Double-click to switch view"
                                             >
-                                                {record.value} {task.metricConfig?.unit}
+                                                {hasValue ? `${record.value} ${task.metricConfig?.unit || ''}` : `Intensity: ${record.intensity}`}
                                             </div>
                                         ) : (
-                                            record.intensity && (
-                                                <div
-                                                    className="flex gap-0.5 cursor-pointer"
-                                                    onDoubleClick={() => hasValue && toggleRecordView(record.taskId)}
-                                                    title={hasValue ? "Double-click to see exact value" : "Intensity"}
-                                                >
-                                                    {Array.from({ length: 4 }).map((_, i) => (
-                                                        <div
-                                                            key={i}
-                                                            className={`w-1 h-3 rounded-full ${i < record.intensity! ? 'bg-accent' : 'bg-white/10'}`}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            )
+                                            <div
+                                                className="flex gap-0.5 cursor-pointer"
+                                                onDoubleClick={() => toggleRecordView(record.taskId)}
+                                                title="Double-click to see details"
+                                            >
+                                                {record.intensity ? Array.from({ length: 4 }).map((_, i) => (
+                                                    <div
+                                                        key={i}
+                                                        className={`w-1 h-3 rounded-full ${i < record.intensity! ? 'bg-accent' : 'bg-white/10'}`}
+                                                    />
+                                                )) : <span className="text-xs text-muted-foreground">Completed</span>}
+                                            </div>
                                         )}
+
                                         <button
                                             onClick={() => handleDeleteRecord(task.id)}
                                             className="text-muted-foreground hover:text-red-500 transition-colors p-1"
