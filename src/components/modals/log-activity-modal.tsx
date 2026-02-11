@@ -19,6 +19,19 @@ export function LogActivityModal({ isOpen, onClose, dateStr }: LogActivityModalP
     const [activePhase, setActivePhase] = useState<number | null>(null); // Calculated intensity
     const [existingRecords, setExistingRecords] = useState<any[]>([]);
     const [analytics, setAnalytics] = useState<any>(null);
+    const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set());
+
+    const toggleRecordView = (taskId: string) => {
+        setExpandedRecords(prev => {
+            const next = new Set(prev);
+            if (next.has(taskId)) {
+                next.delete(taskId);
+            } else {
+                next.add(taskId);
+            }
+            return next;
+        });
+    };
 
     // Filter out archived tasks for the selection list
     const activeTasks = tasks.filter(t => !t.isArchived);
@@ -125,6 +138,10 @@ export function LogActivityModal({ isOpen, onClose, dateStr }: LogActivityModalP
                         {existingRecords.map((record, idx) => {
                             const task = tasks.find(t => t.id === record.taskId);
                             if (!task) return null;
+
+                            const isExpanded = expandedRecords.has(record.taskId);
+                            const hasValue = record.value !== undefined && record.value !== null;
+
                             return (
                                 <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 group hover:border-white/30 transition-all">
                                     <div className="flex items-center gap-3">
@@ -138,15 +155,29 @@ export function LogActivityModal({ isOpen, onClose, dateStr }: LogActivityModalP
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        {record.intensity && (
-                                            <div className="flex gap-0.5">
-                                                {Array.from({ length: 4 }).map((_, i) => (
-                                                    <div
-                                                        key={i}
-                                                        className={`w-1 h-3 rounded-full ${i < record.intensity ? 'bg-accent' : 'bg-white/10'}`}
-                                                    />
-                                                ))}
+                                        {(hasValue && isExpanded) ? (
+                                            <div
+                                                className="text-sm font-bold text-accent select-none cursor-pointer"
+                                                onDoubleClick={() => toggleRecordView(record.taskId)}
+                                                title="Double-click to see phases"
+                                            >
+                                                {record.value} {task.metricConfig?.unit}
                                             </div>
+                                        ) : (
+                                            record.intensity && (
+                                                <div
+                                                    className="flex gap-0.5 cursor-pointer"
+                                                    onDoubleClick={() => hasValue && toggleRecordView(record.taskId)}
+                                                    title={hasValue ? "Double-click to see exact value" : "Intensity"}
+                                                >
+                                                    {Array.from({ length: 4 }).map((_, i) => (
+                                                        <div
+                                                            key={i}
+                                                            className={`w-1 h-3 rounded-full ${i < record.intensity! ? 'bg-accent' : 'bg-white/10'}`}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )
                                         )}
                                         <button
                                             onClick={() => handleDeleteRecord(task.id)}
