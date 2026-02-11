@@ -48,77 +48,82 @@ export function MobileNav() {
         return pathname.startsWith(href);
     };
 
+    // Hide nav on full-screen pages like notes editor
+    const hideNav = pathname.startsWith('/notes');
+
     return (
         <>
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-white/10 z-[60] pb-safe">
-                <div className="flex items-center justify-around h-16 px-2">
-                    {/* Home Button - Fixed */}
-                    <Link
-                        href="/"
-                        className="flex flex-col items-center justify-center flex-1 h-full relative"
-                    >
-                        <Home
-                            className={`w-6 h-6 transition-all ${isActive('/') ? 'text-white scale-110' : 'text-white/50'}`}
-                            strokeWidth={isActive('/') ? 2.5 : 2}
-                        />
-                        {isActive('/') && (
-                            <div className="absolute -top-1 w-1 h-1 rounded-full bg-accent" />
-                        )}
-                    </Link>
+            {!hideNav && (
+                <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-white/10 z-[60] pb-safe">
+                    <div className="flex items-center justify-around h-16 px-2">
+                        {/* Home Button - Fixed */}
+                        <Link
+                            href="/"
+                            className="flex flex-col items-center justify-center flex-1 h-full relative"
+                        >
+                            <Home
+                                className={`w-6 h-6 transition-all ${isActive('/') ? 'text-white scale-110' : 'text-white/50'}`}
+                                strokeWidth={isActive('/') ? 2.5 : 2}
+                            />
+                            {isActive('/') && (
+                                <div className="absolute -top-1 w-1 h-1 rounded-full bg-accent" />
+                            )}
+                        </Link>
 
-                    {/* Dynamic User Items */}
-                    {activeNavItems.map((item) => {
-                        const Icon = ICON_MAP[item.icon];
-                        if (!Icon) return null;
-                        const active = item.href ? isActive(item.href) : false;
+                        {/* Dynamic User Items */}
+                        {activeNavItems.map((item) => {
+                            const Icon = ICON_MAP[item.icon];
+                            if (!Icon) return null;
+                            const active = item.href ? isActive(item.href) : false;
 
-                        if (item.href) {
+                            if (item.href) {
+                                return (
+                                    <Link
+                                        key={item.key}
+                                        href={item.href}
+                                        className="flex flex-col items-center justify-center flex-1 h-full relative"
+                                    >
+                                        <Icon
+                                            className={`w-6 h-6 transition-all ${active ? 'text-white scale-110' : 'text-white/50'}`}
+                                            strokeWidth={active ? 2.5 : 2}
+                                        />
+                                        {active && (
+                                            <div className="absolute -top-1 w-1 h-1 rounded-full bg-accent" />
+                                        )}
+                                    </Link>
+                                );
+                            }
+
                             return (
-                                <Link
+                                <button
                                     key={item.key}
-                                    href={item.href}
+                                    onClick={() => handleAction(item.key)}
                                     className="flex flex-col items-center justify-center flex-1 h-full relative"
                                 >
-                                    <Icon
-                                        className={`w-6 h-6 transition-all ${active ? 'text-white scale-110' : 'text-white/50'}`}
-                                        strokeWidth={active ? 2.5 : 2}
-                                    />
-                                    {active && (
-                                        <div className="absolute -top-1 w-1 h-1 rounded-full bg-accent" />
-                                    )}
-                                </Link>
+                                    <Icon className="w-6 h-6 text-white/50 hover:text-white transition-all" />
+                                </button>
                             );
-                        }
+                        })}
 
-                        return (
-                            <button
-                                key={item.key}
-                                onClick={() => handleAction(item.key)}
-                                className="flex flex-col items-center justify-center flex-1 h-full relative"
-                            >
-                                <Icon className="w-6 h-6 text-white/50 hover:text-white transition-all" />
-                            </button>
-                        );
-                    })}
-
-                    {/* Profile Button - Fixed */}
-                    <Link
-                        href="/profile"
-                        className="flex flex-col items-center justify-center flex-1 h-full relative"
-                    >
-                        <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center overflow-hidden transition-all ${isActive('/profile') ? 'border-white' : 'border-white/30'} bg-gradient-to-tr from-zinc-800 to-zinc-700`}>
-                            <img
-                                src={getUserAvatar(profile?.avatar_url, profile?.gender, user?.id)}
-                                alt="Profile"
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                        {isActive('/profile') && (
-                            <div className="absolute -top-1 w-1 h-1 rounded-full bg-accent" />
-                        )}
-                    </Link>
-                </div>
-            </nav>
+                        {/* Profile Button - Fixed */}
+                        <Link
+                            href="/profile"
+                            className="flex flex-col items-center justify-center flex-1 h-full relative"
+                        >
+                            <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center overflow-hidden transition-all ${isActive('/profile') ? 'border-white' : 'border-white/30'} bg-gradient-to-tr from-zinc-800 to-zinc-700`}>
+                                <img
+                                    src={getUserAvatar(profile?.avatar_url, profile?.gender, user?.id)}
+                                    alt="Profile"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                            {isActive('/profile') && (
+                                <div className="absolute -top-1 w-1 h-1 rounded-full bg-accent" />
+                            )}
+                        </Link>
+                    </div>
+                </nav>
+            )}
 
             <RitualModal isOpen={isRitualModalOpen} onClose={() => setIsRitualModalOpen(false)} />
             <BankModal isOpen={isBankModalOpen} onClose={() => setIsBankModalOpen(false)} />
