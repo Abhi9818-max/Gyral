@@ -39,18 +39,22 @@ export async function updateSession(request: NextRequest) {
     // 3. Change the myNewResponse object to fit your needs, but avoid changing
     //    the cookies!
 
-    // const {
-    //   data: { user },
-    // } = await supabase.auth.getUser()
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
 
-    // if (
-    //   !user &&
-    //   !request.nextUrl.pathname.startsWith('/login') &&
-    //   !request.nextUrl.pathname.startsWith('/auth')
-    // ) {
-    //   // no user, potentially redirect to login? 
-    //   // For now we allow non-authed access, but middleware refreshes token
-    // }
+    const isGuest = request.cookies.get('gyral-guest-mode')?.value === 'true'
+
+    if (
+        !user &&
+        !isGuest &&
+        !request.nextUrl.pathname.startsWith('/login') &&
+        !request.nextUrl.pathname.startsWith('/auth')
+    ) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/login'
+        return NextResponse.redirect(url)
+    }
 
     return supabaseResponse
 }

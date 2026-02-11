@@ -3,6 +3,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 
 import { createClient } from '@/utils/supabase/server'
 
@@ -19,6 +20,9 @@ export async function login(formData: FormData) {
     if (error) {
         redirect('/login?error=Could not authenticate user')
     }
+
+    // Clear guest mode if logging in
+    cookies().delete('gyral-guest-mode')
 
     revalidatePath('/', 'layout')
     redirect('/')
@@ -62,4 +66,15 @@ export async function signInWithGoogle() {
     if (data.url) {
         redirect(data.url)
     }
+}
+
+export async function continueAsGuest() {
+    cookies().set('gyral-guest-mode', 'true', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24 * 365 * 10, // 10 years
+        path: '/',
+    })
+
+    redirect('/')
 }

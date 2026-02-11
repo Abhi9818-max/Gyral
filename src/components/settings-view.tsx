@@ -5,7 +5,7 @@ import {
     Download, Shield, Database, Cloud, Upload, RefreshCw, Skull, Calendar,
     User, Lock, Bell, Globe, Moon, ChevronRight, Eye, EyeOff, Trash2,
     Home, Flame, Coins, Sword, ClipboardList, MessageCircle, ScrollText,
-    Settings, LogOut, TestTube
+    Settings, LogOut, TestTube, LogIn
 } from 'lucide-react';
 import { useUserData, ALL_NAV_ITEMS, NavItemKey } from '@/context/user-data-context';
 import { subscribeUserToPush } from '@/lib/push-notifications';
@@ -265,8 +265,13 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                         {profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Traveler'}
                     </h3>
                     <p className="text-sm text-zinc-500 font-mono truncate">
-                        {user?.email || 'diogenes@example.com'}
+                        {user?.email || 'Guest Access'}
                     </p>
+                    {!user && (
+                        <a href="/login" className="text-xs text-indigo-400 hover:text-indigo-300 mt-1 inline-block">
+                            ➔ Sign In to Sync
+                        </a>
+                    )}
                 </div>
             </div>
 

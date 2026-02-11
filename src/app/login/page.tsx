@@ -1,5 +1,5 @@
 
-import { login, signup, signInWithGoogle } from './actions'
+import { login, signup, signInWithGoogle, continueAsGuest } from './actions'
 
 export default function LoginPage({
     searchParams,
@@ -89,7 +89,17 @@ export default function LoginPage({
 
                     <form>
                         <button
-                            formAction={signInWithGoogle}
+                            formAction={current => {
+                                // We need to preventDefault if we were using onSubmit, 
+                                // but with formAction on button it submits the form to that action.
+                                // However, google button is inside a form with no other inputs?
+                                // Ah, the Google button is in its own form in the original code. 
+                                // Let's simplify and put this new button in its own form or reuse the google one if appropriate.
+                                // The original code has the Google button inside a separate <form>. 
+                                // I will add another form for Guest or add it to the Google form. 
+                                // Adding a separate form for clarity.
+                                signInWithGoogle()
+                            }}
                             className="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-3 shadow-lg group"
                         >
                             <svg className="w-5 h-5 bg-white rounded-full p-0.5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
@@ -111,6 +121,15 @@ export default function LoginPage({
                                 />
                             </svg>
                             Google
+                        </button>
+                    </form>
+
+                    <form>
+                        <button
+                            formAction={continueAsGuest}
+                            className="w-full bg-transparent border border-white/10 text-zinc-500 hover:text-white font-mono text-xs uppercase tracking-widest py-3 rounded-lg hover:bg-white/5 transition-all"
+                        >
+                            Continue as Guest
                         </button>
                     </form>
                 </div>

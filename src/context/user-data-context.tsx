@@ -330,7 +330,15 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const [notes, setNotes] = useState<Note[]>([]);
     const [birthDate, setBirthDate] = useState<string | null>(null);
     const [mementoViewMode, setMementoViewMode] = useState<'life' | 'year'>('life');
-    const [showStatsCard, setShowStatsCard] = useState(true);
+    const [showStatsCard, setShowStatsCard] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('diogenes-show-stats');
+            if (saved) {
+                try { return JSON.parse(saved); } catch (e) { console.error(e); }
+            }
+        }
+        return true;
+    });
     const [theme, setThemeState] = useState('dark');
     const [language, setLanguageState] = useState('en');
 
@@ -1008,6 +1016,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const toggleStatsCard = async () => {
         const newValue = !showStatsCard;
         setShowStatsCard(newValue);
+        localStorage.setItem('diogenes-show-stats', JSON.stringify(newValue));
         if (user) await supabase.from('user_settings').upsert({ user_id: user.id, show_stats_card: newValue });
     };
 
