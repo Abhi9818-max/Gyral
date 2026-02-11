@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { UserDataProvider } from "@/context/user-data-context";
@@ -24,12 +24,15 @@ export const metadata: Metadata = {
   title: "Gyral",
   description: "Advanced cognitive architecture and habit formation system.",
   manifest: "/manifest.json",
-  themeColor: "#000000",
   icons: {
     icon: '/icons/icon-192.png',
     shortcut: '/icons/icon-192.png',
     apple: '/icons/icon-512.png',
   }
+};
+
+export const viewport: Viewport = {
+  themeColor: "#000000",
 };
 
 import { ExileOverlay } from "@/components/global/exile-overlay";
