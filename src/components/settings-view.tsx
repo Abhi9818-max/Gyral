@@ -104,21 +104,32 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
         setIsTestingPush(true);
         try {
             if (type === 'general') {
-                await fetch('/api/push/send', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        title: "Signal Received",
-                        body: "The Neural Link is active even in the void."
-                    })
-                });
+                // Use native Notification API + service worker (no VAPID needed)
+                if ('serviceWorker' in navigator) {
+                    const reg = await navigator.serviceWorker.ready;
+                    await reg.showNotification("Signal Received", {
+                        body: "The Neural Link is active even in the void.",
+                        icon: '/icons/icon-192.png',
+                        badge: '/icons/icon-192.png',
+                    });
+                } else {
+                    // Fallback to basic Notification API
+                    new Notification("Signal Received", {
+                        body: "The Neural Link is active even in the void.",
+                        icon: '/icons/icon-192.png',
+                    });
+                }
             } else {
-                await fetch(`/api/cron/${type}`, { method: 'POST' });
+                // Morning/Evening tests still use the API (needs VAPID keys configured)
+                const res = await fetch(`/api/cron/${type}`, { method: 'POST' });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.error || `Server returned ${res.status}`);
+                }
             }
-            alert("Signal dispatched. Verify background delivery.");
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert("Signal failed to transmit.");
+            alert("Signal failed: " + (err?.message || "Unknown error"));
         } finally {
             setIsTestingPush(false);
         }
