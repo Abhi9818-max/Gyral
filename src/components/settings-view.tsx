@@ -102,30 +102,46 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
         }
 
         setIsTestingPush(true);
+
+        const MESSAGES = {
+            general: {
+                title: "Signal Received",
+                body: "The Neural Link is active even in the void."
+            },
+            morning: {
+                title: "Morning Briefing",
+                body: "The sun rises. What will you conquer today?"
+            },
+            evening: {
+                title: "Evening Evaluation",
+                body: "The day ends. Update your records. Did you live according to your nature?"
+            }
+        };
+
+        const msg = MESSAGES[type];
+
         try {
-            if (type === 'general') {
-                // Use native Notification API + service worker (no VAPID needed)
-                if ('serviceWorker' in navigator) {
-                    const reg = await navigator.serviceWorker.ready;
-                    await reg.showNotification("Signal Received", {
-                        body: "The Neural Link is active even in the void.",
-                        icon: '/icons/icon-192.png',
-                        badge: '/icons/icon-192.png',
-                    });
-                } else {
-                    // Fallback to basic Notification API
-                    new Notification("Signal Received", {
-                        body: "The Neural Link is active even in the void.",
-                        icon: '/icons/icon-192.png',
-                    });
-                }
+            // Always show via native notification (reliable, works immediately)
+            if ('serviceWorker' in navigator) {
+                const reg = await navigator.serviceWorker.ready;
+                await reg.showNotification(msg.title, {
+                    body: msg.body,
+                    icon: '/icons/icon-192.png',
+                    badge: '/icons/icon-192.png',
+                });
             } else {
-                // Morning/Evening tests still use the API (needs VAPID keys configured)
-                const res = await fetch(`/api/cron/${type}`, { method: 'POST' });
-                if (!res.ok) {
-                    const data = await res.json().catch(() => ({}));
-                    throw new Error(data.error || `Server returned ${res.status}`);
-                }
+                new Notification(msg.title, {
+                    body: msg.body,
+                    icon: '/icons/icon-192.png',
+                });
+            }
+
+            // For morning/evening, also test the server API (in the background, non-blocking)
+            if (type !== 'general') {
+                fetch(`/api/cron/${type}`, { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => console.log(`Server ${type} test:`, data))
+                    .catch(err => console.warn(`Server ${type} test failed:`, err));
             }
         } catch (err: any) {
             console.error(err);
