@@ -1,6 +1,7 @@
+
 import { createClient } from "@/utils/supabase/client";
 
-const PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
+const PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -15,26 +16,30 @@ function urlBase64ToUint8Array(base64String: string) {
     return outputArray;
 }
 
-export async function subscribeUserToPush() {
+export async function subscribeUserToPush(): Promise<{ success: boolean; error?: string }> {
     if (!('serviceWorker' in navigator)) {
-        console.log("No service worker support");
-        return false;
+        return { success: false, error: "Service workers not supported" };
     }
 
     if (!PUBLIC_KEY) {
-        console.error("VAPID public key not found");
-        return false;
+        console.warn("VAPID public key not found — push subscription skipped");
+        return { success: false, error: "VAPID key not configured" };
     }
 
-    const registration = await navigator.serviceWorker.ready;
-
     try {
-        const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(PUBLIC_KEY)
-        });
+        const registration = await navigator.serviceWorker.ready;
 
-        console.log("Generated Subscription:", subscription);
+        // Check if already subscribed
+        let subscription = await registration.pushManager.getSubscription();
+
+        if (!subscription) {
+            subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(PUBLIC_KEY)
+            });
+        }
+
+        console.log("Push Subscription:", JSON.stringify(subscription));
 
         // Save to DB via API
         const res = await fetch('/api/push/subscribe', {
@@ -43,11 +48,14 @@ export async function subscribeUserToPush() {
             body: JSON.stringify({ subscription })
         });
 
-        if (!res.ok) throw new Error('Failed to save subscription');
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            return { success: false, error: data.error || `Server returned ${res.status}` };
+        }
 
-        return true;
-    } catch (error) {
+        return { success: true };
+    } catch (error: any) {
         console.error('Failed to subscribe to push:', error);
-        return false;
+        return { success: false, error: error?.message || 'Unknown error' };
     }
 }

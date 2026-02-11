@@ -1,4 +1,6 @@
+
 import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
 import webpush from 'web-push';
 
@@ -10,41 +12,34 @@ if (VAPID_PUBLIC && VAPID_PRIVATE) {
 }
 
 export async function POST(req: NextRequest) {
-    const supabase = await createClient();
+    if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
+        return NextResponse.json({ error: 'VAPID keys not configured on server' }, { status: 500 });
+    }
 
     // Auth check for testing trigger
+    const supabase = await createClient();
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (!currentUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // 1. Get all subscriptions with their user_ids
-    const { data: subscriptions, error } = await supabase
+    // Use admin client to bypass RLS
+    const admin = createAdminClient();
+    const { data: subscriptions, error } = await admin
         .from('push_subscriptions')
         .select('*');
 
-    if (error || !subscriptions) {
+    if (error) {
+        console.error('Error fetching subscriptions:', error);
+        return NextResponse.json({ error: 'Database error: ' + error.message }, { status: 500 });
+    }
+
+    if (!subscriptions || subscriptions.length === 0) {
         return NextResponse.json({ error: 'No subscriptions found' }, { status: 404 });
     }
 
     const results = [];
 
-    // 2. Iterate (Group by user would be more efficient in SQL but iterating JS for prototype)
     for (const sub of subscriptions) {
         try {
-            // Check incomplete habits for this user
-            // We assume "tasks" table has user_id and completed_dates array or similar
-            // Adjust query to match your actual schema. 
-            // Based on previous contexts, habits are in 'tasks' table and completion is tracked in 'records' or locally.
-            // Simplified Check: Just check if they have ANY habits for now, or if we can check records.
-
-            // To be precise with "Did you do the task?", we need to know today's date status.
-            // Since `records` jsonb map is complex to query efficiently in one go without a view,
-            // we will send a generic "Check your progress" if we can't easily count.
-
-            // However, let's try to query pending count if possible.
-            // Actually, for this specific user, let's just send the reminder.
-            // The client-side logic keeps track of 'records'. The server might not have the today's record sync'd perfectly if offline.
-            // WE WILL ASSUME: If they have habits, we remind them.
-
             const payload = JSON.stringify({
                 title: "Evening Evaluation",
                 body: "The day ends. Update your records. Did you live according to your nature?",
@@ -57,9 +52,8 @@ export async function POST(req: NextRequest) {
             }, payload);
 
             results.push({ success: true, user: sub.user_id });
-
-        } catch (e) {
-            console.error(`Failed to send to ${sub.user_id}`, e);
+        } catch (e: any) {
+            console.error(`Failed to send to ${sub.user_id}`, e?.message);
             results.push({ success: false, user: sub.user_id });
         }
     }

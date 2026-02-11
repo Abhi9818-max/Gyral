@@ -136,17 +136,25 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
     };
 
     const requestNotifications = async () => {
-        if (!('Notification' in window)) return;
+        if (!('Notification' in window)) {
+            alert("This browser doesn't support notifications.");
+            return;
+        }
         const permission = await Notification.requestPermission();
         setNotificationStatus(permission === 'granted' ? 'On' : 'Off');
 
         if (permission === 'granted') {
-            const subscribed = await subscribeUserToPush();
-            if (subscribed) {
-                new Notification("Gyral", { body: "Connection established. The Order is watching." });
-            } else {
-                alert("Notification permission granted, but failed to connect to background services.");
+            // Show immediate confirmation via native notification
+            new Notification("Gyral", { body: "Connection established. The Order is watching." });
+
+            // Also try to subscribe for background push notifications
+            const result = await subscribeUserToPush();
+            if (!result.success) {
+                console.warn("Push subscription issue:", result.error);
+                // Don't alert - the native notification still works
             }
+        } else {
+            alert("Notification permission denied. Please enable it in your browser settings.");
         }
     };
 

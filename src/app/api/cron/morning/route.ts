@@ -1,4 +1,6 @@
+
 import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
 import webpush from 'web-push';
 
@@ -20,21 +22,29 @@ const QUOTES = [
 ];
 
 export async function POST(req: NextRequest) {
-    const supabase = await createClient();
+    if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
+        return NextResponse.json({ error: 'VAPID keys not configured on server' }, { status: 500 });
+    }
 
-    // In a real cron, we'd verify a secret key header here to prevent spam
-    // For this prototype, we'll allow authenticated users to trigger it (for testing)
+    // Auth check for testing trigger
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get ALL subscriptions (in a real app you might batch this or filter by timezone)
-    const { data: subscriptions, error } = await supabase
+    // Use admin client to bypass RLS
+    const admin = createAdminClient();
+    const { data: subscriptions, error } = await admin
         .from('push_subscriptions')
         .select('*');
 
-    if (error || !subscriptions) {
+    if (error) {
+        console.error('Error fetching subscriptions:', error);
+        return NextResponse.json({ error: 'Database error: ' + error.message }, { status: 500 });
+    }
+
+    if (!subscriptions || subscriptions.length === 0) {
         return NextResponse.json({ error: 'No subscriptions found' }, { status: 404 });
     }
 
@@ -45,7 +55,6 @@ export async function POST(req: NextRequest) {
         url: "/"
     });
 
-    // Send to all (in the background)
     const results = await Promise.allSettled(subscriptions.map(sub =>
         webpush.sendNotification({
             endpoint: sub.endpoint,

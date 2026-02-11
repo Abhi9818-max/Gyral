@@ -1,4 +1,6 @@
+
 import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
 import webpush from 'web-push';
 
@@ -10,6 +12,10 @@ if (VAPID_PUBLIC && VAPID_PRIVATE) {
 }
 
 export async function POST(req: NextRequest) {
+    if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
+        return NextResponse.json({ error: 'VAPID keys not configured' }, { status: 500 });
+    }
+
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -19,14 +25,20 @@ export async function POST(req: NextRequest) {
 
     const { title, body, url } = await req.json();
 
-    // Get user's subscriptions
-    const { data: subscriptions, error } = await supabase
+    // Use admin client to bypass RLS and read subscriptions
+    const admin = createAdminClient();
+    const { data: subscriptions, error } = await admin
         .from('push_subscriptions')
         .select('*')
         .eq('user_id', user.id);
 
-    if (error || !subscriptions || subscriptions.length === 0) {
-        return NextResponse.json({ error: 'No subscriptions found' }, { status: 404 });
+    if (error) {
+        console.error('Error fetching subscriptions:', error);
+        return NextResponse.json({ error: 'Database error: ' + error.message }, { status: 500 });
+    }
+
+    if (!subscriptions || subscriptions.length === 0) {
+        return NextResponse.json({ error: 'No subscriptions found. Please enable notifications first.' }, { status: 404 });
     }
 
     const payload = JSON.stringify({ title, body, url });
@@ -41,14 +53,19 @@ export async function POST(req: NextRequest) {
                 }
             }, payload);
             return { success: true };
-        } catch (error) {
-            console.error('Error sending push:', error);
-            // Optionally delete invalid subscriptions here
-            return { success: false, error };
+        } catch (error: any) {
+            console.error('Error sending push:', error?.message || error);
+            return { success: false, error: error?.message };
         }
     }));
 
     const successCount = results.filter(r => r.success).length;
+    const failedCount = results.filter(r => !r.success).length;
 
-    return NextResponse.json({ success: true, sent: successCount });
+    return NextResponse.json({
+        success: successCount > 0,
+        sent: successCount,
+        failed: failedCount,
+        errors: results.filter(r => !r.success).map(r => r.error)
+    });
 }
