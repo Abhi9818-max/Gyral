@@ -22,7 +22,8 @@ export async function login(formData: FormData) {
     }
 
     // Clear guest mode if logging in
-    cookies().delete('gyral-guest-mode')
+    const cookieStore = await cookies()
+    cookieStore.delete('gyral-guest-mode')
 
     revalidatePath('/', 'layout')
     redirect('/')
@@ -69,7 +70,8 @@ export async function signInWithGoogle() {
 }
 
 export async function continueAsGuest() {
-    cookies().set('gyral-guest-mode', 'true', {
+    const cookieStore = await cookies()
+    cookieStore.set('gyral-guest-mode', 'true', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         maxAge: 60 * 60 * 24 * 365 * 10, // 10 years
