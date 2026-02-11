@@ -10,10 +10,17 @@ import { createClient } from '@/utils/supabase/server'
 export async function login(formData: FormData) {
     const supabase = await createClient()
 
-    const data = {
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+
+    if (!email || !email.includes('@')) {
+        redirect('/login?error=Invalid email address')
     }
+    if (!password || password.length < 6) {
+        redirect('/login?error=Password must be at least 6 characters')
+    }
+
+    const data = { email, password }
 
     const { error } = await supabase.auth.signInWithPassword(data)
 
@@ -32,10 +39,17 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
     const supabase = await createClient()
 
-    const data = {
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+
+    if (!email || !email.includes('@')) {
+        redirect('/login?error=Invalid email address')
     }
+    if (!password || password.length < 6) {
+        redirect('/login?error=Password must be at least 6 characters')
+    }
+
+    const data = { email, password }
 
     const { error } = await supabase.auth.signUp(data)
 

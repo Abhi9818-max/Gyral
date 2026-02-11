@@ -56,5 +56,13 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url)
     }
 
-    return supabaseResponse
+    // Add Security Headers
+    const response = supabaseResponse
+    response.headers.set('X-Content-Type-Options', 'nosniff')
+    response.headers.set('X-Frame-Options', 'DENY')
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+    response.headers.set('Content-Security-Policy', "upgrade-insecure-requests; frame-ancestors 'none';")
+    response.headers.set('Permissions-Policy', "camera=(self), microphone=(self), geolocation=(self)")
+
+    return response
 }

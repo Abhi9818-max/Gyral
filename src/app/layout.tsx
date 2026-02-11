@@ -5,6 +5,7 @@ import { UserDataProvider } from "@/context/user-data-context";
 import { StoriesProvider } from "@/context/stories-context";
 import { MessageNotificationProvider } from "@/context/message-notification-context";
 import { PresenceProvider } from "@/context/presence-provider";
+import { ToastProvider } from "@/context/toast-context";
 import { MobileNavWrapper } from "@/components/mobile-nav-wrapper";
 
 const geistSans = Geist({
@@ -47,16 +48,18 @@ export default function RootLayout({
       >
         <PWAInit />
         <UserDataProvider>
-          <StoriesProvider>
-            <MessageNotificationProvider>
-              <PresenceProvider>
-                <ExileOverlay />
-                <OnboardingWrapper />
-                {children}
-                <MobileNavWrapper />
-              </PresenceProvider>
-            </MessageNotificationProvider>
-          </StoriesProvider>
+          <ToastProvider>
+            <StoriesProvider>
+              <MessageNotificationProvider>
+                <PresenceProvider>
+                  <ExileOverlay />
+                  <OnboardingWrapper />
+                  {children}
+                  <MobileNavWrapper />
+                </PresenceProvider>
+              </MessageNotificationProvider>
+            </StoriesProvider>
+          </ToastProvider>
         </UserDataProvider>
       </body>
     </html>
