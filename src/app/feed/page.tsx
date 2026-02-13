@@ -1,4 +1,5 @@
-// ... imports
+"use client";
+
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/header';
 import { createClient } from '@/utils/supabase/client';
