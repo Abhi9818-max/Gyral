@@ -1,4 +1,4 @@
-import { PostType } from '@/types';
+export type PostType = 'confession' | 'crush' | 'rumor' | 'rant' | 'question' | 'voice';
 
 /**
  * Post type color configuration
