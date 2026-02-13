@@ -1,36 +1,25 @@
 {
-  "name": "Gyral",
-  "short_name": "Gyral",
+  "name": "Mind-Flayer",
+  "short_name": "Mind-Flayer",
+  "description": "Your campus, unfiltered. Anonymous social for college students.",
   "start_url": "/",
-  "id": "/",
-  "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#000000",
-  "orientation": "portrait",
-  "categories": [
-    "productivity",
-    "lifestyle",
-    "health"
-  ],
+  "theme_color": "#ef4444",
+  "orientation": "portrait-primary",
+  "scope": "/",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
   ]
 }

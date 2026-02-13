@@ -1,11 +1,15 @@
-"use client";
-
+// ... imports
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/header';
 import { createClient } from '@/utils/supabase/client';
 import { Heart, MessageSquare, TrendingUp, Award, Flame } from 'lucide-react';
 import { getUserAvatar } from '@/utils/avatar-helpers';
+import { PostCardSkeletonList } from '@/components/world/feed/PostCardSkeleton';
+import { EmptyFeed } from '@/components/global/EmptyState';
+import { haptic } from '@/utils/haptic';
+import { sfx } from '@/utils/sfx';
 
+// ... Activity interface (unchanged)
 interface Activity {
     id: string;
     user_id: string;
@@ -43,70 +47,78 @@ export default function ActivityFeedPage() {
     const loadActivities = async (userId: string) => {
         setIsLoading(true);
 
-        // Get activities from friends and self
-        const { data: activities } = await supabase
-            .from('activities')
-            .select(`
-                id,
-                user_id,
-                type,
-                content,
-                created_at
-            `)
-            .order('created_at', { ascending: false })
-            .limit(50);
+        try {
+            // Get activities from friends and self
+            const { data: activities } = await supabase
+                .from('activities')
+                .select(`
+                    id,
+                    user_id,
+                    type,
+                    content,
+                    created_at
+                `)
+                .order('created_at', { ascending: false })
+                .limit(50);
 
-        if (activities) {
-            // Get profiles for all activity users
-            const userIds = [...new Set(activities.map(a => a.user_id))];
-            const { data: profiles } = await supabase
-                .from('profiles')
-                .select('id, full_name, username, avatar_url, gender')
-                .in('id', userIds);
+            if (activities) {
+                // Get profiles for all activity users
+                const userIds = [...new Set(activities.map(a => a.user_id))];
+                const { data: profiles } = await supabase
+                    .from('profiles')
+                    .select('id, full_name, username, avatar_url, gender')
+                    .in('id', userIds);
 
-            // Get likes and comments counts
-            const enrichedActivities = await Promise.all(
-                activities.map(async (activity) => {
-                    const { count: likesCount } = await supabase
-                        .from('activity_likes')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('activity_id', activity.id);
+                // Get likes and comments counts
+                const enrichedActivities = await Promise.all(
+                    activities.map(async (activity) => {
+                        const { count: likesCount } = await supabase
+                            .from('activity_likes')
+                            .select('*', { count: 'exact', head: true })
+                            .eq('activity_id', activity.id);
 
-                    const { count: commentsCount } = await supabase
-                        .from('activity_comments')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('activity_id', activity.id);
+                        const { count: commentsCount } = await supabase
+                            .from('activity_comments')
+                            .select('*', { count: 'exact', head: true })
+                            .eq('activity_id', activity.id);
 
-                    const { data: userLike } = await supabase
-                        .from('activity_likes')
-                        .select('id')
-                        .eq('activity_id', activity.id)
-                        .eq('user_id', userId)
-                        .single();
+                        const { data: userLike } = await supabase
+                            .from('activity_likes')
+                            .select('id')
+                            .eq('activity_id', activity.id)
+                            .eq('user_id', userId)
+                            .single();
 
-                    return {
-                        ...activity,
-                        profile: profiles?.find(p => p.id === activity.user_id) || {
-                            full_name: null,
-                            username: null,
-                            avatar_url: null,
-                            gender: null
-                        },
-                        likes_count: likesCount || 0,
-                        comments_count: commentsCount || 0,
-                        user_liked: !!userLike
-                    };
-                })
-            );
+                        return {
+                            ...activity,
+                            profile: profiles?.find(p => p.id === activity.user_id) || {
+                                full_name: null,
+                                username: null,
+                                avatar_url: null,
+                                gender: null
+                            },
+                            likes_count: likesCount || 0,
+                            comments_count: commentsCount || 0,
+                            user_liked: !!userLike
+                        };
+                    })
+                );
 
-            setActivities(enrichedActivities);
+                setActivities(enrichedActivities);
+            }
+        } catch (error) {
+            console.error('Error loading activities:', error);
+        } finally {
+            // Add a small artificial delay to show off the skeleton (optional, remove in prod if too slow)
+            setTimeout(() => setIsLoading(false), 800);
         }
-
-        setIsLoading(false);
     };
 
     const toggleLike = async (activityId: string, currentlyLiked: boolean) => {
         if (!currentUser) return;
+
+        haptic.like(); // Haptic feedback
+        if (!currentlyLiked) sfx.playPop(); // Sound feedback
 
         if (currentlyLiked) {
             await supabase
@@ -160,24 +172,26 @@ export default function ActivityFeedPage() {
             <Header />
             <main className="min-h-screen bg-black pt-20 pb-24 md:pb-10">
                 <div className="max-w-4xl mx-auto px-4">
-                    <h1 className="text-3xl font-bold mb-8 flex items-center gap-2">
+                    <h1 className="text-3xl font-bold mb-8 flex items-center gap-2 animate-fade-in-down">
                         <TrendingUp className="w-8 h-8 text-blue-400" />
                         Activity Feed
                     </h1>
 
                     {isLoading ? (
-                        <div className="text-center py-12 text-zinc-500">Loading...</div>
+                        <div className="animate-fade-in">
+                            <PostCardSkeletonList count={3} />
+                        </div>
                     ) : activities.length === 0 ? (
-                        <div className="text-center py-12 text-zinc-500">
-                            <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                            <p>No activities yet. Start adding friends to see their updates!</p>
+                        <div className="animate-fade-in-up">
+                            <EmptyFeed onRefresh={() => loadActivities(currentUser || '')} />
                         </div>
                     ) : (
-                        <div className="space-y-4">
-                            {activities.map(activity => (
+                        <div className="space-y-4 animate-fade-in-up">
+                            {activities.map((activity, index) => (
                                 <div
                                     key={activity.id}
-                                    className="bg-gradient-to-br from-zinc-900 to-black border border-white/20 rounded-2xl p-6 hover:border-white/30 transition-colors"
+                                    style={{ animationDelay: `${index * 50}ms` }}
+                                    className="bg-gradient-to-br from-zinc-900 to-black border border-white/20 rounded-2xl p-6 hover:border-white/30 transition-colors animate-fade-in-up"
                                 >
                                     {/* Header */}
                                     <div className="flex items-center gap-3 mb-4">

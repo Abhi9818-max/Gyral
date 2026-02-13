@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { UserDataProvider } from "@/context/user-data-context";
@@ -64,6 +65,26 @@ export default function RootLayout({
             </StoriesProvider>
           </ToastProvider>
         </UserDataProvider>
+        <Script
+          id="register-sw"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    function(registration) {
+                      console.log('Service Worker registration successful with scope: ', registration.scope);
+                    },
+                    function(err) {
+                      console.log('Service Worker registration failed: ', err);
+                    }
+                  );
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );

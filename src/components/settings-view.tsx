@@ -5,10 +5,17 @@ import {
     Download, Shield, Database, Cloud, Upload, RefreshCw, Skull, Calendar,
     User, Lock, Bell, Globe, Moon, ChevronRight, Eye, EyeOff, Trash2,
     Home, Flame, Coins, Sword, ClipboardList, MessageCircle, ScrollText,
-    Settings, LogOut, TestTube, LogIn
+    Settings, LogOut, TestTube, LogIn, Volume2, VolumeX
 } from 'lucide-react';
 import { useUserData, ALL_NAV_ITEMS, NavItemKey } from '@/context/user-data-context';
-import { subscribeUserToPush } from '@/lib/push-notifications';
+import { sfx } from '@/utils/sfx';
+import {
+    enablePushNotifications,
+    disablePushNotifications,
+    isPushSubscribed,
+    isPushSupported,
+    getNotificationPermission
+} from '@/lib/push-notifications';
 import { useInstallPrompt } from '@/hooks/use-install-prompt';
 import { getUserAvatar } from '@/utils/avatar-helpers';
 
@@ -36,6 +43,12 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
 
     const { isInstallable, promptInstall } = useInstallPrompt();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [pushNotifications, setPushNotifications] = useState(false);
+    const [pushLoading, setPushLoading] = useState(false);
+    const [pushSupported, setPushSupported] = useState(true);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+    // Legacy state for other notifications if needed, generally replaced by pushNotifications
     const [notificationStatus, setNotificationStatus] = useState('Off');
     const [resetSending, setResetSending] = useState(false);
     const [isTestingPush, setIsTestingPush] = useState(false);
@@ -43,7 +56,19 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
     // Date Logic
     const [day, setDay] = useState('');
     const [month, setMonth] = useState('');
+
     const [year, setYear] = useState('');
+    const [soundEnabled, setSoundEnabled] = useState(true);
+
+    useEffect(() => {
+        setSoundEnabled(sfx.isEnabled());
+    }, []);
+
+    const handleSoundToggle = () => {
+        const newState = sfx.toggle();
+        setSoundEnabled(newState);
+        if (newState) sfx.playSuccess();
+    };
 
     useEffect(() => {
         if (birthDate) {
@@ -69,10 +94,25 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
     }, [day, month, year, birthDate, setBirthDate]);
 
     useEffect(() => {
-        if (typeof window !== 'undefined' && 'Notification' in window) {
-            setNotificationStatus(Notification.permission === 'granted' ? 'On' : 'Off');
-        }
+        const checkPushStatus = async () => {
+            const supported = await isPushSupported();
+            setPushSupported(supported);
+
+            if (supported) {
+                const isSubscribed = await isPushSubscribed();
+                setPushNotifications(isSubscribed);
+                setNotificationStatus(isSubscribed ? 'On' : 'Off');
+            } else {
+                setNotificationStatus('Off');
+            }
+        };
+        checkPushStatus();
     }, []);
+
+    const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 4000);
+    };
 
     const handleResetPassword = async () => {
         if (!user?.email) return;
@@ -151,26 +191,45 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
         }
     };
 
-    const requestNotifications = async () => {
-        if (!('Notification' in window)) {
-            alert("This browser doesn't support notifications.");
+    const handlePushToggle = async () => {
+        if (pushLoading) return;
+
+        if (!pushSupported) {
+            showToast('Push notifications are not supported in this browser', 'error');
             return;
         }
-        const permission = await Notification.requestPermission();
-        setNotificationStatus(permission === 'granted' ? 'On' : 'Off');
 
-        if (permission === 'granted') {
-            // Show immediate confirmation via native notification
-            new Notification("Gyral", { body: "Connection established. The Order is watching." });
-
-            // Also try to subscribe for background push notifications
-            const result = await subscribeUserToPush();
-            if (!result.success) {
-                console.warn("Push subscription issue:", result.error);
-                // Don't alert - the native notification still works
+        setPushLoading(true);
+        try {
+            if (pushNotifications) {
+                const success = await disablePushNotifications();
+                if (success) {
+                    setPushNotifications(false);
+                    setNotificationStatus('Off');
+                    showToast('Push notifications disabled', 'success');
+                } else {
+                    showToast('Failed to disable push notifications', 'error');
+                }
+            } else {
+                const success = await enablePushNotifications();
+                if (success) {
+                    setPushNotifications(true);
+                    setNotificationStatus('On');
+                    showToast('🔔 Push notifications enabled! You\'ll receive notifications even when the app is closed.', 'success');
+                } else {
+                    const permission = getNotificationPermission();
+                    if (permission === 'denied') {
+                        showToast('Notification permission denied. Please enable it in your browser settings.', 'error');
+                    } else {
+                        showToast('Failed to enable push notifications. Please try again.', 'error');
+                    }
+                }
             }
-        } else {
-            alert("Notification permission denied. Please enable it in your browser settings.");
+        } catch (error) {
+            console.error('Error toggling push notifications:', error);
+            showToast('An error occurred. Please try again.', 'error');
+        } finally {
+            setPushLoading(false);
         }
     };
 
@@ -345,24 +404,50 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                             onClick={handleResetPassword}
                             value={resetSending ? "Dispatching..." : "Send Link"}
                         />
-                        <SettingsItem
-                            icon={Bell}
-                            label="Notifications"
-                            onClick={requestNotifications}
-                            value={notificationStatus}
-                            action={
-                                notificationStatus === 'On' && (
-                                    <button
-                                        onClick={(e) => handleTestPush(e)}
-                                        disabled={isTestingPush}
-                                        className="px-3 py-1 text-[10px] font-bold bg-white/10 hover:bg-white/20 rounded-full text-zinc-300 transition-colors uppercase tracking-tight"
-                                    >
-                                        {isTestingPush ? "Testing..." : "Test Signal"}
-                                    </button>
-                                )
-                            }
-                            isLast
-                        />
+                        <div className="flex items-center justify-between p-4 border-b border-white/5">
+                            <div className="flex items-center gap-4">
+                                <div className="p-2 rounded-xl bg-zinc-800 text-zinc-400">
+                                    <Bell className="w-5 h-5" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-medium text-zinc-200">Push Notifications</span>
+                                        {pushNotifications && (
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 uppercase tracking-widest font-bold">
+                                                Active
+                                            </span>
+                                        )}
+                                        {!pushSupported && (
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 uppercase tracking-widest font-bold">
+                                                Unsupported
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span className="text-xs text-zinc-500 mt-0.5">
+                                        {pushSupported
+                                            ? "Receive neural signals when the app is closed"
+                                            : "Your browser doesn't support neural links"}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handlePushToggle}
+                                disabled={pushLoading || !pushSupported}
+                                className={`relative w-11 h-6 rounded-full transition-all duration-300 ${pushNotifications ? 'bg-indigo-600' : 'bg-zinc-700'
+                                    } ${pushLoading ? 'opacity-70 cursor-wait' : ''} ${!pushSupported ? 'opacity-30 cursor-not-allowed' : 'hover:scale-105 active:scale-95'
+                                    }`}
+                            >
+                                {pushLoading ? (
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin" />
+                                    </div>
+                                ) : (
+                                    <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-300 ${pushNotifications ? 'translate-x-5' : 'translate-x-0'
+                                        }`} />
+                                )}
+                            </button>
+                        </div>
                     </SettingsGroup>
 
                     <SettingsGroup title="Mobile Access">
@@ -430,6 +515,16 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                                     <option value="midnight">Midnight</option>
                                     <option value="obsidian">Obsidian</option>
                                 </select>
+                            }
+                        />
+                        <SettingsItem
+                            icon={soundEnabled ? Volume2 : VolumeX}
+                            label="Sound Effects"
+                            onClick={handleSoundToggle}
+                            action={
+                                <div className={`w-10 h-5 rounded-full p-1 transition-colors duration-300 ${soundEnabled ? 'bg-indigo-600' : 'bg-zinc-700'}`}>
+                                    <div className={`w-3 h-3 bg-white rounded-full transition-transform duration-300 ${soundEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                                </div>
                             }
                         />
                         <SettingsItem
@@ -540,6 +635,19 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                 <p>GYRAL CORE v1.2.0</p>
                 <p className="mt-1 tracking-[0.3em]">SYNCHRONIZED</p>
             </div>
+            {toast && (
+                <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-fade-in-up">
+                    <div className={`px-6 py-3 rounded-xl backdrop-blur-xl border shadow-2xl max-w-md flex items-center gap-3 ${toast.type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-200' :
+                        toast.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-200' :
+                            'bg-blue-500/10 border-blue-500/20 text-blue-200'
+                        }`}>
+                        {toast.type === 'success' && <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />}
+                        {toast.type === 'error' && <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
+                        {toast.type === 'info' && <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />}
+                        <p className="text-xs font-medium tracking-wide">{toast.message}</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
