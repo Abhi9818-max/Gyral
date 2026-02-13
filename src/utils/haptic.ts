@@ -5,14 +5,14 @@
  * Trigger haptic feedback (vibration) on supported devices
  * @param pattern - Vibration pattern: number (ms) or array of [vibrate, pause, vibrate, ...]
  */
-export function triggerHaptic(pattern: number | number[] = 10): void {
+export function triggerHaptic(pattern: number | readonly number[] = 10): void {
     // Check if vibration API is supported
     if (!('vibrate' in navigator)) {
         return;
     }
 
     try {
-        navigator.vibrate(pattern);
+        navigator.vibrate(pattern as number | number[]);
     } catch (error) {
         // Silently fail if vibration is not supported or blocked
         console.debug('Haptic feedback not available:', error);
