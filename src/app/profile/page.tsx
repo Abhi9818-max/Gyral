@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { getUserAvatar } from "@/utils/avatar-helpers";
 import { ArtifactGallery } from "@/components/artifact-gallery";
 import { ARTIFACTS } from "@/lib/artifacts";
-import { Lock, CheckCircle, Flame, Triangle, Hexagon, Compass, Skull, Box } from "lucide-react";
+import { Lock, CheckCircle, Flame, Triangle, Hexagon, Compass, Skull, Box, Shield, Book, Zap, Activity, BookOpen, Clock } from "lucide-react";
 
 const ICON_MAP = {
     'Flame': Flame,
@@ -24,11 +24,17 @@ const ICON_MAP = {
     'Hexagon': Hexagon,
     'Compass': Compass,
     'Skull': Skull,
-    'Box': Box
+    'Box': Box,
+    'Shield': Shield,
+    'Book': Book,
+    'Zap': Zap,
+    'Activity': Activity,
+    'BookOpen': BookOpen,
+    'Clock': Clock
 };
 
 export default function ProfilePage() {
-    const { consistencyScore, currentStreak, streakTier, streakStrength, tasks, records } = useUserData();
+    const { consistencyScore, currentStreak, streakTier, streakStrength, tasks, records, profileStreakMode, calculateAverageStreak, getStreakForDate, defaultFilterTaskId, unlockedArtifacts } = useUserData();
     const { myStories, stories } = useStories();
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<any>(null);
@@ -37,7 +43,7 @@ export default function ProfilePage() {
     const [isCreateStoryOpen, setIsCreateStoryOpen] = useState(false);
     const [isArtifactGalleryOpen, setIsArtifactGalleryOpen] = useState(false);
     const [viewingStoryIndex, setViewingStoryIndex] = useState<number | null>(null);
-    const [activeTab, setActiveTab] = useState<'posts' | 'streaks' | 'history' | 'notes'>('posts');
+    const [activeTab, setActiveTab] = useState<'artifacts' | 'streaks' | 'history' | 'notes'>('artifacts');
     const router = useRouter();
 
     const getUser = async () => {
@@ -154,7 +160,9 @@ export default function ProfilePage() {
                                 <div className="text-xs md:text-sm text-zinc-400">entries</div>
                             </div>
                             <div className="text-center md:text-left">
-                                <div className="font-bold text-base md:text-lg">{currentStreak}</div>
+                                <div className="font-bold text-base md:text-lg">
+                                    {profileStreakMode === 'combined' ? calculateAverageStreak() : getStreakForDate(new Date().toISOString().split('T')[0], defaultFilterTaskId)}
+                                </div>
                                 <div className="text-xs md:text-sm text-zinc-400">streak</div>
                             </div>
                             <div className="text-center md:text-left">
@@ -206,12 +214,12 @@ export default function ProfilePage() {
                 {/* Tab Navigation - Instagram Style with Icons */}
                 <div className="flex border-t border-white/10 mb-1">
                     <button
-                        onClick={() => setActiveTab('posts')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-3 md:py-4 text-xs font-semibold uppercase tracking-widest transition-colors relative ${activeTab === 'posts' ? 'text-white' : 'text-zinc-500 hover:text-white'}`}
+                        onClick={() => setActiveTab('artifacts')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-3 md:py-4 text-xs font-semibold uppercase tracking-widest transition-colors relative ${activeTab === 'artifacts' ? 'text-white' : 'text-zinc-500 hover:text-white'}`}
                     >
-                        <LayoutGrid className="w-5 h-5 md:w-4 md:h-4" />
-                        <span className="hidden md:inline">Posts</span>
-                        {activeTab === 'posts' && <div className="absolute top-0 left-0 right-0 h-[1px] bg-white" />}
+                        <Hexagon className="w-5 h-5 md:w-4 md:h-4" />
+                        <span className="hidden md:inline">Vault</span>
+                        {activeTab === 'artifacts' && <div className="absolute top-0 left-0 right-0 h-[1px] bg-white" />}
                     </button>
                     <button
                         onClick={() => setActiveTab('streaks')}
@@ -240,36 +248,55 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Grid Content */}
-                {activeTab === 'posts' && (
-                    <div className="grid grid-cols-3 gap-1 md:gap-4 animate-[fadeIn_0.5s_ease-out]">
-                        {/* Simulated Posts from Tasks */}
-                        {tasks.map((task, i) => (
-                            <div key={task.id} className="aspect-square bg-zinc-900 hover:bg-zinc-800 transition-colors relative group cursor-pointer overflow-hidden">
-                                <div className="absolute inset-0 flex flex-col items-center justify-center p-2 md:p-4 opacity-70 group-hover:opacity-100 transition-opacity">
-                                    <div className="w-8 h-8 md:w-12 md:h-12 rounded-full mb-1 md:mb-2 flex items-center justify-center" style={{ backgroundColor: `${task.color}20`, color: task.color }}>
-                                        <span className="font-bold text-sm md:text-xl">{task.name[0]}</span>
-                                    </div>
-                                    <span className="text-[10px] md:text-xs font-bold text-center truncate w-full px-1">{task.name}</span>
-                                </div>
+                {activeTab === 'artifacts' && (
+                    <div className="grid grid-cols-3 gap-2 md:gap-4 animate-[fadeIn_0.5s_ease-out]">
+                        {ARTIFACTS.map((artifact) => {
+                            const isUnlocked = unlockedArtifacts.includes(artifact.id);
+                            const Icon = ICON_MAP[artifact.icon as keyof typeof ICON_MAP] || Box;
 
-                                {/* Hover Overlay */}
-                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white font-bold">
-                                    <div className="flex items-center gap-1">
-                                        <Flame className="w-4 h-4 md:w-5 md:h-5 fill-white" />
-                                        <span className="text-xs md:text-base">{Math.floor(Math.random() * 20)}</span>
+                            return (
+                                <div
+                                    key={artifact.id}
+                                    className={`aspect-square relative group overflow-hidden rounded-xl border transition-all ${isUnlocked
+                                        ? 'bg-zinc-900/50 border-white/10 hover:border-white/20 hover:bg-zinc-800/50 cursor-pointer'
+                                        : 'bg-zinc-900/20 border-white/5 opacity-50 grayscale'
+                                        }`}
+                                    onClick={() => {
+                                        if (isUnlocked) {
+                                            // Optional: Open detail view or something
+                                        }
+                                    }}
+                                >
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
+                                        <div
+                                            className={`w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-1 md:mb-2 transition-transform group-hover:scale-110 ${isUnlocked ? 'bg-black/50 shadow-lg' : 'bg-white/5'
+                                                }`}
+                                            style={isUnlocked ? { boxShadow: `0 0 20px ${artifact.color}40`, color: artifact.color } : {}}
+                                        >
+                                            <Icon className="w-4 h-4 md:w-6 md:h-6" />
+                                        </div>
+                                        <span className={`text-[10px] md:text-xs font-bold text-center truncate w-full px-1 ${isUnlocked ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                                            {artifact.name}
+                                        </span>
+                                    </div>
+
+                                    {/* Hover Overlay */}
+                                    <div className="absolute inset-0 bg-black/90 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-3 text-center pointer-events-none backdrop-blur-sm">
+                                        {isUnlocked ? (
+                                            <>
+                                                <span className="text-[10px] md:text-xs font-bold text-white mb-1">{artifact.name}</span>
+                                                <span className="text-[9px] md:text-[10px] text-zinc-400 line-clamp-3 leading-tight">{artifact.description}</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Lock className="w-4 h-4 md:w-5 md:h-5 text-zinc-500 mb-1" />
+                                                <span className="text-[9px] md:text-[10px] text-zinc-500 font-mono leading-tight">{artifact.condition}</span>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-
-                        {/* Fillers */}
-                        {[1, 2, 3, 4, 5].map((_, i) => (
-                            <div key={i} className="aspect-square bg-zinc-900/50 relative group">
-                                <div className="absolute inset-0 flex items-center justify-center text-zinc-700">
-                                    <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-zinc-800 rounded-full" />
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
 
@@ -282,8 +309,10 @@ export default function ProfilePage() {
                         <p className="text-zinc-500 text-sm mb-8">Detailed streak visualization coming soon.</p>
                         <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
                             <div className="bg-zinc-900/50 p-6 rounded-xl">
-                                <div className="text-3xl font-bold text-white mb-1">{currentStreak}</div>
-                                <div className="text-xs text-zinc-500 uppercase tracking-widest">Current</div>
+                                <div className="text-3xl font-bold text-white mb-1">
+                                    {profileStreakMode === 'combined' ? calculateAverageStreak() : getStreakForDate(new Date().toISOString().split('T')[0], defaultFilterTaskId)}
+                                </div>
+                                <div className="text-xs text-zinc-500 uppercase tracking-widest">{profileStreakMode === 'combined' ? 'Avg Streak' : 'Pinned'}</div>
                             </div>
                             <div className="bg-zinc-900/50 p-6 rounded-xl">
                                 <div className="text-3xl font-bold text-white mb-1">{consistencyScore}%</div>
@@ -294,27 +323,75 @@ export default function ProfilePage() {
                 )}
 
                 {activeTab === 'history' && (
-                    <div className="space-y-2 animate-[fadeIn_0.5s_ease-out]">
-                        {historyDates.length > 0 ? historyDates.slice(0, 20).map(date => (
-                            <div key={date} className="flex items-center justify-between p-3 md:p-4 bg-zinc-900/30 rounded-lg hover:bg-zinc-900/50 transition-colors">
-                                <div className="flex items-center gap-3 md:gap-4">
-                                    <div className="w-10 h-10 rounded bg-zinc-800 flex items-center justify-center font-mono font-bold text-zinc-400 text-sm">
-                                        {new Date(date).getDate()}
+                    <div className="space-y-6 animate-[fadeIn_0.5s_ease-out]">
+                        {historyDates.length > 0 ? historyDates.slice(0, 30).map(date => {
+                            const dayRecords = records[date].sort((a, b) => {
+                                if (a.timestamp && b.timestamp) return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+                                return 0;
+                            });
+
+                            return (
+                                <div key={date} className="bg-zinc-900/30 rounded-xl overflow-hidden border border-white/5">
+                                    <div className="px-4 py-3 bg-white/5 flex items-center justify-between border-b border-white/5">
+                                        <div className="font-semibold text-white text-sm">
+                                            {new Date(date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+                                        </div>
+                                        <div className="text-xs text-zinc-500 font-mono">
+                                            {dayRecords.length} entries
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div className="font-semibold text-white text-sm">{new Date(date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</div>
-                                        <div className="text-xs text-zinc-500">{records[date].length} activities</div>
+
+                                    <div className="divide-y divide-white/5">
+                                        {dayRecords.map((record, i) => {
+                                            const task = tasks.find(t => t.id === record.taskId);
+                                            const timeStr = record.timestamp
+                                                ? new Date(record.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                                : 'Completed';
+
+                                            return (
+                                                <div key={i} className="flex items-center gap-4 p-4 hover:bg-white/5 transition-colors">
+                                                    {/* Task Color Indicator */}
+                                                    <div
+                                                        className="w-2 h-10 rounded-full shrink-0"
+                                                        style={{ backgroundColor: task?.color || '#555' }}
+                                                    />
+
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <h4 className="font-medium text-white truncate pr-2">
+                                                                {task?.name || 'Unknown Task'}
+                                                            </h4>
+                                                            <span className="text-xs text-zinc-500 font-mono shrink-0">
+                                                                {timeStr}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-3 text-xs text-zinc-400">
+                                                            {record.value !== undefined && (
+                                                                <span className="bg-zinc-800 px-2 py-0.5 rounded text-zinc-300">
+                                                                    Value: {record.value} {task?.metricConfig?.unit}
+                                                                </span>
+                                                            )}
+                                                            {record.intensity !== null && record.intensity !== undefined && (
+                                                                <div className="flex items-center gap-1">
+                                                                    <Flame className="w-3 h-3 text-orange-500" />
+                                                                    <span>Intensity: {record.intensity}</span>
+                                                                </div>
+                                                            )}
+                                                            {!record.value && record.intensity === null && (
+                                                                <span>Task Completed</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
-                                <div className="flex gap-1">
-                                    {records[date].map((r, i) => (
-                                        <div key={i} className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-500" />
-                                    ))}
-                                </div>
-                            </div>
-                        )) : (
+                            );
+                        }) : (
                             <div className="text-center py-12 text-zinc-500 text-sm">
-                                No history recorded yet.
+                                No history recorded yet. The void awaits your actions.
                             </div>
                         )}
                     </div>

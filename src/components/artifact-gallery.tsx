@@ -3,7 +3,7 @@
 
 import { useUserData } from "@/context/user-data-context";
 import { ARTIFACTS } from "@/lib/artifacts";
-import { Lock, CheckCircle, Flame, Triangle, Hexagon, Compass, Skull, Box } from "lucide-react";
+import { Lock, CheckCircle, Flame, Triangle, Hexagon, Compass, Skull, Box, Shield, Book, Zap, Activity, BookOpen, Clock } from "lucide-react";
 import { createPortal } from "react-dom";
 
 interface ArtifactGalleryProps {
@@ -17,7 +17,13 @@ const ICON_MAP = {
     'Hexagon': Hexagon,
     'Compass': Compass,
     'Skull': Skull,
-    'Box': Box
+    'Box': Box,
+    'Shield': Shield,
+    'Book': Book,
+    'Zap': Zap,
+    'Activity': Activity,
+    'BookOpen': BookOpen,
+    'Clock': Clock
 };
 
 export function ArtifactGallery({ isOpen, onClose }: ArtifactGalleryProps) {
@@ -53,8 +59,8 @@ export function ArtifactGallery({ isOpen, onClose }: ArtifactGalleryProps) {
                             <div
                                 key={artifact.id}
                                 className={`relative aspect-[4/5] rounded-xl border p-4 flex flex-col items-center justify-between group transition-all duration-300 ${isUnlocked
-                                        ? "bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900"
-                                        : "bg-zinc-950/50 border-zinc-900 opacity-60 grayscale"
+                                    ? "bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900"
+                                    : "bg-zinc-950/50 border-zinc-900 opacity-60 grayscale"
                                     }`}
                             >
                                 {/* Status Badge */}

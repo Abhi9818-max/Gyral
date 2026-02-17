@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Filter, ChevronDown, Check } from 'lucide-react';
+import { Filter, ChevronDown, Check, Pin } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
 
 export function FilterBar() {
-    const { tasks, activeFilterTaskId, setActiveFilterTaskId } = useUserData();
+    const { tasks, activeFilterTaskId, setActiveFilterTaskId, defaultFilterTaskId, setDefaultFilterTask } = useUserData();
     const [isOpen, setIsOpen] = useState(false);
     const [clickCount, setClickCount] = useState(0);
 
@@ -67,12 +67,12 @@ export function FilterBar() {
                     <div className="h-px bg-white/5" />
 
                     {tasks.map(task => (
-                        <button
+                        <div
                             key={task.id}
                             onClick={() => handleSelect(task.id)}
-                            className="w-full text-left px-4 py-4 md:py-3 text-base md:text-sm font-medium hover:bg-white/5 active:bg-white/10 transition-colors flex items-center justify-between group"
+                            className="w-full text-left px-4 py-4 md:py-3 text-base md:text-sm font-medium hover:bg-white/5 active:bg-white/10 transition-colors flex items-center justify-between group cursor-pointer"
                         >
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 pointer-events-none">
                                 <div
                                     className="w-2.5 h-2.5 md:w-2 md:h-2 rounded-full shadow-[0_0_5px_currentColor]"
                                     style={{ backgroundColor: task.color, color: task.color }}
@@ -81,8 +81,20 @@ export function FilterBar() {
                                     {task.name}
                                 </span>
                             </div>
-                            {activeFilterTaskId === task.id && <Check className="w-5 h-5 md:w-4 md:h-4" style={{ color: task.color }} />}
-                        </button>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDefaultFilterTask(defaultFilterTaskId === task.id ? null : task.id);
+                                    }}
+                                    className={`p-1 rounded hover:bg-white/10 transition-colors ${defaultFilterTaskId === task.id ? 'text-accent' : 'text-zinc-600 hover:text-zinc-400'}`}
+                                    title={defaultFilterTaskId === task.id ? "Unset Default" : "Set as Default Dashboard View"}
+                                >
+                                    <Pin className={`w-3 h-3 ${defaultFilterTaskId === task.id ? 'fill-current' : ''}`} />
+                                </button>
+                                {activeFilterTaskId === task.id && <Check className="w-5 h-5 md:w-4 md:h-4 pointer-events-none" style={{ color: task.color }} />}
+                            </div>
+                        </div>
                     ))}
 
                     {tasks.length === 0 && (

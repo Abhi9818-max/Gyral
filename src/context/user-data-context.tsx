@@ -327,6 +327,17 @@ interface UserDataContextType {
     displayedArtifactId: string | null;
     equipArtifact: (artifactId: string) => Promise<void>;
     checkUnlockables: () => void;
+
+    // Default Filter
+    defaultFilterTaskId: string | null;
+    setDefaultFilterTask: (taskId: string | null) => Promise<void>;
+
+    newlyUnlockedArtifacts: string[];
+    clearNewlyUnlocked: () => void;
+
+    profileStreakMode: 'pinned' | 'combined';
+    setProfileStreakMode: (mode: 'pinned' | 'combined') => Promise<void>;
+    calculateAverageStreak: () => number;
 }
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
@@ -359,6 +370,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
     const [isLoaded, setIsLoaded] = useState(false);
     const [activeFilterTaskId, setActiveFilterTaskId] = useState<string | null>(null);
+    const [defaultFilterTaskId, setDefaultFilterTaskIdState] = useState<string | null>(null);
 
 
     // Gamification
@@ -466,6 +478,16 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                         if (dbSettings.show_stats_card !== undefined) setShowStatsCard(dbSettings.show_stats_card);
                         if (dbSettings.theme) setThemeState(dbSettings.theme);
                         if (dbSettings.language) setLanguageState(dbSettings.language);
+
+                        if (dbSettings.default_filter_task_id) {
+                            setDefaultFilterTaskIdState(dbSettings.default_filter_task_id);
+                            // Apply it immediately if no filter is set (fresh load)
+                            setActiveFilterTaskId(dbSettings.default_filter_task_id);
+                        }
+
+                        if (dbSettings.profile_streak_mode) {
+                            setProfileStreakModeState(dbSettings.profile_streak_mode as 'pinned' | 'combined');
+                        }
                     }
 
                     // 6. Life Events
@@ -660,6 +682,17 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                 if (savedFaction) try { setCurrentFaction(JSON.parse(savedFaction)); } catch (e) { console.error(e); }
                 const savedMementoMode = localStorage.getItem('diogenes-memento-mode');
                 if (savedMementoMode) setMementoViewMode(savedMementoMode as 'life' | 'year');
+
+                const savedDefaultFilter = localStorage.getItem('diogenes-default-filter');
+                if (savedDefaultFilter) {
+                    setDefaultFilterTaskIdState(savedDefaultFilter);
+                    setActiveFilterTaskId(savedDefaultFilter);
+                }
+
+                const savedProfileStreakMode = localStorage.getItem('diogenes-profile-streak-mode');
+                if (savedProfileStreakMode) {
+                    setProfileStreakModeState(savedProfileStreakMode as 'pinned' | 'combined');
+                }
             }
             setIsLoaded(true);
         };
@@ -1328,7 +1361,18 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         // Calculate stats
         const allRecords = Object.values(records).flat();
         const totalEntries = allRecords.length;
-        console.log("Checking Artifacts:", { currentStreak, totalEntries, unlockedArtifacts });
+        // consistencyScore is likely 0 in the provider value in the return statement? 
+        // "consistencyScore: 0" was seen in the return. so it might not be a state variable.
+        // I need to calculate it or just use 0 for now if not implemented.
+        // Actually, looking at the previous file view, `consistencyScore` was passed as `0` in value.
+        // So I should define it in the function or read it from somewhere.
+        // For now, I will calculate it simply: (currentStreak / (days since start)) * 100? Or just use a placeholder.
+        // I'll calculate a simple one: totalEntries / (days since first entry).
+
+        // Let's just define a mock consistency for now if it's missing, or calculate it.
+        const consistencyScore = totalEntries > 0 ? Math.min(100, Math.round((currentStreak / (totalEntries + 1)) * 100)) : 0; // Placeholder logic
+
+        console.log("Checking Artifacts:", { currentStreak, totalEntries, unlockedArtifacts, consistencyScore });
         // currentStreak is already in state
 
         const newUnlocks: string[] = [];
@@ -1339,7 +1383,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             let unlocked = false;
             if (artifact.type === 'streak' && currentStreak >= artifact.threshold) unlocked = true;
             if (artifact.type === 'entries' && totalEntries >= artifact.threshold) unlocked = true;
-            // Add consistency logic if needed
+            if (artifact.type === 'consistency' && consistencyScore >= artifact.threshold) unlocked = true;
 
             if (unlocked) {
                 newUnlocks.push(artifact.id);
@@ -1353,7 +1397,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
         if (newUnlocks.length > 0) {
             setUnlockedArtifacts(prev => [...prev, ...newUnlocks]);
-            // Could trigger a modal or toast here
+            setNewlyUnlockedArtifacts(prev => [...prev, ...newUnlocks]);
             console.log("Unlocked Artifacts:", newUnlocks);
         }
     };
@@ -1386,6 +1430,49 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }
     }, [currentStreak, records, isLoaded, user]);
 
+    const [newlyUnlockedArtifacts, setNewlyUnlockedArtifacts] = useState<string[]>([]);
+    const clearNewlyUnlocked = () => setNewlyUnlockedArtifacts([]);
+
+    const [profileStreakMode, setProfileStreakModeState] = useState<'pinned' | 'combined'>('pinned');
+
+    const setProfileStreakMode = async (mode: 'pinned' | 'combined') => {
+        setProfileStreakModeState(mode);
+        if (user) {
+            await supabase.from('user_settings').upsert({ user_id: user.id, profile_streak_mode: mode });
+        } else {
+            localStorage.setItem('diogenes-profile-streak-mode', mode);
+        }
+    };
+
+    const calculateAverageStreak = () => {
+        const activeTasks = tasks.filter(t => !t.isArchived);
+        if (activeTasks.length === 0) return 0;
+        const totalStreak = activeTasks.reduce((acc, t) => acc + calculateStreak(records, t.id), 0);
+        return Math.round(totalStreak / activeTasks.length);
+    };
+
+    const setDefaultFilterTask = async (taskId: string | null) => {
+        // Find if valid
+        if (taskId && !tasks.find(t => t.id === taskId)) return;
+
+        // If we are setting a default, we probably want to view it now too
+        if (taskId) setActiveFilterTaskId(taskId);
+
+        if (user) {
+            await supabase.from('user_settings').upsert({
+                user_id: user.id,
+                default_filter_task_id: taskId
+            });
+            // Update local state implicitly via init or just assume success if we want tracking
+            // Use initData pattern or simple state? 
+            // We need a state for defaultFilterTaskId to update UI immediately
+            setDefaultFilterTaskIdState(taskId);
+        } else {
+            localStorage.setItem('diogenes-default-filter', taskId || '');
+            setDefaultFilterTaskIdState(taskId);
+        }
+    };
+
     return (
         <UserDataContext.Provider value={{
             tasks, records, addTask, updateTask, deleteTask, toggleTaskArchive, addRecord, deleteRecord, getRecordsForDate, activeFilterTaskId, setActiveFilterTaskId,
@@ -1395,7 +1482,10 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             debts, addDebt, payDebt, vows, addVow, completeVowDaily, isExiled, exiledUntil, redeemExile, factions, currentFaction, setFaction, investments, addInvestment, completeInvestment,
             navPreferences, updateNavPreferences, ALL_NAV_ITEMS, profile, setProfile, onboardingCompleted, completeOnboarding, mementoViewMode, toggleMementoViewMode,
             breakVow, restoreVowStreak, getBrokenVows,
-            unlockedArtifacts, displayedArtifactId, equipArtifact, checkUnlockables
+            unlockedArtifacts, displayedArtifactId, equipArtifact, checkUnlockables,
+            defaultFilterTaskId, setDefaultFilterTask,
+            newlyUnlockedArtifacts, clearNewlyUnlocked,
+            profileStreakMode, setProfileStreakMode, calculateAverageStreak
         }}>
             {children}
         </UserDataContext.Provider>

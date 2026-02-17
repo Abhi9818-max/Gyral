@@ -11,6 +11,7 @@ import { StreakSuccessModal } from "@/components/modals/streak-success-modal";
 import { StreakLossModal } from "@/components/modals/streak-loss-modal";
 import { RitualModal } from "@/components/modals/ritual-modal";
 import { MissedVowModal } from "@/components/modals/missed-vow-modal";
+import { ArtifactUnlockModal } from "@/components/modals/artifact-unlock-modal";
 import { VowWidget } from "@/components/vow-widget";
 import { Flame } from "lucide-react";
 import { getQuoteOfTheDay } from "@/lib/quotes";
@@ -129,6 +130,7 @@ export default function Home() {
       <StreakLossModal />
       <MissedVowModal />
       <RitualModal isOpen={isRitualModalOpen} onClose={() => setIsRitualModalOpen(false)} />
+      <ArtifactUnlockModal />
     </div>
   );
 }

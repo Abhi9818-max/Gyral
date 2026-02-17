@@ -38,7 +38,8 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
         showStatsCard, toggleStatsCard,
         user, profile, theme, setTheme, language, setLanguage,
         navPreferences, updateNavPreferences,
-        lifeEvents, debts, vows, investments, currentFaction, isExiled, exiledUntil, onboardingCompleted
+        lifeEvents, debts, vows, investments, currentFaction, isExiled, exiledUntil, onboardingCompleted,
+        profileStreakMode, setProfileStreakMode
     } = useUserData();
 
     const { isInstallable, promptInstall } = useInstallPrompt();
@@ -581,6 +582,13 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                                     <div className={`w-3 h-3 bg-white rounded-full transition-transform duration-300 ${showStatsCard ? 'translate-x-5' : 'translate-x-0'}`} />
                                 </div>
                             }
+                            isLast={false}
+                        />
+                        <SettingsItem
+                            icon={profileStreakMode === 'combined' ? Flame : Flame}
+                            label="Profile Streak Display"
+                            onClick={() => setProfileStreakMode(profileStreakMode === 'pinned' ? 'combined' : 'pinned')}
+                            value={profileStreakMode === 'pinned' ? 'Pinned Task' : 'Combined Average'}
                             isLast
                         />
                     </SettingsGroup>

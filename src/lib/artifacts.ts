@@ -77,5 +77,71 @@ export const ARTIFACTS: Artifact[] = [
         threshold: 100,
         type: 'entries',
         color: '#10b981' // Emerald
+    },
+    {
+        id: 'sentinel_shield',
+        name: 'The Sentinel',
+        description: 'Vigilance is the price of order.',
+        icon: 'Shield',
+        rarity: 'rare',
+        condition: 'Reach a 21-day streak',
+        threshold: 21,
+        type: 'streak',
+        color: '#60a5fa' // Blue
+    },
+    {
+        id: 'obsidian_ledger',
+        name: 'The Ledger',
+        description: 'Every action is recorded. Nothing is lost.',
+        icon: 'Book',
+        rarity: 'epic',
+        condition: 'Log 250 total entries',
+        threshold: 250,
+        type: 'entries',
+        color: '#475569' // Slate-600
+    },
+    {
+        id: 'eternal_flame',
+        name: 'Eternal Flame',
+        description: 'A fire that refuses to die.',
+        icon: 'Zap',
+        rarity: 'legendary',
+        condition: 'Reach a 60-day streak',
+        threshold: 60,
+        type: 'streak',
+        color: '#dc2626' // Red
+    },
+    {
+        id: 'crystal_metronome',
+        name: 'The Metronome',
+        description: 'Perfect rhythm. Perfect execution.',
+        icon: 'Activity',
+        rarity: 'rare',
+        condition: 'Reach 90% consistency',
+        threshold: 90,
+        type: 'consistency',
+        color: '#ec4899' // Pink
+    },
+    {
+        id: 'grand_codex',
+        name: 'The Codex',
+        description: 'Knowledge accumulated over a lifetime.',
+        icon: 'BookOpen',
+        rarity: 'legendary',
+        condition: 'Log 500 total entries',
+        threshold: 500,
+        type: 'entries',
+        color: '#8b5cf6' // Violet
+    },
+    {
+        id: 'chronos_dial',
+        name: 'The Timekeeper',
+        description: 'Time bows to those who master it.',
+        icon: 'Clock',
+        rarity: 'legendary',
+        condition: 'Reach a 90-day streak',
+        threshold: 90,
+        type: 'streak',
+        color: '#fbbf24' // Amber
     }
 ];
