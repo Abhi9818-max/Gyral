@@ -88,7 +88,15 @@ export function DailyReviewModal({ isOpen, onClose }: DailyReviewModalProps) {
         const promises = activeTasks.map(async (task) => {
             const update = updates[task.id];
             if (update?.isMarked) {
-                await addRecord(dateStr, task.id, update.intensity || 1, update.value);
+                const status = await addRecord(dateStr, task.id, update.intensity || 1, update.value);
+
+                // Immediate feedback for mercy/failure in the loop? 
+                // Or collect them? Collecting is better UX but simpler to just alert for now.
+                if (status.valid && status.mercyUsed) {
+                    alert(`⚠️ Mercy Used for ${task.name}\n\n"I have given you this for now."`);
+                } else if (!status.valid) {
+                    alert(`❌ Streak Risk for ${task.name}\n\nMercy exhausted. This won't count for streak.`);
+                }
             } else {
                 const dayRecords = records[dateStr] || [];
                 if (dayRecords.some(r => r.taskId === task.id)) {

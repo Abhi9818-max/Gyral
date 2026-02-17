@@ -15,6 +15,7 @@ export type MetricConfig = {
         threshold: number;
         intensity: number;
     }[];
+    noMercy?: boolean;
 };
 
 export type TaskAnalytics = {
@@ -53,6 +54,8 @@ export type Pact = {
     id: string;
     text: string;
     isCompleted: boolean;
+    shiftedCount?: number;
+    createdAt?: string;
 };
 
 export type PactsMap = {
@@ -222,7 +225,7 @@ interface UserDataContextType {
     updateTask: (taskId: string, updates: Partial<Task>) => void;
     deleteTask: (taskId: string) => void;
     toggleTaskArchive: (taskId: string) => void;
-    addRecord: (date: string, taskId: string, intensity: number | null, value?: number) => void;
+    addRecord: (date: string, taskId: string, intensity: number | null, value?: number) => Promise<{ valid: boolean; mercyUsed: boolean; mercyRemaining: number }>;
     deleteRecord: (date: string, taskId: string) => void;
     getRecordsForDate: (date: string) => Record[];
     activeFilterTaskId: string | null;
@@ -254,6 +257,7 @@ interface UserDataContextType {
     addPact: (text: string, date: string) => void;
     togglePact: (id: string, date: string) => void;
     deletePact: (id: string, date: string) => void;
+    shiftPact: (id: string, currentDate: string) => void;
 
     // Notes
     notes: Note[];
@@ -372,7 +376,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const [activeFilterTaskId, setActiveFilterTaskId] = useState<string | null>(null);
     const [defaultFilterTaskId, setDefaultFilterTaskIdState] = useState<string | null>(null);
 
-
+    // Stats
+    const [consistencyScore, setConsistencyScore] = useState(0);
     // Gamification
     const [currentStreak, setCurrentStreak] = useState(0);
     const [longestStreak, setLongestStreak] = useState(0);
@@ -452,7 +457,13 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                         dbPacts.forEach(p => {
                             const d = p.date;
                             if (!newPacts[d]) newPacts[d] = [];
-                            newPacts[d].push({ id: p.id, text: p.text, isCompleted: p.is_completed });
+                            newPacts[d].push({
+                                id: p.id,
+                                text: p.text,
+                                isCompleted: p.is_completed,
+                                shiftedCount: p.shifted_count,
+                                createdAt: p.created_at
+                            });
                         });
                         setPacts(newPacts);
                     }
@@ -799,16 +810,94 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         const sortedDates = Object.keys(currentRecords).sort((a, b) => b.localeCompare(a));
         if (sortedDates.length === 0) return 0;
 
+        // --- Mercy Rule Helper ---
+        // Pre-calculates valid dates for a given month/year context
+        const analyzeMonthValidity = (monthKey: string, filterTId: string | null) => {
+            const validDays = new Set<string>();
+            const [yearStr, monthStr] = monthKey.split('-');
+            const year = parseInt(yearStr);
+            const month = parseInt(monthStr);
+
+            // If combined streak, we need to check ALL tasks. 
+            // A day is valid if ANY task is valid on that day.
+            const tasksToCheck = filterTId ? tasks.filter(t => t.id === filterTId) : tasks;
+
+            tasksToCheck.forEach(task => {
+                const metricConfig = task.metricConfig;
+                const phase1 = metricConfig?.phases?.[0];
+                const threshold = phase1?.threshold || 0;
+
+                // 1. Get all records for this task in this month
+                const monthlyRecords = Object.entries(currentRecords).filter(([date, _]) => {
+                    const d = new Date(date);
+                    return d.getFullYear() === year && d.getMonth() === month;
+                }).map(([date, recs]) => ({
+                    date,
+                    records: recs.filter(r => r.taskId === task.id)
+                })).filter(entry => entry.records.length > 0);
+
+                // 2. Sort Chronologically (Day 1 -> Day 31) to apply mercy correctly
+                monthlyRecords.sort((a, b) => a.date.localeCompare(b.date));
+
+                // 3. Apply Mercy Check
+                let mercyUsed = 0;
+
+                monthlyRecords.forEach(entry => {
+                    // Calculate total value for day
+                    // If no value, assume standard completion (1) unless thresholds exist?
+                    // Actually if threshold > 0 and value is undefined/0, it's Low.
+                    const dayValue = entry.records.reduce((sum, r) => sum + (r.value || 0), 0);
+                    const dayIntensity = Math.max(...entry.records.map(r => r.intensity || 0));
+
+                    // Check if passed (either value threshold or intensity override if we want?)
+                    // Prompt says "specific task logged is less than its phase 1"
+                    // If no metric config, it's always valid (threshold 0)
+                    let isHighEffort = true;
+                    if (threshold > 0) {
+                        isHighEffort = dayValue >= threshold;
+                    }
+
+                    if (isHighEffort) {
+                        validDays.add(entry.date);
+                    } else {
+                        // Low Effort - Attempt Mercy
+                        // Check if task allows mercy
+                        if (!metricConfig?.noMercy) {
+                            if (mercyUsed < 2) {
+                                mercyUsed++;
+                                validDays.add(entry.date); // Saved by mercy
+                            }
+                        }
+                        // Else: Failed, do not add to validDays
+                    }
+                });
+            });
+
+            return validDays;
+        };
+        // -------------------------
+
         const today = anchorDateStr ? new Date(anchorDateStr) : new Date();
         const todayStr = today.toISOString().split('T')[0];
 
         let baseStreak = 0;
         let checkDate = new Date(today);
 
+        // State for optimization
+        let currentMonthKey = '';
+        let validDaysCache = new Set<string>();
+
         const hasValidRecord = (dateStr: string) => {
-            const dayRecords = currentRecords[dateStr] || [];
-            if (filterTaskId) return dayRecords.some(r => r.taskId === filterTaskId);
-            return dayRecords.length > 0;
+            const d = new Date(dateStr);
+            const monthKey = `${d.getFullYear()}-${d.getMonth()}`; // e.g. "2024-5"
+
+            // Refresh cache if moving to new month
+            if (monthKey !== currentMonthKey) {
+                validDaysCache = analyzeMonthValidity(monthKey, filterTaskId);
+                currentMonthKey = monthKey;
+            }
+
+            return validDaysCache.has(dateStr);
         };
 
         if (anchorDateStr) {
@@ -862,35 +951,30 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         let strength = 0;
         let count = 0;
         const today = new Date();
-        const todayStr = today.toISOString().split('T')[0];
-        let date = new Date(today);
 
-        const getDayRecords = (dStr: string) => {
-            const recs = currentRecords[dStr] || [];
-            if (filterTaskId) return recs.filter(r => r.taskId === filterTaskId);
-            return recs;
-        };
-
-        if (getDayRecords(todayStr).length === 0) {
-            date.setDate(date.getDate() - 1);
+        // Simple logic for now, could be enhanced with mercy awareness but strength is 'bonus'
+        let backDate = new Date(today);
+        if (!currentRecords[today.toISOString().split('T')[0]]) {
+            backDate.setDate(backDate.getDate() - 1);
         }
 
         while (count < streakDays) {
-            const dStr = date.toISOString().split('T')[0];
-            const recs = getDayRecords(dStr);
-            let dayWeight = 0;
-            recs.forEach(r => {
+            const dStr = backDate.toISOString().split('T')[0];
+            const recs = currentRecords[dStr] || [];
+            // Filter
+            const dayRecs = filterTaskId ? recs.filter(r => r.taskId === filterTaskId) : recs;
+
+            dayRecs.forEach(r => {
                 const i = r.intensity || 0;
                 let w = 0.5;
-                if (i === 2) w = 1.0;
-                if (i === 3) w = 1.5;
-                if (i === 4) w = 2.0;
-                if (i === 0) w = 0.5;
-                dayWeight += w;
+                if (i >= 2) w = 1.0;
+                if (i >= 3) w = 1.5;
+                if (i >= 4) w = 2.0;
+                // Add value bonus?
+                strength += w;
             });
-            strength += dayWeight;
             count++;
-            date.setDate(date.getDate() - 1);
+            backDate.setDate(backDate.getDate() - 1);
         }
         return strength;
     };
@@ -901,12 +985,98 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         return 'spark';
     };
 
+    const calculateConsistency = (currentRecords: RecordsMap) => {
+        const today = new Date();
+        let activeDays = 0;
+        const totalDays = 30;
+
+        // Memoize validity to avoid recalculating heavy logic 30 times?
+        // Actually we can just call the helper for each month involved (usually 1 or 2 months)
+
+        let processedMonths = new Set<string>();
+        let validDaysMap = new Set<string>();
+
+        const getValidity = (date: Date) => {
+            const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+            if (!processedMonths.has(monthKey)) {
+                // Reuse calculateStreak's logic or extract it?
+                // Since calculateStreak is a closure, we can't easily reuse without extracting.
+                // Duplicating logic here for safety or extracting to a scope-accessible function is better.
+                // For now, I'll essentially replicate the analyzeMonthValidity logic here or move it up.
+                // Moving 'analyzeMonthValidity' up to component scope is cleaner.
+                // But for this diff, I'll define a local version.
+
+                // --- Local Re-implementation of Month Analysis ---
+                // Note: We use 'activeFilterTaskId' from context for calculating global consistency? 
+                // Or is consistency always global/combined? 
+                // User request context implies general consistency. Let's assume Combined if calculating globally.
+                // But wait, setConsistencyScore is setting global state.
+                // It likely uses 'records' (all).
+                // Should it check Phase 1? Yes.
+
+                const validInMonth = new Set<string>();
+                const [yearStr, monthStr] = monthKey.split('-');
+                const year = parseInt(yearStr);
+                const month = parseInt(monthStr);
+
+                tasks.forEach(task => { // Check ALL tasks for consistency
+                    const metricConfig = task.metricConfig;
+                    const phase1 = metricConfig?.phases?.[0];
+                    const threshold = phase1?.threshold || 0;
+
+                    const monthlyRecords = Object.entries(currentRecords).filter(([date, _]) => {
+                        const d = new Date(date);
+                        return d.getFullYear() === year && d.getMonth() === month;
+                    }).map(([date, recs]) => ({
+                        date,
+                        records: recs.filter(r => r.taskId === task.id)
+                    })).filter(entry => entry.records.length > 0);
+
+                    monthlyRecords.sort((a, b) => a.date.localeCompare(b.date));
+
+                    let mercyUsed = 0;
+                    monthlyRecords.forEach(entry => {
+                        const dayValue = entry.records.reduce((sum, r) => sum + (r.value || 0), 0);
+                        let isHighEffort = true;
+                        if (threshold > 0) isHighEffort = dayValue >= threshold;
+
+                        if (isHighEffort) {
+                            validInMonth.add(entry.date);
+                        } else {
+                            if (!task.metricConfig?.noMercy) {
+                                if (mercyUsed < 2) {
+                                    mercyUsed++;
+                                    validInMonth.add(entry.date);
+                                }
+                            }
+                        }
+                    });
+                });
+                // ------------------------------------------------
+
+                validInMonth.forEach(d => validDaysMap.add(d));
+                processedMonths.add(monthKey);
+            }
+            return validDaysMap.has(date.toISOString().split('T')[0]);
+        };
+
+        for (let i = 0; i < totalDays; i++) {
+            const d = new Date(today);
+            d.setDate(d.getDate() - i);
+            if (getValidity(d)) {
+                activeDays++;
+            }
+        }
+        return Math.round((activeDays / totalDays) * 100);
+    };
+
     useEffect(() => {
         if (!isLoaded) return;
         const newStreak = calculateStreak(records, activeFilterTaskId);
         setCurrentStreak(newStreak);
         setStreakTier(getStreakTier(newStreak));
         setStreakStrength(calculateStrength(newStreak, records, activeFilterTaskId));
+        setConsistencyScore(calculateConsistency(records));
         if (newStreak > longestStreak) setLongestStreak(newStreak);
     }, [records, isLoaded, activeFilterTaskId]);
 
@@ -953,12 +1123,70 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const addRecord = async (date: string, taskId: string, intensity: number | null, value?: number) => {
         const timestamp = new Date().toISOString();
         const newRecord: Record = { taskId, intensity, value, timestamp };
+
+        let mercyStatus = { valid: true, mercyUsed: false, mercyRemaining: 2 };
+
+        // --- Mercy Check Logic (Prediction) ---
+        const task = tasks.find(t => t.id === taskId);
+        if (task && task.metricConfig) {
+            const phase1 = task.metricConfig.phases?.[0];
+            const threshold = phase1?.threshold || 0;
+
+            // Check if this specific record is "Low Effort"
+            const isLowEffort = threshold > 0 && (value || 0) < threshold;
+
+            if (isLowEffort) {
+                // Check if mercy is allowed
+                if (task.metricConfig?.noMercy) {
+                    mercyStatus = { valid: false, mercyUsed: false, mercyRemaining: 0 };
+                } else {
+                    // Count existing Low Effort days this month
+                    const d = new Date(date);
+                    const year = d.getFullYear();
+                    const month = d.getMonth();
+
+                    const monthlyRecords = Object.entries(records).filter(([rDate, _]) => {
+                        const rd = new Date(rDate);
+                        return rd.getFullYear() === year && rd.getMonth() === month && rDate !== date;
+                    }).flatMap(([_, recs]) => recs.filter(r => r.taskId === taskId));
+
+                    let mercyUsedCount = 0;
+                    const evaluatedDates = new Set<string>();
+
+                    // Let's use the records state. We can group by date.
+                    const monthDates = Object.keys(records).filter(k => {
+                        const kd = new Date(k);
+                        return kd.getFullYear() === year && kd.getMonth() === month;
+                    });
+
+                    monthDates.forEach(dKey => {
+                        if (dKey === date) return; // Ignore current day being updated
+                        const dayRecs = records[dKey].filter(r => r.taskId === taskId);
+                        if (dayRecs.length === 0) return;
+
+                        const dayTotal = dayRecs.reduce((sum, r) => sum + (r.value || 0), 0);
+                        if (dayTotal < threshold) {
+                            mercyUsedCount++;
+                        }
+                    });
+
+                    if (mercyUsedCount >= 2) {
+                        mercyStatus = { valid: false, mercyUsed: false, mercyRemaining: 0 };
+                    } else {
+                        mercyStatus = { valid: true, mercyUsed: true, mercyRemaining: 2 - (mercyUsedCount + 1) };
+                    }
+                }
+            }
+        }
+        // --------------------------------------
+
         setRecords((prev) => {
             const dayRecords = prev[date] || [];
             setLastCompletion({ date, taskId });
             const filteredRecords = dayRecords.filter(r => r.taskId !== taskId);
             return { ...prev, [date]: [...filteredRecords, newRecord] };
         });
+
         if (user) {
             await supabase.from('records').delete().match({ task_id: taskId, date });
             await supabase.from('records').insert({
@@ -967,7 +1195,6 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
             // Increment Activity Points
             const pointsToAdd = intensity ? (intensity + 1) * 10 : 10;
-            // Best to use a relative update if possible, but for now we'll fetch/update
             const { data: profile } = await supabase.from('profiles').select('activity_points').eq('id', user.id).single();
             if (profile) {
                 await supabase.from('profiles').update({
@@ -975,6 +1202,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                 }).eq('id', user.id);
             }
         }
+
+        return mercyStatus;
     };
 
     const deleteRecord = async (date: string, taskId: string) => {
@@ -994,13 +1223,21 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const getRecordsForDate = (date: string) => records[date] || [];
 
     const addPact = async (text: string, date: string) => {
-        const newPact = { id: crypto.randomUUID(), text, isCompleted: false };
+        const createdAt = new Date().toISOString();
+        const newPact: Pact = { id: crypto.randomUUID(), text, isCompleted: false, createdAt };
         setPacts(prev => {
             const dayPacts = prev[date] || [];
             return { ...prev, [date]: [...dayPacts, newPact] };
         });
         if (user) {
-            await supabase.from('pacts').insert({ id: newPact.id, user_id: user.id, text, date, is_completed: false });
+            await supabase.from('pacts').insert({
+                id: newPact.id,
+                user_id: user.id,
+                text,
+                date,
+                is_completed: false,
+                created_at: createdAt
+            });
         }
     };
 
@@ -1026,6 +1263,54 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             return { ...prev, [date]: dayPacts.filter(p => p.id !== id) };
         });
         if (user) await supabase.from('pacts').delete().eq('id', id);
+    };
+
+    const shiftPact = async (id: string, currentDate: string) => {
+        let pactToShift: Pact | undefined;
+
+        // Optimistic Update
+        setPacts(prev => {
+            const currentDayPacts = prev[currentDate] || [];
+            pactToShift = currentDayPacts.find(p => p.id === id);
+
+            if (!pactToShift) return prev;
+            if ((pactToShift.shiftedCount || 0) >= 1) return prev; // Limit 1 shift
+
+            // Calculate Next Day
+            const nextDateObj = new Date(currentDate);
+            nextDateObj.setDate(nextDateObj.getDate() + 1);
+            const nextDate = nextDateObj.toISOString().split('T')[0];
+
+            // Remove from current
+            const newCurrentDayPacts = currentDayPacts.filter(p => p.id !== id);
+
+            // Add to next with incremented count and reset completion
+            const nextDayPacts = prev[nextDate] || [];
+            const updatedPact = {
+                ...pactToShift,
+                shiftedCount: (pactToShift.shiftedCount || 0) + 1,
+                isCompleted: false
+            };
+
+            return {
+                ...prev,
+                [currentDate]: newCurrentDayPacts,
+                [nextDate]: [...nextDayPacts, updatedPact]
+            };
+        });
+
+        if (user && pactToShift && (pactToShift.shiftedCount || 0) < 1) {
+            const nextDateObj = new Date(currentDate);
+            nextDateObj.setDate(nextDateObj.getDate() + 1);
+            const nextDate = nextDateObj.toISOString().split('T')[0];
+
+            await supabase.from('pacts').update({
+                date: nextDate,
+                // @ts-ignore - shifted_count is new
+                shifted_count: (pactToShift.shiftedCount || 0) + 1,
+                is_completed: false
+            }).eq('id', id);
+        }
     };
 
     const addNote = async () => {
@@ -1476,8 +1761,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     return (
         <UserDataContext.Provider value={{
             tasks, records, addTask, updateTask, deleteTask, toggleTaskArchive, addRecord, deleteRecord, getRecordsForDate, activeFilterTaskId, setActiveFilterTaskId,
-            consistencyScore: 0, currentStreak, longestStreak, streakStatus, streakTier, streakStrength, rebuildMode, analyzePatterns, getAdaptiveSuggestion, getTaskAnalytics,
-            lastCompletion, setLastCompletion, getStreakForDate, showLossModal, setShowLossModal, pacts, addPact, togglePact, deletePact, notes, addNote, updateNote, deleteNote,
+            consistencyScore, currentStreak, longestStreak, streakStatus, streakTier, streakStrength, rebuildMode, analyzePatterns, getAdaptiveSuggestion, getTaskAnalytics,
+            lastCompletion, setLastCompletion, getStreakForDate, showLossModal, setShowLossModal, pacts, addPact, togglePact, deletePact, shiftPact, notes, addNote, updateNote, deleteNote,
             restoreData, birthDate, setBirthDate: updateBirthDate, showStatsCard, toggleStatsCard, theme, setTheme, language, setLanguage, user, lifeEvents, addLifeEvent, deleteLifeEvent,
             debts, addDebt, payDebt, vows, addVow, completeVowDaily, isExiled, exiledUntil, redeemExile, factions, currentFaction, setFaction, investments, addInvestment, completeInvestment,
             navPreferences, updateNavPreferences, ALL_NAV_ITEMS, profile, setProfile, onboardingCompleted, completeOnboarding, mementoViewMode, toggleMementoViewMode,

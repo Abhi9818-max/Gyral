@@ -14,6 +14,7 @@ import { MissedVowModal } from "@/components/modals/missed-vow-modal";
 import { ArtifactUnlockModal } from "@/components/modals/artifact-unlock-modal";
 import { VowWidget } from "@/components/vow-widget";
 import { Flame } from "lucide-react";
+import { LongTermReminders } from "@/components/long-term-reminders";
 import { getQuoteOfTheDay } from "@/lib/quotes";
 
 export default function Home() {
@@ -56,6 +57,9 @@ export default function Home() {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 p-4 md:p-8 pt-24 md:pt-28 max-w-7xl mx-auto w-full space-y-6 md:space-y-8 pb-20 md:pb-8">
+        {/* Long Term Reminders */}
+        <LongTermReminders />
+
         {/* Daily Ritual Button */}
         {showRitualButton && (
           <div className="relative">

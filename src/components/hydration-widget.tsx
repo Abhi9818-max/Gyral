@@ -37,11 +37,12 @@ export function HydrationWidget() {
         addTask("Hydration", "#3b82f6", {
             unit: "ml",
             phases: [
-                { name: "Dehydrated", threshold: 1000, intensity: 1 },
-                { name: "Refreshing", threshold: 2000, intensity: 2 },
-                { name: "Hydrated", threshold: 3000, intensity: 3 },
-                { name: "Peak Performance", threshold: 4000, intensity: 4 }
-            ]
+                { name: "Hydrated", threshold: 1500, intensity: 1 },
+                { name: "Well Hydrated", threshold: 2000, intensity: 2 },
+                { name: "Super Hydrated", threshold: 2500, intensity: 3 },
+                { name: "Peak Performance", threshold: 3000, intensity: 4 }
+            ],
+            noMercy: true
         });
     };
 
@@ -128,28 +129,28 @@ export function HydrationWidget() {
                     {/* Quick Presets */}
                     <div className="flex gap-2">
                         <button
-                            onClick={() => handleDrink(500)}
+                            onClick={() => handleDrink(1500)}
                             className="bg-blue-900/20 hover:bg-blue-600/20 border border-blue-500/20 rounded-lg px-3 py-2 flex flex-col items-center gap-1 transition-all active:scale-95 group/btn"
-                            title="Bottle (500ml)"
+                            title="Bottle (1.5L)"
                         >
                             <CupSoda className="w-4 h-4 text-blue-400 group-hover/btn:text-blue-300" />
-                            <span className="text-[10px] font-bold text-blue-200">500ml</span>
-                        </button>
-                        <button
-                            onClick={() => handleDrink(1000)}
-                            className="bg-blue-900/20 hover:bg-blue-600/20 border border-blue-500/20 rounded-lg px-3 py-2 flex flex-col items-center gap-1 transition-all active:scale-95 group/btn"
-                            title="Jug (1L)"
-                        >
-                            <Milk className="w-4 h-4 text-blue-400 group-hover/btn:text-blue-300" />
-                            <span className="text-[10px] font-bold text-blue-200">1L</span>
+                            <span className="text-[10px] font-bold text-blue-200">1.5L</span>
                         </button>
                         <button
                             onClick={() => handleDrink(2000)}
                             className="bg-blue-900/20 hover:bg-blue-600/20 border border-blue-500/20 rounded-lg px-3 py-2 flex flex-col items-center gap-1 transition-all active:scale-95 group/btn"
-                            title="Daily Goal (2L)"
+                            title="Jug (2L)"
+                        >
+                            <Milk className="w-4 h-4 text-blue-400 group-hover/btn:text-blue-300" />
+                            <span className="text-[10px] font-bold text-blue-200">2L</span>
+                        </button>
+                        <button
+                            onClick={() => handleDrink(2500)}
+                            className="bg-blue-900/20 hover:bg-blue-600/20 border border-blue-500/20 rounded-lg px-3 py-2 flex flex-col items-center gap-1 transition-all active:scale-95 group/btn"
+                            title="Daily Goal (2.5L)"
                         >
                             <Wine className="w-4 h-4 text-blue-400 group-hover/btn:text-blue-300" />
-                            <span className="text-[10px] font-bold text-blue-200">2L</span>
+                            <span className="text-[10px] font-bold text-blue-200">2.5L</span>
                         </button>
                     </div>
 

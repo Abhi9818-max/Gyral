@@ -163,7 +163,7 @@ export default function ProfilePage() {
                                 <div className="font-bold text-base md:text-lg">
                                     {profileStreakMode === 'combined' ? calculateAverageStreak() : getStreakForDate(new Date().toISOString().split('T')[0], defaultFilterTaskId)}
                                 </div>
-                                <div className="text-xs md:text-sm text-zinc-400">streak</div>
+                                <div className="text-xs md:text-sm text-zinc-400">{profileStreakMode === 'combined' ? 'avg streak' : 'pinned streak'}</div>
                             </div>
                             <div className="text-center md:text-left">
                                 <div className="font-bold text-base md:text-lg">{consistencyScore}%</div>
@@ -192,20 +192,20 @@ export default function ProfilePage() {
                 <div className="flex gap-2 mb-6 md:hidden">
                     <button
                         onClick={() => setIsEditProfileOpen(true)}
-                        className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm font-semibold transition-colors"
+                        className="flex-1 px-4 py-2 bg-zinc-800/80 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-zinc-700/80 rounded-lg text-sm font-semibold transition-all active:scale-95"
                     >
                         Edit profile
                     </button>
                     <button
                         onClick={() => setIsArtifactGalleryOpen(true)}
-                        className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 bg-zinc-800/80 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-zinc-700/80 rounded-lg text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
                     >
                         <Box className="w-4 h-4" />
                         Open Vault
                     </button>
                     <button
                         onClick={() => setIsSettingsOpen(true)}
-                        className="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
+                        className="px-3 py-2 bg-zinc-800/80 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-zinc-700/80 rounded-lg transition-all active:scale-95"
                     >
                         <Settings className="w-5 h-5" />
                     </button>
@@ -308,6 +308,10 @@ export default function ProfilePage() {
                         <h3 className="text-xl font-bold mb-2">Active Streaks</h3>
                         <p className="text-zinc-500 text-sm mb-8">Detailed streak visualization coming soon.</p>
                         <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
+                            <div className="bg-zinc-900/50 p-6 rounded-xl col-span-2">
+                                <div className="text-3xl font-bold text-white mb-1">{totalEntries}</div>
+                                <div className="text-xs text-zinc-500 uppercase tracking-widest">Total Entries</div>
+                            </div>
                             <div className="bg-zinc-900/50 p-6 rounded-xl">
                                 <div className="text-3xl font-bold text-white mb-1">
                                     {profileStreakMode === 'combined' ? calculateAverageStreak() : getStreakForDate(new Date().toISOString().split('T')[0], defaultFilterTaskId)}

@@ -5,7 +5,7 @@ import { Dumbbell, BookOpen, Droplet, Carrot, Circle, Check, Zap, Brain, Moon, P
 import { useState, useRef } from 'react';
 
 export function PactWidget() {
-    const { pacts, addPact, togglePact, deletePact } = useUserData();
+    const { pacts, addPact, togglePact, deletePact, shiftPact } = useUserData();
     const [newPactText, setNewPactText] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
@@ -173,6 +173,20 @@ export function PactWidget() {
                                         >
                                             CANCEL
                                         </button>
+
+                                        {(!pact.shiftedCount || pact.shiftedCount < 1) && (
+                                            <button
+                                                onClick={() => {
+                                                    shiftPact(pact.id, selectedDate);
+                                                    setDeleteCandidateId(null);
+                                                }}
+                                                className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-xs font-bold text-white transition-all shadow-lg shadow-blue-900/50 flex items-center gap-1 hover:scale-105 active:scale-95"
+                                                title="Move to tomorrow (One-time use)"
+                                            >
+                                                SHIFT <ChevronRight className="w-3 h-3" />
+                                            </button>
+                                        )}
+
                                         <button
                                             onClick={() => {
                                                 deletePact(pact.id, selectedDate);
@@ -205,6 +219,11 @@ export function PactWidget() {
                                     </div>
                                     <span className={`font-bold text-sm ${pact.isCompleted ? 'line-through decoration-black/20' : ''}`}>
                                         {pact.text}
+                                        {pact.shiftedCount && pact.shiftedCount > 0 && (
+                                            <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                                Shifted
+                                            </span>
+                                        )}
                                     </span>
                                 </div>
 

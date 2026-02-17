@@ -84,21 +84,30 @@ export function LogActivityModal({ isOpen, onClose, dateStr }: LogActivityModalP
 
     }, [metricValue, selectedTask]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (selectedTaskId) {
+            let status;
             if (selectedTask?.metricConfig) {
-                // Use calculated intensity or 1 if valid value but defined poorly? 
-                // If valid value >= min threshold, use activePhase.
-                // If value < min, maybe just default to 1 (Attendance)? Or 0?
-                // Let's assume ANY value entry counts as Intensity 1 minimum if strictly below threshold, 
-                // or maybe we enforce threshold? 
-                // Simple logic: If valid input, use calculated phase (or 1 if below all thresholds but activity done).
                 const finalIntensity = activePhase || (parseFloat(metricValue) > 0 ? 1 : null);
-                addRecord(dateStr, selectedTaskId, finalIntensity, parseFloat(metricValue));
+                status = await addRecord(dateStr, selectedTaskId, finalIntensity, parseFloat(metricValue));
             } else {
-                addRecord(dateStr, selectedTaskId, useIntensity ? intensity : null);
+                status = await addRecord(dateStr, selectedTaskId, useIntensity ? intensity : null);
             }
+
+            // Notification Logic
+            if (status) {
+                if (status.valid && status.mercyUsed) {
+                    alert(`⚠️ Mercy Used! (${status.mercyRemaining} left this month)\n\n"I have given you this for now."\nThis counts towards your streak, but try to hit your target next time!`);
+                } else if (!status.valid) {
+                    alert(`❌ Streak Risk!\n\nYou've exhausted your mercy buffer for this month.\nThis entry will NOT count towards your streak or consistency.`);
+                } else {
+                    // Standard success - maybe a subtle toast or nothing?
+                    // User said "dont do shitty things like showing i dont count... and then show streak done"
+                    // So we only notify on exceptions.
+                }
+            }
+
             onClose();
         }
     };
