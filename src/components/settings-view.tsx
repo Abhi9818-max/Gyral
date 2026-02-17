@@ -180,8 +180,15 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
             if (type !== 'general') {
                 fetch(`/api/cron/${type}`, { method: 'POST' })
                     .then(res => res.json())
-                    .then(data => console.log(`Server ${type} test:`, data))
-                    .catch(err => console.warn(`Server ${type} test failed:`, err));
+                    .then(data => {
+                        console.log(`Server ${type} test:`, data);
+                        if (data.error) alert(`Server Error: ${data.error}`);
+                        if (data.success) alert(`Server sent to ${data.sent || data.message} devices`);
+                    })
+                    .catch(err => {
+                        console.warn(`Server ${type} test failed:`, err);
+                        alert(`Server Connection Failed: ${err.message}`);
+                    });
             }
         } catch (err: any) {
             console.error(err);
@@ -434,7 +441,7 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                             <button
                                 onClick={handlePushToggle}
                                 disabled={pushLoading || !pushSupported}
-                                className={`relative w-11 h-6 rounded-full transition-all duration-300 ${pushNotifications ? 'bg-indigo-600' : 'bg-zinc-700'
+                                className={`relative w-11 h-6 rounded-full transition-colors duration-300 shrink-0 ${pushNotifications ? 'bg-indigo-600' : 'bg-zinc-700'
                                     } ${pushLoading ? 'opacity-70 cursor-wait' : ''} ${!pushSupported ? 'opacity-30 cursor-not-allowed' : 'hover:scale-105 active:scale-95'
                                     }`}
                             >

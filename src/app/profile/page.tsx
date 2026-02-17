@@ -3,7 +3,7 @@
 
 import { Header } from "@/components/header";
 import { useUserData } from "@/context/user-data-context";
-import { Settings, Grid, Flame, Calendar, LogOut, Share2, LayoutGrid, Video, FileText } from "lucide-react";
+import { Settings, Grid, Calendar, LogOut, Share2, LayoutGrid, Video, FileText } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
@@ -14,6 +14,18 @@ import { StoryViewer } from "@/components/stories/story-viewer";
 import { useStories } from "@/context/stories-context";
 import { useRouter } from "next/navigation";
 import { getUserAvatar } from "@/utils/avatar-helpers";
+import { ArtifactGallery } from "@/components/artifact-gallery";
+import { ARTIFACTS } from "@/lib/artifacts";
+import { Lock, CheckCircle, Flame, Triangle, Hexagon, Compass, Skull, Box } from "lucide-react";
+
+const ICON_MAP = {
+    'Flame': Flame,
+    'Triangle': Triangle,
+    'Hexagon': Hexagon,
+    'Compass': Compass,
+    'Skull': Skull,
+    'Box': Box
+};
 
 export default function ProfilePage() {
     const { consistencyScore, currentStreak, streakTier, streakStrength, tasks, records } = useUserData();
@@ -23,6 +35,7 @@ export default function ProfilePage() {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
     const [isCreateStoryOpen, setIsCreateStoryOpen] = useState(false);
+    const [isArtifactGalleryOpen, setIsArtifactGalleryOpen] = useState(false);
     const [viewingStoryIndex, setViewingStoryIndex] = useState<number | null>(null);
     const [activeTab, setActiveTab] = useState<'posts' | 'streaks' | 'history' | 'notes'>('posts');
     const router = useRouter();
@@ -94,7 +107,19 @@ export default function ProfilePage() {
                     {/* Stats - Instagram Style */}
                     <div className="flex-1 flex flex-col gap-3">
                         {/* Username - Mobile visible, desktop hidden in this section */}
-                        <h1 className="text-base font-semibold md:hidden pl-8">{profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Initiate"}</h1>
+                        <div className="flex items-center gap-2 md:hidden pl-8">
+                            <h1 className="text-base font-semibold">{profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Initiate"}</h1>
+                            {profile?.displayed_artifact_id && (() => {
+                                const art = ARTIFACTS.find(a => a.id === profile.displayed_artifact_id);
+                                if (!art) return null;
+                                const Icon = ICON_MAP[art.icon as keyof typeof ICON_MAP] || Box;
+                                return (
+                                    <div className="w-5 h-5 rounded-full flex items-center justify-center bg-zinc-900 border border-zinc-800" style={{ boxShadow: `0 0 10px ${art.color}40` }}>
+                                        <Icon className="w-3 h-3" style={{ color: art.color }} />
+                                    </div>
+                                );
+                            })()}
+                        </div>
 
                         {/* Username and action buttons - mobile hidden, shown on desktop */}
                         <div className="hidden md:flex items-center gap-4">
@@ -144,14 +169,14 @@ export default function ProfilePage() {
                 <div className="mb-4 md:hidden">
                     <h2 className="font-semibold text-sm mb-0.5">{profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Initiate"}</h2>
                     <p className="text-sm text-zinc-300 whitespace-pre-wrap">
-                        {profile?.bio || user?.user_metadata?.bio || "Pursuing the uncomfortable.\nBuilding S.I.G.I.L."}
+                        {profile?.bio || user?.user_metadata?.bio || ""}
                     </p>
                 </div>
 
                 {/* Desktop Bio */}
                 <div className="hidden md:block mb-6">
                     <p className="text-sm text-zinc-300 whitespace-pre-wrap">
-                        {profile?.bio || user?.user_metadata?.bio || "Pursuing the uncomfortable.\nBuilding S.I.G.I.L."}
+                        {profile?.bio || user?.user_metadata?.bio || ""}
                     </p>
                 </div>
 
@@ -164,9 +189,11 @@ export default function ProfilePage() {
                         Edit profile
                     </button>
                     <button
-                        className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm font-semibold transition-colors"
+                        onClick={() => setIsArtifactGalleryOpen(true)}
+                        className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
                     >
-                        Share profile
+                        <Box className="w-4 h-4" />
+                        Open Vault
                     </button>
                     <button
                         onClick={() => setIsSettingsOpen(true)}
@@ -326,6 +353,8 @@ export default function ProfilePage() {
                     onClose={() => setViewingStoryIndex(null)}
                 />
             )}
+
+            <ArtifactGallery isOpen={isArtifactGalleryOpen} onClose={() => setIsArtifactGalleryOpen(false)} />
         </div>
     );
 }

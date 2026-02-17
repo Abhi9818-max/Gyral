@@ -22,8 +22,8 @@ self.addEventListener('push', (event) => {
     let notificationData = {
         title: 'Mind-Flayer',
         body: 'You have a new notification',
-        icon: '/icon-192x192.png',
-        badge: '/badge-72x72.png',
+        icon: '/icons/icon-192.png',
+        badge: '/icons/icon-192.png',
         tag: 'default',
         data: {}
     };
@@ -37,7 +37,7 @@ self.addEventListener('push', (event) => {
                 icon: payload.icon || notificationData.icon,
                 badge: payload.badge || notificationData.badge,
                 tag: payload.tag || notificationData.tag,
-                data: payload.data || {},
+                data: payload.data || { url: payload.url },
                 requireInteraction: payload.requireInteraction || false,
             };
         } catch (e) {

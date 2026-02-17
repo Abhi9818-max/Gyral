@@ -10,6 +10,8 @@ import { HydrationWidget } from "@/components/hydration-widget";
 import { StreakSuccessModal } from "@/components/modals/streak-success-modal";
 import { StreakLossModal } from "@/components/modals/streak-loss-modal";
 import { RitualModal } from "@/components/modals/ritual-modal";
+import { MissedVowModal } from "@/components/modals/missed-vow-modal";
+import { VowWidget } from "@/components/vow-widget";
 import { Flame } from "lucide-react";
 import { getQuoteOfTheDay } from "@/lib/quotes";
 
@@ -117,6 +119,7 @@ export default function Home() {
 
 
         <div className="pt-6 md:pt-8 space-y-6">
+          <VowWidget />
           <HydrationWidget />
           <WeeklyProgress />
         </div>
@@ -124,6 +127,7 @@ export default function Home() {
 
       <StreakSuccessModal />
       <StreakLossModal />
+      <MissedVowModal />
       <RitualModal isOpen={isRitualModalOpen} onClose={() => setIsRitualModalOpen(false)} />
     </div>
   );

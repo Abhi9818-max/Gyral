@@ -213,6 +213,7 @@ export const DEFAULT_FACTIONS: Faction[] = [
 ];
 
 import { StreakTier } from '../data/quotes';
+import { ARTIFACTS } from '@/lib/artifacts';
 
 interface UserDataContextType {
     tasks: Task[];
@@ -283,8 +284,7 @@ interface UserDataContextType {
     // Memento Mori
     birthDate: string | null;
     setBirthDate: (date: string | null) => void;
-    mementoViewMode: 'life' | 'year';
-    toggleMementoViewMode: () => void;
+
 
     // Preferences
     showStatsCard: boolean;
@@ -301,6 +301,9 @@ interface UserDataContextType {
     isExiled: boolean;
     exiledUntil: string | null;
     redeemExile: () => Promise<void>;
+    breakVow: (id: string) => Promise<void>;
+    restoreVowStreak: (id: string) => Promise<void>;
+    getBrokenVows: (vows: Vow[]) => Vow[];
     factions: Faction[];
     currentFaction: Faction | null;
     setFaction: (factionId: string) => Promise<void>;
@@ -316,6 +319,14 @@ interface UserDataContextType {
     // Onboarding
     onboardingCompleted: boolean;
     completeOnboarding: (dateOfBirth: string, gender: 'male' | 'female' | 'other') => Promise<void>;
+    mementoViewMode: 'life' | 'year';
+    toggleMementoViewMode: () => void;
+
+    // Artifacts
+    unlockedArtifacts: string[];
+    displayedArtifactId: string | null;
+    equipArtifact: (artifactId: string) => Promise<void>;
+    checkUnlockables: () => void;
 }
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
@@ -341,6 +352,10 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     });
     const [theme, setThemeState] = useState('dark');
     const [language, setLanguageState] = useState('en');
+
+    // Artifacts State
+    const [unlockedArtifacts, setUnlockedArtifacts] = useState<string[]>([]);
+    const [displayedArtifactId, setDisplayedArtifactId] = useState<string | null>(null);
 
     const [isLoaded, setIsLoaded] = useState(false);
     const [activeFilterTaskId, setActiveFilterTaskId] = useState<string | null>(null);
@@ -475,7 +490,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                             brokenOn: v.broken_on
                         }));
                         setVows(loadedVows);
-                        checkVowFailures(loadedVows, user.id);
+                        // checkVowFailures removed - deferred to UI
                     }
 
                     const { data: dbFactions, error: fetchErr } = await supabase.from('factions').select('*');
@@ -1045,7 +1060,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const checkVowFailures = async (currentVows: Vow[], userId: string) => {
+    const getBrokenVows = (currentVows: Vow[]) => {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = yesterday.toISOString().split('T')[0];
@@ -1060,18 +1075,61 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                 brokenVows.push(v);
             }
         });
+        return brokenVows;
+    };
 
-        if (brokenVows.length > 0) {
-            const brokenIds = brokenVows.map(v => v.id);
-            const brokenOn = new Date().toISOString();
-            setVows(prev => prev.map(v => brokenIds.includes(v.id) ? { ...v, status: 'broken', brokenOn } : v));
-            if (user) {
-                await supabase.from('vows').update({ status: 'broken', broken_on: brokenOn }).in('id', brokenIds);
-                const exiledUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-                setIsExiled(true);
-                setExiledUntil(exiledUntil);
-                await supabase.from('user_settings').update({ is_exiled: true, exiled_until: exiledUntil }).eq('user_id', user.id);
+    const breakVow = async (id: string) => {
+        const brokenOn = new Date().toISOString();
+        setVows(prev => prev.map(v => v.id === id ? { ...v, status: 'broken', brokenOn } : v));
+
+        if (user) {
+            await supabase.from('vows').update({ status: 'broken', broken_on: brokenOn }).eq('id', id);
+
+            // Apply Exile
+            const exiledUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+            setIsExiled(true);
+            setExiledUntil(exiledUntil);
+            await supabase.from('user_settings').update({ is_exiled: true, exiled_until: exiledUntil }).eq('user_id', user.id);
+        }
+    };
+
+    const restoreVowStreak = async (id: string) => {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+        setVows(prev => prev.map(v => {
+            if (v.id === id) {
+                const newStreak = (v.currentStreak || 0) + 1;
+                return {
+                    ...v,
+                    currentStreak: newStreak,
+                    maxStreak: Math.max(v.maxStreak || 0, newStreak),
+                    lastCompletedDate: yesterdayStr
+                };
             }
+            return v;
+        }));
+
+        if (user) {
+            const vow = vows.find(v => v.id === id);
+            // We need to fetch the fresh vow or rely on local state?
+            // Local state inside setVows is safest but here we are outside.
+            // Let's assume the previous state was correct before the update.
+            // Actually, best to just calculate based on known logic:
+            // logic: we are marking it as done yesterday.
+            // Streak + 1.
+
+            // Fetch current to be safe? Or just use strict increment?
+            // "vow" here might be stale if we just setVows? No, it captures current render `vows`.
+            const currentStreak = (vow?.currentStreak || 0) + 1;
+            const maxStreak = Math.max(vow?.maxStreak || 0, currentStreak);
+
+            await supabase.from('vows').update({
+                last_completed_date: yesterdayStr,
+                current_streak: currentStreak,
+                max_streak: maxStreak
+            }).eq('id', id);
         }
     };
 
@@ -1264,6 +1322,70 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const checkUnlockables = async () => {
+        if (!user) return;
+
+        // Calculate stats
+        const allRecords = Object.values(records).flat();
+        const totalEntries = allRecords.length;
+        console.log("Checking Artifacts:", { currentStreak, totalEntries, unlockedArtifacts });
+        // currentStreak is already in state
+
+        const newUnlocks: string[] = [];
+
+        for (const artifact of ARTIFACTS) {
+            if (unlockedArtifacts.includes(artifact.id)) continue;
+
+            let unlocked = false;
+            if (artifact.type === 'streak' && currentStreak >= artifact.threshold) unlocked = true;
+            if (artifact.type === 'entries' && totalEntries >= artifact.threshold) unlocked = true;
+            // Add consistency logic if needed
+
+            if (unlocked) {
+                newUnlocks.push(artifact.id);
+                // DB Insert
+                await supabase.from('user_artifacts').insert({
+                    user_id: user.id,
+                    artifact_id: artifact.id
+                });
+            }
+        }
+
+        if (newUnlocks.length > 0) {
+            setUnlockedArtifacts(prev => [...prev, ...newUnlocks]);
+            // Could trigger a modal or toast here
+            console.log("Unlocked Artifacts:", newUnlocks);
+        }
+    };
+
+    const equipArtifact = async (artifactId: string) => {
+        if (!unlockedArtifacts.includes(artifactId)) return;
+        setDisplayedArtifactId(artifactId);
+        if (user) {
+            await supabase.from('profiles').update({ displayed_artifact_id: artifactId }).eq('id', user.id);
+        }
+    };
+
+    // Load Artifacts on Init
+    useEffect(() => {
+        if (!user) return;
+        const loadArtifacts = async () => {
+            const { data } = await supabase.from('user_artifacts').select('artifact_id');
+            if (data) setUnlockedArtifacts(data.map(d => d.artifact_id));
+
+            const { data: profile } = await supabase.from('profiles').select('displayed_artifact_id').eq('id', user.id).single();
+            if (profile) setDisplayedArtifactId(profile.displayed_artifact_id);
+        };
+        loadArtifacts();
+    }, [user]);
+
+    // Check unlocks when relevant stats change
+    useEffect(() => {
+        if (isLoaded && user) {
+            checkUnlockables();
+        }
+    }, [currentStreak, records, isLoaded, user]);
+
     return (
         <UserDataContext.Provider value={{
             tasks, records, addTask, updateTask, deleteTask, toggleTaskArchive, addRecord, deleteRecord, getRecordsForDate, activeFilterTaskId, setActiveFilterTaskId,
@@ -1271,7 +1393,9 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             lastCompletion, setLastCompletion, getStreakForDate, showLossModal, setShowLossModal, pacts, addPact, togglePact, deletePact, notes, addNote, updateNote, deleteNote,
             restoreData, birthDate, setBirthDate: updateBirthDate, showStatsCard, toggleStatsCard, theme, setTheme, language, setLanguage, user, lifeEvents, addLifeEvent, deleteLifeEvent,
             debts, addDebt, payDebt, vows, addVow, completeVowDaily, isExiled, exiledUntil, redeemExile, factions, currentFaction, setFaction, investments, addInvestment, completeInvestment,
-            navPreferences, updateNavPreferences, ALL_NAV_ITEMS, profile, setProfile, onboardingCompleted, completeOnboarding, mementoViewMode, toggleMementoViewMode
+            navPreferences, updateNavPreferences, ALL_NAV_ITEMS, profile, setProfile, onboardingCompleted, completeOnboarding, mementoViewMode, toggleMementoViewMode,
+            breakVow, restoreVowStreak, getBrokenVows,
+            unlockedArtifacts, displayedArtifactId, equipArtifact, checkUnlockables
         }}>
             {children}
         </UserDataContext.Provider>

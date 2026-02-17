@@ -118,7 +118,7 @@ export function LogActivityModal({ isOpen, onClose, dateStr }: LogActivityModalP
             />
 
             {/* Modal Content */}
-            <div className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.8)] animate-[scaleIn_0.3s_ease-out]">
+            <div className="relative w-full max-w-md max-h-[85vh] overflow-y-auto bg-[#0a0a0a] border border-white/10 rounded-xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.8)] animate-[scaleIn_0.3s_ease-out] custom-scrollbar">
                 <button
                     onClick={onClose}
                     className="absolute right-4 top-4 text-muted-foreground hover:text-white transition-colors"
@@ -283,9 +283,9 @@ export function LogActivityModal({ isOpen, onClose, dateStr }: LogActivityModalP
                                         <button
                                             type="button"
                                             onClick={() => setUseIntensity(!useIntensity)}
-                                            className={`w-12 h-6 rounded-full transition-colors relative ${useIntensity ? 'bg-accent' : 'bg-white/20'}`}
+                                            className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${useIntensity ? 'bg-accent' : 'bg-white/20'}`}
                                         >
-                                            <div className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${useIntensity ? 'translate-x-6' : 'translate-x-0'}`} />
+                                            <div className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${useIntensity ? 'translate-x-5' : 'translate-x-0'}`} />
                                         </button>
                                     </div>
 

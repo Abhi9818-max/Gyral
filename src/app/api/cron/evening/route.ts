@@ -43,6 +43,8 @@ export async function POST(req: NextRequest) {
             const payload = JSON.stringify({
                 title: "Evening Evaluation",
                 body: "The day ends. Update your records. Did you live according to your nature?",
+                icon: "/icons/icon-192.png",
+                badge: "/icons/icon-192.png",
                 url: "/"
             });
 

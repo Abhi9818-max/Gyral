@@ -52,6 +52,8 @@ export async function POST(req: NextRequest) {
     const payload = JSON.stringify({
         title: "Morning Briefing",
         body: randomQuote,
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
         url: "/"
     });
 
