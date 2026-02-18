@@ -38,6 +38,7 @@ export const viewport: Viewport = {
 
 import { ExileOverlay } from "@/components/global/exile-overlay";
 import { OnboardingWrapper } from "@/components/onboarding-wrapper";
+import { AuthSync } from "@/components/auth-sync";
 
 export default function RootLayout({
   children,
@@ -57,6 +58,7 @@ export default function RootLayout({
               <MessageNotificationProvider>
                 <PresenceProvider>
                   <ExileOverlay />
+                  <AuthSync />
                   <OnboardingWrapper />
                   {children}
                   <MobileNavWrapper />
