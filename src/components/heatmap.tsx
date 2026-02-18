@@ -179,10 +179,10 @@ export function Heatmap() {
             </div>
 
             <div className="flex justify-center">
-                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-card to-card/80 border border-border/60 rounded-lg text-xs md:text-sm text-[#f5f5f5] hover:bg-gradient-to-r hover:from-muted hover:to-muted/80 transition-all duration-500 cursor-pointer shadow-[0_10px_40px_rgba(0,0,0,0.5)] hover:shadow-[0_15px_60px_rgba(16,185,129,0.2)] hover:scale-105 hover:-translate-y-1 backdrop-blur-xl group">
+                <a href="/calendar" className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-card to-card/80 border border-border/60 rounded-lg text-xs md:text-sm text-[#f5f5f5] hover:bg-gradient-to-r hover:from-muted hover:to-muted/80 transition-all duration-500 cursor-pointer shadow-[0_10px_40px_rgba(0,0,0,0.5)] hover:shadow-[0_15px_60px_rgba(16,185,129,0.2)] hover:scale-105 hover:-translate-y-1 backdrop-blur-xl group">
                     <CalendarIcon className="w-4 h-4 group-hover:text-accent transition-colors duration-300" />
                     View Full Calendar
-                </button>
+                </a>
             </div>
 
             {selectedDate && (

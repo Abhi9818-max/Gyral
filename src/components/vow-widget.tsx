@@ -1,14 +1,20 @@
-
 "use client";
 
 import { useUserData, Vow } from "@/context/user-data-context";
-import { Shield, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { Shield, CheckCircle, XCircle, AlertTriangle, Repeat } from "lucide-react";
 
 export function VowWidget() {
-    const { vows, completeVowDaily } = useUserData();
+    const { vows, completeVowDaily, extendVow } = useUserData();
 
-    // Filter active vows
-    const activeVows = vows.filter(v => v.status === 'active');
+    // Filter active vows - Show vows created within the last 7 days
+    const activeVows = vows.filter(v => {
+        if (v.status !== 'active') return false;
+        if (!v.startDate) return false;
+        const startDate = new Date(v.startDate);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        return startDate >= sevenDaysAgo;
+    });
 
     if (activeVows.length === 0) return null;
 
@@ -48,16 +54,26 @@ export function VowWidget() {
                                 </div>
                             </div>
 
-                            <button
-                                onClick={() => !isCompletedToday && completeVowDaily(vow.id)}
-                                disabled={isCompletedToday}
-                                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${isCompletedToday
-                                    ? "bg-green-500/20 text-green-500 cursor-default"
-                                    : "bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500 hover:text-white"
-                                    }`}
-                            >
-                                {isCompletedToday ? <CheckCircle className="w-5 h-5" /> : <Shield className="w-4 h-4" />}
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => extendVow(vow.id)}
+                                    className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-800/50 text-slate-400 hover:bg-indigo-500 hover:text-white transition-all opacity-0 group-hover/vow:opacity-100"
+                                    title="Extend for 7 days"
+                                >
+                                    <Repeat className="w-4 h-4" />
+                                </button>
+
+                                <button
+                                    onClick={() => !isCompletedToday && completeVowDaily(vow.id)}
+                                    disabled={isCompletedToday}
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${isCompletedToday
+                                        ? "bg-green-500/20 text-green-500 cursor-default"
+                                        : "bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500 hover:text-white"
+                                        }`}
+                                >
+                                    {isCompletedToday ? <CheckCircle className="w-5 h-5" /> : <Shield className="w-4 h-4" />}
+                                </button>
+                            </div>
                         </div>
                     );
                 })}

@@ -135,6 +135,13 @@ export function Header() {
           >
             <Shield className="w-4 h-4 text-slate-400 group-hover:text-slate-200 transition-colors" /> <span className="relative">The Watch <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-slate-500 group-hover:w-full transition-all duration-300" /></span>
           </button>
+
+          <button
+            onClick={() => setIsPactsModalOpen(true)}
+            className="hover:text-white hover:scale-105 transition-all duration-300 ease-out flex items-center gap-2 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] group"
+          >
+            <ScrollText className="w-4 h-4 text-amber-400 group-hover:text-amber-200 transition-colors" /> <span className="relative">Pacts <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-amber-500 group-hover:w-full transition-all duration-300" /></span>
+          </button>
         </nav>
 
         <div className="flex items-center gap-2 md:gap-4">

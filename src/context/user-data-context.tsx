@@ -281,6 +281,7 @@ interface UserDataContextType {
     vows: Vow[];
     addVow: (text: string) => Promise<void>;
     completeVowDaily: (id: string) => Promise<void>;
+    extendVow: (id: string) => Promise<void>;
 
     // Data Management
     restoreData: (data: any) => boolean;
@@ -1388,6 +1389,13 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         currentVows.forEach(v => {
             if (v.status !== 'active') return;
             if (v.startDate && v.startDate.startsWith(todayStr)) return;
+            // Only check vows created within the last 7 days (Weekly Vows)
+            const startDate = v.startDate ? new Date(v.startDate) : new Date();
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+            if (startDate < sevenDaysAgo) return; // Expired vows cannot be broken
+
             const lastDate = v.lastCompletedDate;
             if (lastDate !== yesterdayStr && lastDate !== todayStr) {
                 brokenVows.push(v);
@@ -1555,6 +1563,14 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             await supabase.from('vows').insert({
                 id: newVow.id, user_id: user.id, text, status: 'active', current_streak: 0, max_streak: 0, start_date: newVow.startDate
             });
+        }
+    };
+
+    const extendVow = async (id: string) => {
+        const now = new Date().toISOString();
+        setVows(prev => prev.map(v => v.id === id ? { ...v, startDate: now } : v));
+        if (user) {
+            await supabase.from('vows').update({ start_date: now }).eq('id', id);
         }
     };
 
@@ -1764,7 +1780,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             consistencyScore, currentStreak, longestStreak, streakStatus, streakTier, streakStrength, rebuildMode, analyzePatterns, getAdaptiveSuggestion, getTaskAnalytics,
             lastCompletion, setLastCompletion, getStreakForDate, showLossModal, setShowLossModal, pacts, addPact, togglePact, deletePact, shiftPact, notes, addNote, updateNote, deleteNote,
             restoreData, birthDate, setBirthDate: updateBirthDate, showStatsCard, toggleStatsCard, theme, setTheme, language, setLanguage, user, lifeEvents, addLifeEvent, deleteLifeEvent,
-            debts, addDebt, payDebt, vows, addVow, completeVowDaily, isExiled, exiledUntil, redeemExile, factions, currentFaction, setFaction, investments, addInvestment, completeInvestment,
+            debts, addDebt, payDebt, vows, addVow, completeVowDaily, extendVow, isExiled, exiledUntil, redeemExile, factions, currentFaction, setFaction, investments, addInvestment, completeInvestment,
             navPreferences, updateNavPreferences, ALL_NAV_ITEMS, profile, setProfile, onboardingCompleted, completeOnboarding, mementoViewMode, toggleMementoViewMode,
             breakVow, restoreVowStreak, getBrokenVows,
             unlockedArtifacts, displayedArtifactId, equipArtifact, checkUnlockables,
