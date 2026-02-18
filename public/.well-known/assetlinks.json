@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.diogenes.app",
+      "sha256_cert_fingerprints": [
+        "29:FB:4F:BB:12:F4:4C:D6:64:A7:42:AC:13:BC:75:F4:14:70:A3:45:11:FF:FF:FF:9D:74:05:C4:BC:F7:4C:65"
+      ]
+    }
+  }
+]
