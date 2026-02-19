@@ -25,10 +25,7 @@ export function CapacitorAuthHandler() {
         const setupListener = async () => {
             try {
                 // Dynamic import — only loads in Capacitor context
-                const { App } = await import(
-                    /* webpackIgnore: true */
-                    "@capacitor/app"
-                );
+                const { App } = await import("@capacitor/app");
 
                 const handle = await App.addListener("appUrlOpen", async (event) => {
                     // Prevent double-handling
