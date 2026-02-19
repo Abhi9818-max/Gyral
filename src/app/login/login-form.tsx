@@ -48,7 +48,7 @@ export function LoginForm({
             const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    redirectTo: "https://gyral.vercel.app/",
+                    redirectTo: "com.diogenes.app://callback",
                     skipBrowserRedirect: true,
                     queryParams: {
                         access_type: "offline",
