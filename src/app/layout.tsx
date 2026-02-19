@@ -39,6 +39,7 @@ export const viewport: Viewport = {
 import { ExileOverlay } from "@/components/global/exile-overlay";
 import { OnboardingWrapper } from "@/components/onboarding-wrapper";
 import { AuthSync } from "@/components/auth-sync";
+import { CapacitorAuthHandler } from "@/components/capacitor-auth-handler";
 
 export default function RootLayout({
   children,
@@ -59,6 +60,7 @@ export default function RootLayout({
                 <PresenceProvider>
                   <ExileOverlay />
                   <AuthSync />
+                  <CapacitorAuthHandler />
                   <OnboardingWrapper />
                   {children}
                   <MobileNavWrapper />
