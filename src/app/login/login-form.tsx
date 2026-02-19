@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { login, signup, continueAsGuest, signInWithGoogle } from "./actions";
-import { createClient } from "@/utils/supabase/client";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 export function LoginForm({
     message,
@@ -16,7 +16,6 @@ export function LoginForm({
     const [error, setError] = useState(initialError);
 
     useEffect(() => {
-        // Detect Capacitor native platform
         const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
         if (cap?.isNativePlatform?.()) {
             setIsCapacitor(true);
@@ -24,20 +23,33 @@ export function LoginForm({
     }, []);
 
     const handleGoogleSignIn = useCallback(async () => {
-        if (!isCapacitor) return; // Should never happen — server action handles web
+        if (!isCapacitor) return;
         setLoading(true);
         setError(undefined);
 
         try {
-            const supabase = createClient();
+            // IMPORTANT: Use @supabase/supabase-js directly (NOT @supabase/ssr)
+            // with flowType: 'implicit' to avoid PKCE.
+            // The @supabase/ssr createBrowserClient defaults to PKCE which stores
+            // a code_verifier in cookies — but the callback opens in Chrome which
+            // doesn't share the WebView's cookies.
+            const supabase = createSupabaseClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                {
+                    auth: {
+                        flowType: "implicit",
+                        autoRefreshToken: false,
+                        persistSession: false,
+                    },
+                }
+            );
 
-            // Use implicit flow — tokens come back in the URL hash
-            // No PKCE, so no code_verifier cookie needed
             const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    redirectTo: "https://gyral.vercel.app",
-                    skipBrowserRedirect: true, // We handle the redirect ourselves
+                    redirectTo: "https://gyral.vercel.app/",
+                    skipBrowserRedirect: true,
                     queryParams: {
                         access_type: "offline",
                         prompt: "consent",
@@ -52,11 +64,15 @@ export function LoginForm({
             }
 
             if (data.url) {
-                // Open in external browser — Chrome will handle the OAuth
-                // After Google auth, Chrome redirects to https://gyral.vercel.app#access_token=...
-                // The deep link intent filter intercepts this and opens the app
-                // CapacitorAuthHandler picks up the tokens and calls setSession()
-                window.open(data.url, "_blank");
+                // Navigate the WebView to the OAuth URL.
+                // Capacitor will intercept the external domain (accounts.google.com)
+                // and open it in the system browser (Chrome).
+                // After OAuth, Google will redirect to:
+                //   https://gyral.vercel.app/#access_token=...&refresh_token=...
+                // The deep link intent filter intercepts this and opens the app.
+                // CapacitorAuthHandler picks up the tokens and calls setSession().
+                window.location.href = data.url;
+                return; // Don't reset loading — we're navigating away
             }
         } catch (e) {
             console.error("[Login] Google sign-in error:", e);
@@ -131,10 +147,11 @@ export function LoginForm({
                 </div>
 
                 {isCapacitor ? (
-                    /* Capacitor: use client-side implicit flow — no PKCE */
+                    /* Capacitor: client-side IMPLICIT flow — no PKCE, no code_verifier, no cookies */
                     <button
                         onClick={handleGoogleSignIn}
                         disabled={loading}
+                        type="button"
                         className="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-3 shadow-lg group disabled:opacity-50"
                     >
                         <svg className="w-5 h-5 bg-white rounded-full p-0.5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
@@ -146,7 +163,7 @@ export function LoginForm({
                         {loading ? "Connecting..." : "Google"}
                     </button>
                 ) : (
-                    /* Web: use server action with PKCE (the existing flow) */
+                    /* Web: server action with PKCE (unchanged) */
                     <form>
                         <button
                             formAction={signInWithGoogle}
