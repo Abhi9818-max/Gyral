@@ -1,34 +1,46 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
+// Type for Capacitor's global object
+interface CapacitorGlobal {
+    isNativePlatform?: () => boolean;
+    Plugins?: {
+        App?: {
+            addListener: (
+                event: string,
+                callback: (data: { url: string }) => void
+            ) => Promise<{ remove: () => void }>;
+        };
+    };
+}
+
 export function CapacitorAuthHandler() {
-    const router = useRouter();
     const isHandling = useRef(false);
 
     useEffect(() => {
-        // Only run in Capacitor (native) context
         if (typeof window === "undefined") return;
 
-        const win = window as unknown as Record<string, unknown>;
-        const isCapacitor = win.Capacitor !== undefined;
+        // Access Capacitor through the global window object — no imports needed.
+        // The native shell injects this into the WebView.
+        const cap = (window as unknown as { Capacitor?: CapacitorGlobal }).Capacitor;
 
-        if (!isCapacitor) {
-            console.log("[CapacitorAuth] Not in Capacitor context, skipping.");
+        if (!cap || !cap.isNativePlatform?.()) {
+            return; // Not in a native Capacitor app
+        }
+
+        const appPlugin = cap.Plugins?.App;
+        if (!appPlugin) {
+            console.warn("[CapacitorAuth] App plugin not found on global Capacitor object.");
             return;
         }
 
         let cleanup: (() => void) | undefined;
 
-        const setupListener = async () => {
+        const setup = async () => {
             try {
-                // Dynamic import — only loads in Capacitor context
-                const { App } = await import("@capacitor/app");
-
-                const handle = await App.addListener("appUrlOpen", async (event) => {
-                    // Prevent double-handling
+                const handle = await appPlugin.addListener("appUrlOpen", async (event) => {
                     if (isHandling.current) return;
                     isHandling.current = true;
 
@@ -37,15 +49,15 @@ export function CapacitorAuthHandler() {
                     try {
                         const url = new URL(event.url);
 
-                        // Case 1: URL has tokens in the fragment (hash)
-                        const hash = url.hash;
-                        if (hash) {
-                            const params = new URLSearchParams(hash.substring(1));
+                        // Case 1: Tokens in the URL fragment (hash)
+                        // e.g. https://gyral.vercel.app/#access_token=...&refresh_token=...
+                        if (url.hash) {
+                            const params = new URLSearchParams(url.hash.substring(1));
                             const accessToken = params.get("access_token");
                             const refreshToken = params.get("refresh_token");
 
                             if (accessToken && refreshToken) {
-                                console.log("[CapacitorAuth] Tokens found, setting session...");
+                                console.log("[CapacitorAuth] Setting session from tokens...");
                                 const supabase = createClient();
                                 const { error } = await supabase.auth.setSession({
                                     access_token: accessToken,
@@ -56,8 +68,6 @@ export function CapacitorAuthHandler() {
                                     console.error("[CapacitorAuth] setSession error:", error);
                                 } else {
                                     console.log("[CapacitorAuth] Session set! Reloading...");
-                                    // Use window.location for a full page reload to ensure 
-                                    // server components re-render with the new session
                                     window.location.href = "/";
                                 }
                                 isHandling.current = false;
@@ -65,28 +75,29 @@ export function CapacitorAuthHandler() {
                             }
                         }
 
-                        // Case 2: URL has an auth code in query params
+                        // Case 2: Auth code in query params
+                        // e.g. https://gyral.vercel.app/auth/callback?code=...
                         const code = url.searchParams.get("code");
                         if (code && url.pathname.includes("/auth/callback")) {
-                            console.log("[CapacitorAuth] Auth code found, exchanging...");
+                            console.log("[CapacitorAuth] Exchanging auth code...");
                             const supabase = createClient();
                             const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
                             if (error) {
                                 console.error("[CapacitorAuth] Code exchange error:", error);
                             } else if (data.session) {
-                                console.log("[CapacitorAuth] Code exchange success! Reloading...");
+                                console.log("[CapacitorAuth] Code exchanged! Reloading...");
                                 window.location.href = "/";
                             }
                             isHandling.current = false;
                             return;
                         }
 
-                        // Case 3: Normal deep link (not auth-related)
+                        // Case 3: Non-auth deep link — navigate within the app
                         const path = url.pathname + url.search;
                         if (path && path !== "/") {
                             console.log("[CapacitorAuth] Navigating to:", path);
-                            router.push(path);
+                            window.location.href = path;
                         }
                     } catch (e) {
                         console.error("[CapacitorAuth] Error processing deep link:", e);
@@ -95,21 +106,15 @@ export function CapacitorAuthHandler() {
                     isHandling.current = false;
                 });
 
-                cleanup = () => {
-                    handle.remove();
-                };
+                cleanup = () => handle.remove();
             } catch (e) {
-                // This will only fire if @capacitor/app fails to load
-                console.warn("[CapacitorAuth] Could not load @capacitor/app:", e);
+                console.warn("[CapacitorAuth] Failed to set up listener:", e);
             }
         };
 
-        setupListener();
-
-        return () => {
-            cleanup?.();
-        };
-    }, [router]);
+        setup();
+        return () => cleanup?.();
+    }, []);
 
     return null;
 }
