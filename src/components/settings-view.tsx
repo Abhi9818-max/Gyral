@@ -9,13 +9,7 @@ import {
 } from 'lucide-react';
 import { useUserData, ALL_NAV_ITEMS, NavItemKey } from '@/context/user-data-context';
 import { sfx } from '@/utils/sfx';
-import {
-    enablePushNotifications,
-    disablePushNotifications,
-    isPushSubscribed,
-    isPushSupported,
-    getNotificationPermission
-} from '@/lib/push-notifications';
+import { useFCM } from '@/hooks/use-fcm';
 import { useInstallPrompt } from '@/hooks/use-install-prompt';
 import { getUserAvatar } from '@/utils/avatar-helpers';
 
@@ -44,8 +38,8 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
 
     const { isInstallable, promptInstall } = useInstallPrompt();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { token, loading: fcmLoading, requestPermission } = useFCM();
     const [pushNotifications, setPushNotifications] = useState(false);
-    const [pushLoading, setPushLoading] = useState(false);
     const [pushSupported, setPushSupported] = useState(true);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
@@ -96,19 +90,20 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
 
     useEffect(() => {
         const checkPushStatus = async () => {
-            const supported = await isPushSupported();
+            const supported = 'serviceWorker' in navigator && 'PushManager' in window;
             setPushSupported(supported);
 
             if (supported) {
-                const isSubscribed = await isPushSubscribed();
-                setPushNotifications(isSubscribed);
-                setNotificationStatus(isSubscribed ? 'On' : 'Off');
+                const granted = Notification.permission === 'granted';
+                // Because FCM hook saves token to hook state, if we have a token or permission granted, we consider it ON.
+                setPushNotifications(granted);
+                setNotificationStatus(granted ? 'On' : 'Off');
             } else {
                 setNotificationStatus('Off');
             }
         };
         checkPushStatus();
-    }, []);
+    }, [token]);
 
     const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
         setToast({ message, type });
@@ -200,32 +195,26 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
     };
 
     const handlePushToggle = async () => {
-        if (pushLoading) return;
+        if (fcmLoading) return;
 
         if (!pushSupported) {
             showToast('Push notifications are not supported in this browser', 'error');
             return;
         }
 
-        setPushLoading(true);
         try {
             if (pushNotifications) {
-                const success = await disablePushNotifications();
-                if (success) {
-                    setPushNotifications(false);
-                    setNotificationStatus('Off');
-                    showToast('Push notifications disabled', 'success');
-                } else {
-                    showToast('Failed to disable push notifications', 'error');
-                }
+                // Since Firebase handles tokens actively, "disabling" practically means 
+                // we tell the user to block it in their browser settings.
+                showToast('To disable, revoke Notification permissions in your browser settings.', 'info');
             } else {
-                const success = await enablePushNotifications();
+                const success = await requestPermission();
                 if (success) {
                     setPushNotifications(true);
                     setNotificationStatus('On');
                     showToast('🔔 Push notifications enabled! You\'ll receive notifications even when the app is closed.', 'success');
                 } else {
-                    const permission = getNotificationPermission();
+                    const permission = Notification.permission;
                     if (permission === 'denied') {
                         showToast('Notification permission denied. Please enable it in your browser settings.', 'error');
                     } else {
@@ -236,8 +225,6 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
         } catch (error) {
             console.error('Error toggling push notifications:', error);
             showToast('An error occurred. Please try again.', 'error');
-        } finally {
-            setPushLoading(false);
         }
     };
 
@@ -441,12 +428,12 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
 
                             <button
                                 onClick={handlePushToggle}
-                                disabled={pushLoading || !pushSupported}
+                                disabled={fcmLoading || !pushSupported}
                                 className={`relative w-11 h-6 rounded-full transition-colors duration-300 shrink-0 ${pushNotifications ? 'bg-indigo-600' : 'bg-zinc-700'
-                                    } ${pushLoading ? 'opacity-70 cursor-wait' : ''} ${!pushSupported ? 'opacity-30 cursor-not-allowed' : 'hover:scale-105 active:scale-95'
+                                    } ${fcmLoading ? 'opacity-70 cursor-wait' : ''} ${!pushSupported ? 'opacity-30 cursor-not-allowed' : 'hover:scale-105 active:scale-95'
                                     }`}
                             >
-                                {pushLoading ? (
+                                {fcmLoading ? (
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <div className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin" />
                                     </div>
