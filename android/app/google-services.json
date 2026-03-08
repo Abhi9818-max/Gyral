@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "270216970249",
+    "project_id": "gyral-a3744",
+    "storage_bucket": "gyral-a3744.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:270216970249:android:b8b570614fbfa51e2e78d8",
+        "android_client_info": {
+          "package_name": "com.diogenes.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKQLvOXho2mewPLRffdSx-aDxhi0vGHI0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

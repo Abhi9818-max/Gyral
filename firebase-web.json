@@ -1,0 +1,18 @@
+﻿{
+  "status": "success",
+  "result": {
+    "fileName": "firebase-js-config.json",
+    "fileContents": "{\n  \"projectId\": \"gyral-a3744\",\n  \"appId\": \"1:270216970249:web:1be84d95c8f90e532e78d8\",\n  \"storageBucket\": \"gyral-a3744.firebasestorage.app\",\n  \"apiKey\": \"AIzaSyCRdoslXdwCkyqgthqX4xiBZ45hl2yS87E\",\n  \"authDomain\": \"gyral-a3744.firebaseapp.com\",\n  \"messagingSenderId\": \"270216970249\",\n  \"measurementId\": \"G-5ERBE98CVV\",\n  \"projectNumber\": \"270216970249\",\n  \"version\": \"2\"\n}",
+    "sdkConfig": {
+      "projectId": "gyral-a3744",
+      "appId": "1:270216970249:web:1be84d95c8f90e532e78d8",
+      "storageBucket": "gyral-a3744.firebasestorage.app",
+      "apiKey": "AIzaSyCRdoslXdwCkyqgthqX4xiBZ45hl2yS87E",
+      "authDomain": "gyral-a3744.firebaseapp.com",
+      "messagingSenderId": "270216970249",
+      "measurementId": "G-5ERBE98CVV",
+      "projectNumber": "270216970249",
+      "version": "2"
+    }
+  }
+}

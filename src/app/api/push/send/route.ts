@@ -1,18 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import webpush from 'web-push';
-
-// Configure web-push with VAPID keys
-const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
-
-if (vapidPublicKey && vapidPrivateKey) {
-    webpush.setVapidDetails(
-        'mailto:support@mindflayer.app',
-        vapidPublicKey,
-        vapidPrivateKey
-    );
-}
+import { adminMessaging } from '@/lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
     try {
@@ -33,66 +21,79 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Get all push subscriptions for the user
-        const { data: subscriptions, error: subError } = await supabase
-            .from('push_subscriptions')
-            .select('*')
-            .eq('user_id', userId);
-
-        if (subError) {
-            console.error('Error fetching subscriptions:', subError);
+        if (!adminMessaging) {
             return NextResponse.json(
-                { error: 'Failed to fetch subscriptions' },
+                { error: 'Firebase Admin not configured properly' },
                 { status: 500 }
             );
         }
 
-        if (!subscriptions || subscriptions.length === 0) {
+        // Get all FCM tokens for the user
+        const { data: tokens, error: tokenError } = await supabase
+            .from('fcm_tokens')
+            .select('*')
+            .eq('user_id', userId);
+
+        if (tokenError) {
+            console.error('Error fetching FCM tokens:', tokenError);
             return NextResponse.json(
-                { message: 'No subscriptions found for user' },
+                { error: 'Failed to fetch stored tokens' },
+                { status: 500 }
+            );
+        }
+
+        if (!tokens || tokens.length === 0) {
+            return NextResponse.json(
+                { message: 'No devices strictly registered found for user' },
                 { status: 200 }
             );
         }
 
-        // Prepare notification payload
-        const payload = JSON.stringify({
-            title,
-            body: messageBody,
-            icon: '/icon-192x192.png',
-            badge: '/badge-72x72.png',
-            tag: tag || 'notification',
-            data: {
-                url: url || '/notifications',
-                timestamp: Date.now(),
-            },
-            requireInteraction: false,
-        });
-
-        // Send push notification to all subscriptions
-        const sendPromises = subscriptions.map(async (sub) => {
+        // Send push notification to all stored FCM tokens
+        const sendPromises = tokens.map(async (device) => {
             try {
-                const pushSubscription = {
-                    endpoint: sub.endpoint,
-                    keys: {
-                        p256dh: sub.p256dh,
-                        auth: sub.auth,
+                const message = {
+                    token: device.token,
+                    notification: {
+                        title,
+                        body: messageBody,
                     },
+                    data: {
+                        url: url || '/notifications',
+                        tag: tag || 'notification',
+                        timestamp: Date.now().toString(),
+                    },
+                    android: {
+                        notification: {
+                            icon: 'ic_stat_ic_notification',
+                            color: '#000000',
+                        }
+                    },
+                    apns: {
+                        payload: {
+                            aps: {
+                                badge: 1,
+                                sound: 'default',
+                            }
+                        }
+                    }
                 };
 
-                await webpush.sendNotification(pushSubscription, payload);
-                return { success: true, endpoint: sub.endpoint };
+                await adminMessaging!.send(message);
+                return { success: true, token: device.token };
             } catch (error: any) {
-                console.error('Error sending push to endpoint:', sub.endpoint, error);
+                console.error('Error sending push to FCM token:', device.token, error);
 
-                // If subscription is invalid (410 Gone), delete it
-                if (error.statusCode === 410) {
+                // If token is invalid or unregistered, delete it
+                if (error.code === 'messaging/invalid-registration-token' ||
+                    error.code === 'messaging/registration-token-not-registered') {
                     await supabase
-                        .from('push_subscriptions')
+                        .from('fcm_tokens')
                         .delete()
-                        .eq('id', sub.id);
+                        .eq('id', device.id);
                 }
 
-                return { success: false, endpoint: sub.endpoint, error: error.message };
+                return { success: false, token: device.token, error: error.message };
             }
         });
 
@@ -102,7 +103,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             sent: successCount,
-            total: subscriptions.length,
+            total: tokens.length,
             results,
         });
     } catch (error) {

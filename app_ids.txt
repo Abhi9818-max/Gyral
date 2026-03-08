@@ -1,0 +1,2 @@
+Gyral Android|1:270216970249:android:b8b570614fbfa51e2e78d8|ANDROID
+Gyral Web|1:270216970249:web:1be84d95c8f90e532e78d8|WEB

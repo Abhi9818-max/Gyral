@@ -2,14 +2,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
-import webpush from 'web-push';
-
-const VAPID_PUBLIC = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
-
-if (VAPID_PUBLIC && VAPID_PRIVATE) {
-    webpush.setVapidDetails('mailto:test@example.com', VAPID_PUBLIC, VAPID_PRIVATE);
-}
+import { adminMessaging } from '@/lib/firebase-admin';
 
 const QUOTES = [
     "The sun rises. What will you conquer today?",
@@ -22,10 +15,6 @@ const QUOTES = [
 ];
 
 export async function POST(req: NextRequest) {
-    if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
-        return NextResponse.json({ error: 'VAPID keys not configured on server' }, { status: 500 });
-    }
-
     // Auth check for testing trigger
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -34,35 +23,39 @@ export async function POST(req: NextRequest) {
     }
 
     // Use admin client to bypass RLS
-    const admin = createAdminClient();
-    const { data: subscriptions, error } = await admin
-        .from('push_subscriptions')
+    const adminClient = createAdminClient();
+    const { data: tokens, error } = await adminClient
+        .from('fcm_tokens')
         .select('*');
 
     if (error) {
-        console.error('Error fetching subscriptions:', error);
+        console.error('Error fetching FCM tokens:', error);
         return NextResponse.json({ error: 'Database error: ' + error.message }, { status: 500 });
     }
 
-    if (!subscriptions || subscriptions.length === 0) {
-        return NextResponse.json({ error: 'No subscriptions found' }, { status: 404 });
+    if (!tokens || tokens.length === 0) {
+        return NextResponse.json({ error: 'No fcm tokens found' }, { status: 404 });
+    }
+
+    if (!adminMessaging) {
+        return NextResponse.json({ error: 'Firebase Admin SDK not initialized' }, { status: 500 });
     }
 
     const randomQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-    const payload = JSON.stringify({
+    const notification = {
         title: "Morning Briefing",
         body: randomQuote,
-        icon: "/icons/icon-192.png",
-        badge: "/icons/icon-192.png",
-        url: "/"
-    });
+    };
 
-    const results = await Promise.allSettled(subscriptions.map(sub =>
-        webpush.sendNotification({
-            endpoint: sub.endpoint,
-            keys: { p256dh: sub.p256dh, auth: sub.auth }
-        }, payload)
-    ));
+    const results = await Promise.allSettled(tokens.map(device => {
+        const message = {
+            token: device.token,
+            notification,
+            data: { url: "/" },
+            android: { notification: { icon: 'ic_stat_ic_notification' } }
+        };
+        return adminMessaging!.send(message);
+    }));
 
     const successCount = results.filter(r => r.status === 'fulfilled').length;
 

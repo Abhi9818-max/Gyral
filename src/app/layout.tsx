@@ -41,6 +41,8 @@ import { OnboardingWrapper } from "@/components/onboarding-wrapper";
 import { AuthSync } from "@/components/auth-sync";
 import { CapacitorAuthHandler } from "@/components/capacitor-auth-handler";
 
+import { FCMHandler } from "@/components/fcm-handler";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -61,6 +63,7 @@ export default function RootLayout({
                   <ExileOverlay />
                   <AuthSync />
                   <CapacitorAuthHandler />
+                  <FCMHandler />
                   <OnboardingWrapper />
                   {children}
                   <MobileNavWrapper />
