@@ -15,8 +15,7 @@ import { NightsWatchModal } from './modals/nights-watch-modal';
 import { ShareModal } from './modals/share-modal';
 import { PactsModal } from './modals/pacts-modal';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
     Home, Globe, Flame, Coins, Shield, Sword,
     ClipboardList, MessageCircle, ScrollText, User, Skull
 };
@@ -51,6 +50,10 @@ export function MobileNav() {
 
     // Hide nav on full-screen pages like notes editor
     const hideNav = pathname.startsWith('/notes');
+
+    const avatarSrc = user?.id
+        ? getUserAvatar(profile?.avatar_url, profile?.gender, user.id)
+        : null;
 
     return (
         <>
@@ -111,13 +114,21 @@ export function MobileNav() {
                             href="/profile"
                             className="flex flex-col items-center justify-center flex-1 h-full relative"
                         >
-                            <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center overflow-hidden transition-all ${isActive('/profile') ? 'border-white' : 'border-white/30'} bg-gradient-to-tr from-zinc-800 to-zinc-700`}>
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                    src={getUserAvatar(profile?.avatar_url, profile?.gender, user?.id)}
-                                    alt="Profile"
-                                    className="w-full h-full object-cover"
-                                />
+                            <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center overflow-hidden transition-all ${isActive('/profile') ? 'border-white scale-110' : 'border-white/30'} bg-gradient-to-tr from-zinc-800 to-zinc-700`}>
+                                {avatarSrc ? (
+                                    /* eslint-disable-next-line @next/next/no-img-element */
+                                    <img
+                                        src={avatarSrc}
+                                        alt="Profile"
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            // Fallback to User icon if image fails to load
+                                            (e.target as HTMLImageElement).style.display = 'none';
+                                        }}
+                                    />
+                                ) : (
+                                    <User className="w-4 h-4 text-white/50" />
+                                )}
                             </div>
                             {isActive('/profile') && (
                                 <div className="absolute -top-1 w-1 h-1 rounded-full bg-accent" />

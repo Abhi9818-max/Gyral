@@ -2,12 +2,10 @@
 
 import { useRef, useState, useEffect, MouseEvent } from 'react';
 import {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Download, Shield, Database, Cloud, Upload, RefreshCw, Skull, Calendar,
+    Download, Shield, Cloud, RefreshCw, Skull, Calendar,
     User, Lock, Bell, Globe, Moon, ChevronRight, Eye, EyeOff, Trash2,
     Home, Flame, Coins, Sword, ClipboardList, MessageCircle, ScrollText,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Settings, LogOut, TestTube, LogIn, Volume2, VolumeX
+    TestTube, Volume2, VolumeX
 } from 'lucide-react';
 import { useUserData, ALL_NAV_ITEMS, NavItemKey } from '@/context/user-data-context';
 import { sfx } from '@/utils/sfx';
@@ -44,17 +42,11 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
     const [pushNotifications, setPushNotifications] = useState(false);
     const [pushSupported, setPushSupported] = useState(true);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-
-    // Legacy state for other notifications if needed, generally replaced by pushNotifications
     const [notificationStatus, setNotificationStatus] = useState('Off');
     const [resetSending, setResetSending] = useState(false);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isTestingPush, setIsTestingPush] = useState(false);
-
-    // Date Logic
     const [day, setDay] = useState('');
     const [month, setMonth] = useState('');
-
     const [year, setYear] = useState('');
     const [soundEnabled, setSoundEnabled] = useState(true);
 
@@ -95,10 +87,8 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
         const checkPushStatus = async () => {
             const supported = 'serviceWorker' in navigator && 'PushManager' in window;
             setPushSupported(supported);
-
             if (supported) {
                 const granted = Notification.permission === 'granted';
-                // Because FCM hook saves token to hook state, if we have a token or permission granted, we consider it ON.
                 setPushNotifications(granted);
                 setNotificationStatus(granted ? 'On' : 'Off');
             } else {
@@ -116,10 +106,9 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
     const handleResetPassword = async () => {
         if (!user?.email) return;
         if (!confirm(`Send password reset email to ${user.email}?`)) return;
-
         setResetSending(true);
         try {
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            /* eslint-disable-next-line @typescript-eslint/no-require-imports */
             const { createClient } = require('@/utils/supabase/client');
             const supabase = createClient();
             const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
@@ -127,9 +116,8 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
             });
             if (error) throw error;
             alert('Password reset email sent! Check your inbox.');
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (e: any) {
-            alert('Error sending reset email: ' + e.message);
+        } catch (e: unknown) {
+            alert('Error sending reset email: ' + (e as Error).message);
         } finally {
             setResetSending(false);
         }
@@ -141,28 +129,14 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
             alert("Enable notifications first.");
             return;
         }
-
         setIsTestingPush(true);
-
         const MESSAGES = {
-            general: {
-                title: "Signal Received",
-                body: "The Neural Link is active even in the void."
-            },
-            morning: {
-                title: "Morning Briefing",
-                body: "The sun rises. What will you conquer today?"
-            },
-            evening: {
-                title: "Evening Evaluation",
-                body: "The day ends. Update your records. Did you live according to your nature?"
-            }
+            general: { title: "Signal Received", body: "The Neural Link is active even in the void." },
+            morning: { title: "Morning Briefing", body: "The sun rises. What will you conquer today?" },
+            evening: { title: "Evening Evaluation", body: "The day ends. Update your records. Did you live according to your nature?" }
         };
-
         const msg = MESSAGES[type];
-
         try {
-            // Always show via native notification (reliable, works immediately)
             if ('serviceWorker' in navigator) {
                 const reg = await navigator.serviceWorker.ready;
                 await reg.showNotification(msg.title, {
@@ -171,30 +145,19 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                     badge: '/icons/icon-192.png',
                 });
             } else {
-                new Notification(msg.title, {
-                    body: msg.body,
-                    icon: '/icons/icon-192.png',
-                });
+                new Notification(msg.title, { body: msg.body, icon: '/icons/icon-192.png' });
             }
-
-            // For morning/evening, also test the server API (in the background, non-blocking)
             if (type !== 'general') {
                 fetch(`/api/cron/${type}`, { method: 'POST' })
                     .then(res => res.json())
                     .then(data => {
-                        console.log(`Server ${type} test:`, data);
                         if (data.error) alert(`Server Error: ${data.error}`);
                         if (data.success) alert(`Server sent to ${data.sent || data.message} devices`);
                     })
-                    .catch(err => {
-                        console.warn(`Server ${type} test failed:`, err);
-                        alert(`Server Connection Failed: ${err.message}`);
-                    });
+                    .catch(err => alert(`Server Connection Failed: ${err.message}`));
             }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (err: any) {
-            console.error(err);
-            alert("Signal failed: " + (err?.message || "Unknown error"));
+        } catch (err: unknown) {
+            alert("Signal failed: " + ((err as Error)?.message || "Unknown error"));
         } finally {
             setIsTestingPush(false);
         }
@@ -202,27 +165,22 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
 
     const handlePushToggle = async () => {
         if (fcmLoading) return;
-
         if (!pushSupported) {
             showToast('Push notifications are not supported in this browser', 'error');
             return;
         }
-
         try {
             if (pushNotifications) {
-                // Since Firebase handles tokens actively, "disabling" practically means 
-                // we tell the user to block it in their browser settings.
                 showToast('To disable, revoke Notification permissions in your browser settings.', 'info');
             } else {
                 const success = await requestPermission();
                 if (success) {
                     setPushNotifications(true);
                     setNotificationStatus('On');
-                    showToast('🔔 Push notifications enabled! You\'ll receive notifications even when the app is closed.', 'success');
+                    showToast("Push notifications enabled! You'll receive reminders even when the app is closed.", 'success');
                 } else {
-                    const permission = Notification.permission;
-                    if (permission === 'denied') {
-                        showToast('Notification permission denied. Please enable it in your browser settings.', 'error');
+                    if (Notification.permission === 'denied') {
+                        showToast('Notification permission denied. Enable it in your browser settings.', 'error');
                     } else {
                         showToast('Failed to enable push notifications. Please try again.', 'error');
                     }
@@ -237,32 +195,12 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
     const handleExport = () => {
         const timestamp = new Date().toISOString();
         const data = {
-            meta: {
-                exportDate: timestamp,
-                appVersion: "1.0.0",
-                description: "Gyral Life Data Export - Complete Archive",
-                generatedBy: "Gyral System"
-            },
-            identity: {
-                user: { id: user?.id, email: user?.email, metadata: user?.user_metadata },
-                profile,
-                faction: currentFaction,
-                preferences: { theme, language, navPreferences, showStatsCard }
-            },
-            core: {
-                birthDate,
-                onboardingCompleted,
-                streaks: { currentStreak, longestStreak, consistencyScore, streakTier, streakStrength }
-            },
+            meta: { exportDate: timestamp, appVersion: "1.0.0", description: "Gyral Life Data Export - Complete Archive", generatedBy: "Gyral System" },
+            identity: { user: { id: user?.id, email: user?.email, metadata: user?.user_metadata }, profile, faction: currentFaction, preferences: { theme, language, navPreferences, showStatsCard } },
+            core: { birthDate, onboardingCompleted, streaks: { currentStreak, longestStreak, consistencyScore, streakTier, streakStrength } },
             habits: { tasks, records },
-            modules: {
-                pacts, notes,
-                memento_mori: { life_events: lifeEvents, debts },
-                nights_watch: { vows, status: { isExiled, exiledUntil } },
-                investment_bank: { investments }
-            }
+            modules: { pacts, notes, memento_mori: { life_events: lifeEvents, debts }, nights_watch: { vows, status: { isExiled, exiledUntil } }, investment_bank: { investments } }
         };
-
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -274,19 +212,16 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
         URL.revokeObjectURL(url);
     };
 
-    const handleImportClick = () => {
-        fileInputRef.current?.click();
-    };
+    const handleImportClick = () => fileInputRef.current?.click();
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const json = JSON.parse(e.target?.result as string);
-                if (confirm("⚠️ RESURRECTION PROTOCOL\n\nThis will OVERWRITE your current data with the backup file.\n\nAre you sure you want to proceed?")) {
+                if (confirm("RESURRECTION PROTOCOL\n\nThis will OVERWRITE your current data with the backup file.\n\nAre you sure you want to proceed?")) {
                     const success = restoreData(json);
                     if (success) {
                         alert("Resurrection complete. The cycle continues.");
@@ -316,8 +251,14 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
     const SettingsItem = ({
         icon: Icon, label, value, onClick, isLast, danger, action, customHeight
     }: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        icon: any, label: string, value?: string | React.ReactNode, onClick?: (e: React.MouseEvent) => void | Promise<void>, isLast?: boolean, danger?: boolean, action?: React.ReactNode, customHeight?: boolean
+        icon: React.ComponentType<{ className?: string }>,
+        label: string,
+        value?: string | React.ReactNode,
+        onClick?: (e: React.MouseEvent) => void | Promise<void>,
+        isLast?: boolean,
+        danger?: boolean,
+        action?: React.ReactNode,
+        customHeight?: boolean
     }) => (
         <div
             onClick={(e) => onClick?.(e)}
@@ -331,7 +272,6 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                     <span className={`font-medium ${danger ? 'text-red-400' : 'text-zinc-200'}`}>{label}</span>
                 </div>
             </div>
-
             <div className="flex items-center gap-3">
                 {value && <span className="text-sm text-zinc-500">{value}</span>}
                 {action ? action : <ChevronRight className="w-4 h-4 text-zinc-600" />}
@@ -345,7 +285,7 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
             <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 mb-8 backdrop-blur-sm flex items-center gap-5">
                 <div className="w-20 h-20 shrink-0 rounded-full border-2 border-white/10 overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-purple-900/20">
                     {user?.id ? (
-                        // eslint-disable-next-line @next/next/no-img-element
+                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img
                             src={getUserAvatar(profile?.avatar_url, profile?.gender, user.id)}
                             alt="Profile"
@@ -366,13 +306,13 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                     </p>
                     {!user && (
                         <a href="/login" className="text-xs text-indigo-400 hover:text-indigo-300 mt-1 inline-block">
-                            ➔ Sign In to Sync
+                            Sign In to Sync
                         </a>
                     )}
                 </div>
             </div>
 
-            {/* Neural Link / Install Banner */}
+            {/* Install Banner */}
             {isInstallable && (
                 <div className="mb-8 relative group overflow-hidden rounded-3xl border border-white/10">
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/40 via-purple-900/40 to-pink-900/40 opacity-50 transition-opacity" />
@@ -407,49 +347,56 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                             onClick={handleResetPassword}
                             value={resetSending ? "Dispatching..." : "Send Link"}
                         />
-                        <div className="flex items-center justify-between p-4 border-b border-white/5">
-                            <div className="flex items-center gap-4">
-                                <div className="p-2 rounded-xl bg-zinc-800 text-zinc-400">
-                                    <Bell className="w-5 h-5" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-medium text-zinc-200">Push Notifications</span>
-                                        {pushNotifications && (
-                                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 uppercase tracking-widest font-bold">
-                                                Active
-                                            </span>
-                                        )}
-                                        {!pushSupported && (
-                                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 uppercase tracking-widest font-bold">
-                                                Unsupported
-                                            </span>
-                                        )}
-                                    </div>
-                                    <span className="text-xs text-zinc-500 mt-0.5">
-                                        {pushSupported
-                                            ? "Receive neural signals when the app is closed"
-                                            : "Your browser doesn't support neural links"}
-                                    </span>
-                                </div>
-                            </div>
 
-                            <button
-                                onClick={handlePushToggle}
-                                disabled={fcmLoading || !pushSupported}
-                                className={`relative w-11 h-6 rounded-full transition-colors duration-300 shrink-0 ${pushNotifications ? 'bg-indigo-600' : 'bg-zinc-700'
-                                    } ${fcmLoading ? 'opacity-70 cursor-wait' : ''} ${!pushSupported ? 'opacity-30 cursor-not-allowed' : 'hover:scale-105 active:scale-95'
-                                    }`}
-                            >
-                                {fcmLoading ? (
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin" />
+                        {/* Push Notifications Row — clean mobile layout */}
+                        <div className="p-4 border-b border-white/5">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="p-2 rounded-xl bg-zinc-800 text-zinc-400 shrink-0">
+                                        <Bell className="w-5 h-5" />
                                     </div>
-                                ) : (
-                                    <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-300 ${pushNotifications ? 'translate-x-5' : 'translate-x-0'
+                                    <div className="flex flex-col min-w-0">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="font-medium text-zinc-200 text-sm">Push Notifications</span>
+                                            {pushNotifications && (
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 uppercase tracking-widest font-bold shrink-0">
+                                                    Active
+                                                </span>
+                                            )}
+                                            {!pushSupported && (
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 uppercase tracking-widest font-bold shrink-0">
+                                                    Unsupported
+                                                </span>
+                                            )}
+                                        </div>
+                                        <span className="text-xs text-zinc-500 mt-0.5 leading-snug">
+                                            {pushSupported
+                                                ? 'Reminders even when app is closed'
+                                                : "Your browser doesn't support this"}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handlePushToggle}
+                                    disabled={fcmLoading || !pushSupported}
+                                    className={`relative w-11 h-6 rounded-full transition-colors duration-300 shrink-0 ${
+                                        pushNotifications ? 'bg-indigo-600' : 'bg-zinc-700'
+                                    } ${fcmLoading ? 'opacity-70 cursor-wait' : ''} ${
+                                        !pushSupported ? 'opacity-30 cursor-not-allowed' : 'hover:scale-105 active:scale-95'
+                                    }`}
+                                >
+                                    {fcmLoading ? (
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <div className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin" />
+                                        </div>
+                                    ) : (
+                                        <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-300 ${
+                                            pushNotifications ? 'translate-x-5' : 'translate-x-0'
                                         }`} />
-                                )}
-                            </button>
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     </SettingsGroup>
 
@@ -457,28 +404,27 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                         <div className="p-4 space-y-4">
                             <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-2">Navigation Pins (Select 3)</p>
                             <div className="grid grid-cols-2 gap-2">
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                {ALL_NAV_ITEMS.map((item: any) => {
-                                    const isActive = navPreferences.includes(item.key);
+                                {ALL_NAV_ITEMS.map((item) => {
+                                    const isNavActive = navPreferences.includes(item.key);
                                     const toggleItem = () => {
-                                        if (isActive) {
+                                        if (isNavActive) {
                                             updateNavPreferences(navPreferences.filter((k: NavItemKey) => k !== item.key));
                                         } else if (navPreferences.length < 3) {
                                             updateNavPreferences([...navPreferences, item.key]);
                                         }
                                     };
                                     const Icon = ICON_MAP[item.icon as keyof typeof ICON_MAP] || Globe;
-
                                     return (
                                         <button
                                             key={item.key}
                                             onClick={toggleItem}
-                                            className={`flex items-center gap-3 p-3 rounded-2xl border transition-all text-left ${isActive
-                                                ? 'bg-white/10 border-white/20 text-white'
-                                                : 'bg-zinc-800/30 border-white/5 text-zinc-600 opacity-60'
-                                                }`}
+                                            className={`flex items-center gap-3 p-3 rounded-2xl border transition-all text-left ${
+                                                isNavActive
+                                                    ? 'bg-white/10 border-white/20 text-white'
+                                                    : 'bg-zinc-800/30 border-white/5 text-zinc-600 opacity-60'
+                                            }`}
                                         >
-                                            <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-zinc-700'}`} />
+                                            <Icon className={`w-4 h-4 ${isNavActive ? 'text-white' : 'text-zinc-700'}`} />
                                             <span className="text-xs font-bold truncate">{item.label}</span>
                                         </button>
                                     );
@@ -537,29 +483,11 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                             customHeight
                             action={
                                 <div className="flex items-center gap-1.5 focus-within:text-white transition-colors">
-                                    <input
-                                        type="number"
-                                        placeholder="DD"
-                                        value={day}
-                                        onChange={(e) => setDay(e.target.value.slice(0, 2))}
-                                        className="w-8 bg-transparent text-center border-b border-white/20 focus:border-white focus:outline-none text-xs p-1"
-                                    />
+                                    <input type="number" placeholder="DD" value={day} onChange={(e) => setDay(e.target.value.slice(0, 2))} className="w-8 bg-transparent text-center border-b border-white/20 focus:border-white focus:outline-none text-xs p-1" />
                                     <span className="text-zinc-700">/</span>
-                                    <input
-                                        type="number"
-                                        placeholder="MM"
-                                        value={month}
-                                        onChange={(e) => setMonth(e.target.value.slice(0, 2))}
-                                        className="w-8 bg-transparent text-center border-b border-white/20 focus:border-white focus:outline-none text-xs p-1"
-                                    />
+                                    <input type="number" placeholder="MM" value={month} onChange={(e) => setMonth(e.target.value.slice(0, 2))} className="w-8 bg-transparent text-center border-b border-white/20 focus:border-white focus:outline-none text-xs p-1" />
                                     <span className="text-zinc-700">/</span>
-                                    <input
-                                        type="number"
-                                        placeholder="YYYY"
-                                        value={year}
-                                        onChange={(e) => setYear(e.target.value.slice(0, 4))}
-                                        className="w-12 bg-transparent text-center border-b border-white/20 focus:border-white focus:outline-none text-xs p-1"
-                                    />
+                                    <input type="number" placeholder="YYYY" value={year} onChange={(e) => setYear(e.target.value.slice(0, 4))} className="w-12 bg-transparent text-center border-b border-white/20 focus:border-white focus:outline-none text-xs p-1" />
                                 </div>
                             }
                         />
@@ -581,7 +509,7 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                             isLast={false}
                         />
                         <SettingsItem
-                            icon={profileStreakMode === 'combined' ? Flame : Flame}
+                            icon={Flame}
                             label="Profile Streak Display"
                             onClick={() => setProfileStreakMode(profileStreakMode === 'pinned' ? 'combined' : 'pinned')}
                             value={profileStreakMode === 'pinned' ? 'Pinned Task' : 'Combined Average'}
@@ -590,25 +518,9 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                     </SettingsGroup>
 
                     <SettingsGroup title="Preservation">
-                        <SettingsItem
-                            icon={Cloud}
-                            label="Archive (JSON)"
-                            onClick={handleExport}
-                            value="Export"
-                        />
-                        <input
-                            type="file"
-                            accept=".json"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            className="hidden"
-                        />
-                        <SettingsItem
-                            icon={RefreshCw}
-                            label="Resurrect Backup"
-                            onClick={handleImportClick}
-                            value="Import"
-                        />
+                        <SettingsItem icon={Cloud} label="Archive (JSON)" onClick={handleExport} value="Export" />
+                        <input type="file" accept=".json" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+                        <SettingsItem icon={RefreshCw} label="Resurrect Backup" onClick={handleImportClick} value="Import" />
                         <SettingsItem
                             icon={Trash2}
                             label="Total Wipe"
@@ -623,20 +535,10 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                         />
                     </SettingsGroup>
 
-                    {/* Notification Tests - Unified */}
                     {notificationStatus === 'On' && (
                         <SettingsGroup title="Diagnostic Signals">
-                            <SettingsItem
-                                icon={TestTube}
-                                label="Test Morning Briefing"
-                                onClick={() => handleTestPush(undefined, 'morning')}
-                            />
-                            <SettingsItem
-                                icon={TestTube}
-                                label="Test Evening Evaluation"
-                                onClick={() => handleTestPush(undefined, 'evening')}
-                                isLast
-                            />
+                            <SettingsItem icon={TestTube} label="Test Morning Briefing" onClick={() => handleTestPush(undefined, 'morning')} />
+                            <SettingsItem icon={TestTube} label="Test Evening Evaluation" onClick={() => handleTestPush(undefined, 'evening')} isLast />
                         </SettingsGroup>
                     )}
                 </div>
@@ -646,12 +548,14 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                 <p>GYRAL CORE v1.2.0</p>
                 <p className="mt-1 tracking-[0.3em]">SYNCHRONIZED</p>
             </div>
+
             {toast && (
                 <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-fade-in-up">
-                    <div className={`px-6 py-3 rounded-xl backdrop-blur-xl border shadow-2xl max-w-md flex items-center gap-3 ${toast.type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-200' :
+                    <div className={`px-6 py-3 rounded-xl backdrop-blur-xl border shadow-2xl max-w-md flex items-center gap-3 ${
+                        toast.type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-200' :
                         toast.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-200' :
-                            'bg-blue-500/10 border-blue-500/20 text-blue-200'
-                        }`}>
+                        'bg-blue-500/10 border-blue-500/20 text-blue-200'
+                    }`}>
                         {toast.type === 'success' && <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />}
                         {toast.type === 'error' && <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
                         {toast.type === 'info' && <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />}
