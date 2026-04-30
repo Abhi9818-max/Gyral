@@ -6,6 +6,7 @@ export function useInstallPrompt() {
 
     useEffect(() => {
         const check = () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((window as any).deferredPrompt) {
                 setIsInstallable(true);
             }
@@ -16,12 +17,14 @@ export function useInstallPrompt() {
     }, []);
 
     const promptInstall = async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const prompt = (window as any).deferredPrompt;
         if (prompt) {
             prompt.prompt();
             const { outcome } = await prompt.userChoice;
             if (outcome === 'accepted') {
                 setIsInstallable(false);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (window as any).deferredPrompt = null;
             }
         }

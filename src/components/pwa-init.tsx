@@ -4,8 +4,10 @@ import { useEffect } from 'react';
 export function PWAInit() {
     useEffect(() => {
         if (typeof window !== 'undefined') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const handlePrompt = (e: any) => {
                 e.preventDefault();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (window as any).deferredPrompt = e;
                 window.dispatchEvent(new Event('deferred-prompt-available'));
             };

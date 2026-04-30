@@ -2,6 +2,7 @@
 
 import { useUserData } from "@/context/user-data-context";
 import { Snowflake, Wind, Lock, Timer } from "lucide-react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 

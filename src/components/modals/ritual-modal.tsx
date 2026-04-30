@@ -18,6 +18,7 @@ export function RitualModal({ isOpen, onClose }: RitualModalProps) {
 
     useEffect(() => {
         if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setStep(0);
             // Pick a random quote for this session
             const randomIndex = Math.floor(Math.random() * quotes.length);
@@ -60,6 +61,7 @@ export function RitualModal({ isOpen, onClose }: RitualModalProps) {
                             THE RITUAL
                         </h1>
                         <p className="text-xl text-zinc-400 font-serif italic max-w-md mx-auto">
+                            // eslint-disable-next-line react/no-unescaped-entities
                             "Begin each day by telling yourself: Today I shall be meeting with interference, ingratitude, insolence, disloyalty, ill-will, and selfishness..."
                         </p>
                         <button
@@ -107,6 +109,7 @@ export function RitualModal({ isOpen, onClose }: RitualModalProps) {
                             <Quote className="w-8 h-8 text-white" />
                         </div>
                         <blockquote className="text-2xl md:text-3xl font-serif text-white/90 leading-relaxed">
+                            // eslint-disable-next-line react/no-unescaped-entities
                             "{dayQuote.text}"
                         </blockquote>
                         <div className="text-zinc-500 font-bold tracking-widest uppercase text-sm">

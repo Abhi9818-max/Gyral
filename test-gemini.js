@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 async function testGeneration() {

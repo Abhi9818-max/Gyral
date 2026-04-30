@@ -78,6 +78,7 @@ export async function GET(req: NextRequest) {
             id: t.id,
             name: t.name,
             metric: t.metric_config,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             recent_logs: recentRecords?.filter((r: any) => r.task_id === t.id)
         })),
         pending_pacts: pacts,

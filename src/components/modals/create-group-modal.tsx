@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { X, Users as UsersIcon, Camera } from 'lucide-react';
 import { getUserAvatar } from '@/utils/avatar-helpers';
 
@@ -157,6 +158,7 @@ export function CreateGroupModal({ isOpen, onClose, friends }: CreateGroupModalP
                                         }`}
                                 >
                                     <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10">
+                                        // eslint-disable-next-line @next/next/no-img-element
                                         <img
                                             src={getUserAvatar(friend.avatar_url, friend.gender, friend.id)}
                                             alt={friend.full_name || 'User'}

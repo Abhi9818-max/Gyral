@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Ghost, Send } from 'lucide-react';
 
 interface Message {

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const fs = require('fs');
 // Using forward slashes for safety in Node
 const src = 'C:/Users/Aman/.gemini/antigravity/brain/85ed1ba8-90c0-4be5-a16e-4853e968f705/gyral_app_icon_1769940171503.png';

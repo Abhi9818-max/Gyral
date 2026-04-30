@@ -54,7 +54,7 @@ export function CalendarCard({ records, activeTask }: CalendarCardProps) {
                         const isToday = dateStr === today.toISOString().split('T')[0];
 
                         // Determine color
-                        let bgClass = "bg-[#1a1a1a]"; // Empty
+                        const bgClass = "bg-[#1a1a1a]"; // Empty
                         let style = {};
 
                         if (intensity > 0) {

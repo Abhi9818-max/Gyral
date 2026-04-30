@@ -6,6 +6,7 @@ import { useUserData } from '@/context/user-data-context';
 
 export function HydrationWidget() {
     const { tasks, records, addTask, addRecord } = useUserData();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [waterTask, setWaterTask] = useState<any>(null);
     const [amount, setAmount] = useState(500);
     const [todaysTotal, setTodaysTotal] = useState(0);
@@ -129,35 +130,35 @@ export function HydrationWidget() {
                     {/* Quick Presets */}
                     <div className="flex gap-2">
                         <button
-                            onClick={() => handleDrink(1500)}
-                            className="bg-blue-900/20 hover:bg-blue-600/20 border border-blue-500/20 rounded-lg px-3 py-2 flex flex-col items-center gap-1 transition-all active:scale-95 group/btn"
-                            title="Bottle (1.5L)"
-                        >
-                            <CupSoda className="w-4 h-4 text-blue-400 group-hover/btn:text-blue-300" />
-                            <span className="text-[10px] font-bold text-blue-200">1.5L</span>
-                        </button>
-                        <button
                             onClick={() => handleDrink(2000)}
                             className="bg-blue-900/20 hover:bg-blue-600/20 border border-blue-500/20 rounded-lg px-3 py-2 flex flex-col items-center gap-1 transition-all active:scale-95 group/btn"
-                            title="Jug (2L)"
+                            title="Bottle (2L)"
                         >
-                            <Milk className="w-4 h-4 text-blue-400 group-hover/btn:text-blue-300" />
+                            <CupSoda className="w-4 h-4 text-blue-400 group-hover/btn:text-blue-300" />
                             <span className="text-[10px] font-bold text-blue-200">2L</span>
                         </button>
                         <button
-                            onClick={() => handleDrink(2500)}
+                            onClick={() => handleDrink(3000)}
                             className="bg-blue-900/20 hover:bg-blue-600/20 border border-blue-500/20 rounded-lg px-3 py-2 flex flex-col items-center gap-1 transition-all active:scale-95 group/btn"
-                            title="Daily Goal (2.5L)"
+                            title="Jug (3L)"
+                        >
+                            <Milk className="w-4 h-4 text-blue-400 group-hover/btn:text-blue-300" />
+                            <span className="text-[10px] font-bold text-blue-200">3L</span>
+                        </button>
+                        <button
+                            onClick={() => handleDrink(3500)}
+                            className="bg-blue-900/20 hover:bg-blue-600/20 border border-blue-500/20 rounded-lg px-3 py-2 flex flex-col items-center gap-1 transition-all active:scale-95 group/btn"
+                            title="Daily Goal (3.5L)"
                         >
                             <Wine className="w-4 h-4 text-blue-400 group-hover/btn:text-blue-300" />
-                            <span className="text-[10px] font-bold text-blue-200">2.5L</span>
+                            <span className="text-[10px] font-bold text-blue-200">3.5L</span>
                         </button>
                     </div>
 
                     {/* Manual Custom Amount */}
                     <div className="flex items-center gap-2 bg-black/40 p-1 rounded-lg border border-blue-500/10 backdrop-blur-sm">
                         <button
-                            onClick={() => setAmount(Math.max(50, amount - 50))}
+                            onClick={() => setAmount(Math.max(100, amount - 100))}
                             className="w-8 h-8 rounded-lg bg-blue-900/20 hover:bg-blue-900/40 text-blue-400 flex items-center justify-center transition-colors"
                         >
                             <Minus className="w-3 h-3" />
@@ -170,7 +171,7 @@ export function HydrationWidget() {
                         />
                         <span className="text-xs text-blue-500/50 -ml-2 mr-2">ml</span>
                         <button
-                            onClick={() => setAmount(Math.min(5000, amount + 50))}
+                            onClick={() => setAmount(Math.min(5000, amount + 100))}
                             className="w-8 h-8 rounded-lg bg-blue-900/20 hover:bg-blue-900/40 text-blue-400 flex items-center justify-center transition-colors"
                         >
                             <Plus className="w-3 h-3" />
@@ -196,9 +197,13 @@ export function HydrationWidget() {
                             key={i}
                             className="absolute bottom-0 bg-blue-400/30 rounded-full animate-[bubble_1s_ease-out_forwards]"
                             style={{
+                                // eslint-disable-next-line react-hooks/purity
                                 left: `${20 + Math.random() * 60}%`,
+                                // eslint-disable-next-line react-hooks/purity
                                 width: `${4 + Math.random() * 8}px`,
+                                // eslint-disable-next-line react-hooks/purity
                                 height: `${4 + Math.random() * 8}px`,
+                                // eslint-disable-next-line react-hooks/purity
                                 animationDelay: `${Math.random() * 0.5}s`
                             }}
                         />

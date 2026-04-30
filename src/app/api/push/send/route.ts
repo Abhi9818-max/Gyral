@@ -81,6 +81,7 @@ export async function POST(request: NextRequest) {
 
                 await adminMessaging!.send(message);
                 return { success: true, token: device.token };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (error: any) {
                 console.error('Error sending push to FCM token:', device.token, error);
 

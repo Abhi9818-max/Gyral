@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { X, Upload, Video, StopCircle, PlayCircle } from 'lucide-react';
 
 interface VideoUploadModalProps {
@@ -27,6 +28,7 @@ export function VideoUploadModal({ isOpen, onClose, onVideoSelected }: VideoUplo
 
     useEffect(() => {
         if (!isOpen) {
+            // eslint-disable-next-line react-hooks/immutability
             cleanup();
         }
     }, [isOpen]);

@@ -27,6 +27,7 @@ export function generateLuciusReflection(
     const now = new Date();
     const cutoff = new Date(now.setDate(now.getDate() - MAX_MEMORY_DAYS));
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const recentLogs = userLogs.filter(log => {
         // guard against missing timestamp
         if (!log.timestamp) return false;

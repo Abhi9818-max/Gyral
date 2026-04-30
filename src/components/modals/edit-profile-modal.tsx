@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { X, Upload, Loader2, Camera, Trash2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -216,6 +217,7 @@ export function EditProfileModal({ isOpen, onClose, user, onUpdate }: EditProfil
                         <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                             <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-white/10 group-hover:border-white/50 transition-colors">
                                 {avatarUrl ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
                                     <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-zinc-500 text-2xl font-bold">

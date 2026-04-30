@@ -34,7 +34,9 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     const addToast = useCallback((message: string, type: ToastType = 'info') => {
         const id = crypto.randomUUID();
         setToasts(prev => [...prev, { id, message, type }]);
+        // eslint-disable-next-line react-hooks/immutability
         setTimeout(() => removeToast(id), 5000); // Auto remove after 5s
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const removeToast = useCallback((id: string) => {

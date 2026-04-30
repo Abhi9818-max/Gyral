@@ -15,6 +15,7 @@ import { NightsWatchModal } from './modals/nights-watch-modal';
 import { ShareModal } from './modals/share-modal';
 import { PactsModal } from './modals/pacts-modal';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ICON_MAP: Record<string, any> = {
     Home, Globe, Flame, Coins, Shield, Sword,
     ClipboardList, MessageCircle, ScrollText, User, Skull
@@ -111,6 +112,7 @@ export function MobileNav() {
                             className="flex flex-col items-center justify-center flex-1 h-full relative"
                         >
                             <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center overflow-hidden transition-all ${isActive('/profile') ? 'border-white' : 'border-white/30'} bg-gradient-to-tr from-zinc-800 to-zinc-700`}>
+                                // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                     src={getUserAvatar(profile?.avatar_url, profile?.gender, user?.id)}
                                     alt="Profile"

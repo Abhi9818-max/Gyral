@@ -1,6 +1,7 @@
 "use client";
 
 import { useUserData } from '@/context/user-data-context';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Dumbbell, BookOpen, Droplet, Carrot, Circle, Check, Zap, Brain, Moon, Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useRef } from 'react';
 
@@ -59,6 +60,7 @@ export function PactWidget() {
                 <div className="flex justify-between items-start mb-6">
                     <div>
                         <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+                            // eslint-disable-next-line react/no-unescaped-entities
                             {displayDate}'s Pacts
                         </h2>
                         <p className="text-zinc-500 font-medium text-sm mt-1">

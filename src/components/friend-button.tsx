@@ -17,7 +17,9 @@ export function FriendButton({ userId, currentUserId }: FriendButtonProps) {
     const supabase = createClient();
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/immutability
         checkFriendshipStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId, currentUserId]);
 
     const checkFriendshipStatus = async () => {

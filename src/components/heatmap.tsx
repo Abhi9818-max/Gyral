@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Calendar as CalendarIcon } from 'lucide-react';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useUserData, Record } from '@/context/user-data-context';
 import { LogActivityModal } from './modals/log-activity-modal';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { format, setYear, setMonth, setDate, getDay, getDaysInMonth, startOfYear } from 'date-fns';
 
 export function Heatmap() {

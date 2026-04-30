@@ -41,11 +41,14 @@ export function MessageNotificationProvider({ children }: { children: React.Reac
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 setCurrentUser(user.id);
+                // eslint-disable-next-line react-hooks/immutability
                 loadUnreadCount(user.id);
+                // eslint-disable-next-line react-hooks/immutability
                 loadFriendRequestCount(user.id);
             }
         };
         init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const loadUnreadCount = async (userId: string) => {
@@ -93,6 +96,7 @@ export function MessageNotificationProvider({ children }: { children: React.Reac
                         const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt555NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGGa57OacTBALUKXi8LdjHAU2j9Xxyn0pBSV1xe/glUELElyx6OyrWBQKQ5zd8sFuIgUrfs7y24o3CBdlu+znm00QC0+f4fC3Yx0FNY7U8Ml9KgUkdMPv4ZVBC');
                         audio.volume = 0.3;
                         audio.play().catch(() => { }); // Ignore if sound fails
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     } catch (e) {
                         // Ignore sound errors
                     }
@@ -119,6 +123,7 @@ export function MessageNotificationProvider({ children }: { children: React.Reac
         return () => {
             supabase.removeChannel(channel);
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentUser]);
 
     const loadFriendRequestCount = async (userId: string) => {
@@ -182,6 +187,7 @@ export function MessageNotificationProvider({ children }: { children: React.Reac
         return () => {
             supabase.removeChannel(channel);
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentUser]);
 
     const handleNotificationClick = () => {

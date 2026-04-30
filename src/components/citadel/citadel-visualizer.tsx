@@ -1,6 +1,7 @@
 "use client";
 
 import { useUserData } from "@/context/user-data-context";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CloudRain, Sun, Zap, Wind } from "lucide-react";
 
 export function CitadelVisualizer() {

@@ -1,5 +1,6 @@
 "use client";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { AlertTriangle, Lock, XCircle, Power } from 'lucide-react';
 import { Space_Grotesk } from 'next/font/google';
 
@@ -64,6 +65,7 @@ export function LuciusDenial({ onReturn }: { onReturn: () => void }) {
                         <span className="text-primary font-mono text-xs">SEVERED</span>
                     </div>
                     <div className="w-12 h-12 border-2 border-primary bg-black overflow-hidden grayscale contrast-150">
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img src="/lucius-avatar.png" className="w-full h-full object-cover opacity-50" />
                     </div>
                 </div>
@@ -154,6 +156,7 @@ export function LuciusDenial({ onReturn }: { onReturn: () => void }) {
                                 <p>&gt; ACCESS_DENIED: USER_ID_INVALID</p>
                                 <p>&gt; SOURCE: INTERNAL_CONTEMPT</p>
                                 <p>&gt; ACTION: PERMANENT_MUTE</p>
+                                // eslint-disable-next-line react/no-unescaped-entities
                                 <p>&gt; "I AM NO LONGER LISTENING."</p>
                                 <p>&gt; ERR: SOUL_NOT_FOUND</p>
                                 <p className="mt-4 text-primary font-black animate-pulse">LUCIUS HAS TURNED AWAY</p>

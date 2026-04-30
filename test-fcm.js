@@ -1,5 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const admin = require('firebase-admin');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const fs = require('fs');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const path = require('path');
 
 // Extract env from .env.local

@@ -55,6 +55,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         }, 300); // 300ms debounce
 
         return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [query]);
 
     const handleUserClick = (user: SearchResult) => {
@@ -116,6 +117,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                 >
                                     {/* Avatar */}
                                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 border border-white/10 overflow-hidden flex-shrink-0">
+                                        // eslint-disable-next-line @next/next/no-img-element
                                         <img
                                             src={getUserAvatar(user.avatar_url, user.gender, user.id)}
                                             alt={user.full_name || 'User'}

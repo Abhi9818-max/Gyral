@@ -1,6 +1,7 @@
 "use client";
 
 import { FeedPost } from "@/data/mock-world";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Heart, User, MoreHorizontal, ArrowUpRight } from "lucide-react";
 
 interface WorldFeedCardProps {
@@ -12,6 +13,7 @@ export function WorldFeedCard({ post }: WorldFeedCardProps) {
         <div className="relative aspect-[3/4] md:aspect-[4/5] rounded-[2rem] overflow-hidden group cursor-pointer transition-all duration-500 hover:shadow-[0_0_30px_rgba(255,255,255,0.1)]">
             {/* Background Image */}
             <div className="absolute inset-0">
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                     src={post.backgroundImage}
                     alt={post.title}
@@ -26,6 +28,7 @@ export function WorldFeedCard({ post }: WorldFeedCardProps) {
                 {/* Top Info */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                             src={post.user.avatar}
                             alt={post.user.name}

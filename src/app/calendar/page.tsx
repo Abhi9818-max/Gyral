@@ -43,8 +43,8 @@ export default function CalendarPage() {
         if (!task) return null;
 
         const intensity = lastRecord.intensity || 0;
-        let glowStrength = intensity === 0 ? 5 : 2 + (intensity * 3);
-        let opacity = intensity === 0 ? 0.8 : 0.5 + (intensity * 0.1);
+        const glowStrength = intensity === 0 ? 5 : 2 + (intensity * 3);
+        const opacity = intensity === 0 ? 0.8 : 0.5 + (intensity * 0.1);
 
         return {
             color: task.color,

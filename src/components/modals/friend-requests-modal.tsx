@@ -30,6 +30,7 @@ export function FriendRequestsModal({ isOpen, onClose, currentUserId }: FriendRe
         if (isOpen && currentUserId) {
             loadRequests();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, currentUserId]);
 
     const loadRequests = async () => {
@@ -167,6 +168,7 @@ export function FriendRequestsModal({ isOpen, onClose, currentUserId }: FriendRe
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="relative">
+                                            // eslint-disable-next-line @next/next/no-img-element
                                             <img
                                                 src={getUserAvatar(request.user.avatar_url, request.user.gender, request.user.id)}
                                                 alt={request.user.username || 'User'}

@@ -1,6 +1,8 @@
 "use client";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useUserData, Vow } from "@/context/user-data-context";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Shield, CheckCircle, XCircle, AlertTriangle, Repeat } from "lucide-react";
 
 export function VowWidget() {

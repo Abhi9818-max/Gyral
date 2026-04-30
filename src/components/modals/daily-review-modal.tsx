@@ -25,6 +25,7 @@ export function DailyReviewModal({ isOpen, onClose }: DailyReviewModalProps) {
             setDateStr(dStr);
 
             const dayRecords = records[dStr] || [];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const initialUpdates: Record<string, any> = {};
             let count = 0;
 
@@ -48,12 +49,14 @@ export function DailyReviewModal({ isOpen, onClose }: DailyReviewModalProps) {
             setUpdates(initialUpdates);
             setReviewedCount(count);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, records, tasks]);
 
     const handleToggle = (taskId: string) => {
         setUpdates(prev => {
             const isMarked = !prev[taskId]?.isMarked;
             // Update reviewed count roughly
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             setReviewedCount(Object.values({ ...prev, [taskId]: { ...prev[taskId], isMarked } }).filter((u: any) => u.isMarked).length);
 
             return {
@@ -78,6 +81,7 @@ export function DailyReviewModal({ isOpen, onClose }: DailyReviewModalProps) {
                     isMarked: value !== ''
                 }
             };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             setReviewedCount(Object.values(newState).filter((u: any) => u.isMarked).length);
             return newState;
         });

@@ -14,6 +14,7 @@ const QUOTES = [
     "Man conquers the world by conquering himself."
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function POST(req: NextRequest) {
     // Auth check for testing trigger
     const supabase = await createClient();

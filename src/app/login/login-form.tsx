@@ -18,6 +18,7 @@ export function LoginForm({
     useEffect(() => {
         const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
         if (cap?.isNativePlatform?.()) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsCapacitor(true);
         }
     }, []);

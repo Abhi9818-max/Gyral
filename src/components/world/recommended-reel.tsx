@@ -63,6 +63,7 @@ export function RecommendedReel() {
                         >
                             <div className="relative">
                                 <div className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-yellow-500 via-red-500 to-purple-500 group-hover:scale-105 transition-transform duration-300">
+                                    // eslint-disable-next-line @next/next/no-img-element
                                     <img
                                         src={userAvatar}
                                         alt={userName}

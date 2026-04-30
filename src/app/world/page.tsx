@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Header } from "@/components/header";
 import { RecommendedReel } from "@/components/world/recommended-reel";
 import { WorldFeedCard } from "@/components/world/world-feed-card";
@@ -14,10 +15,12 @@ import { useMessageNotifications } from "@/context/message-notification-context"
 
 export default function WorldPage() {
     const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [users, setUsers] = useState<WorldUser[]>([]);
     const [posts, setPosts] = useState<FeedPost[]>([]);
     const [factionsPower, setFactionsPower] = useState<{ name: string, sigil: string, power: number, primaryColor: string }[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
     const [isFriendRequestsModalOpen, setIsFriendRequestsModalOpen] = useState(false);
@@ -121,6 +124,7 @@ export default function WorldPage() {
         };
 
         fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
@@ -152,6 +156,7 @@ export default function WorldPage() {
                         </button>
                         {currentUser && (
                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 border border-white/20 overflow-hidden">
+                                // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                     src={currentUser.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/shapes/svg?seed=${currentUser.id}`}
                                     alt="Profile"
@@ -199,6 +204,7 @@ export default function WorldPage() {
                                         />
                                         <div className="relative flex flex-col items-center text-center gap-3">
                                             <div className="w-12 h-12 rounded-xl bg-black border border-white/5 flex items-center justify-center p-1.5 overflow-hidden">
+                                                // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={house.sigil} alt={house.name} className="w-full h-full object-cover rounded-lg" />
                                             </div>
                                             <div>
@@ -249,6 +255,7 @@ export default function WorldPage() {
                 <section className="space-y-4 pt-4 border-t border-white/5">
                     <h3 className="text-zinc-500 text-xs font-medium tracking-wide">Popular Protocols</h3>
                     <div className="relative h-48 rounded-2xl overflow-hidden group cursor-pointer">
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                             src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop"
                             alt="Universe"

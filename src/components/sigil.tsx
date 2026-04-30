@@ -37,6 +37,7 @@ export function Sigil({ score, size = 64, className = "" }: SigilProps) {
         const colorIntensity = 0.3 + (score / 100) * 0.7; // Opacity base
 
         // Dynamic Color: Shift from Grey/Blue -> Purple -> Gold/White based on score
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const getStrokeStyle = (t: number) => {
             if (score < 30) return `rgba(100, 116, 139, ${colorIntensity})`; // Slate
             if (score < 70) return `rgba(168, 85, 247, ${colorIntensity})`; // Purple

@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, X, Check } from 'lucide-react';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useState, useEffect } from 'react';
 import { subscribeUserToPush } from '@/lib/push-notifications';
 

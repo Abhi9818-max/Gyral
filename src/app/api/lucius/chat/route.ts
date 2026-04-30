@@ -81,6 +81,7 @@ export async function POST(request: Request) {
                 const response = await result.response;
                 const reply = response.text() || "...";
                 return NextResponse.json({ reply });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
                 // If Rate Limit (429) or Service Unavailable (503)
                 if (err.message.includes('429') || err.message.includes('503') || err.message.includes('RESOURCE_EXHAUSTED')) {
@@ -102,6 +103,7 @@ export async function POST(request: Request) {
             reply: "The mirror's reflection wavers... The connection grows unstable. Return after a moment of stillness."
         });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         console.error("=== LUCIUS GEMINI API ERROR ===");
         console.error("Error message:", error.message);

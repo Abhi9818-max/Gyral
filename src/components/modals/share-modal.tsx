@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from 'react';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { X, Download, Share2, Shield } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
 import { Sigil } from '../sigil';

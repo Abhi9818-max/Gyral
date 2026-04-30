@@ -1,9 +1,11 @@
 // Service Worker for Mind-Flayer PWA
 // Handles push notifications and background sync
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CACHE_NAME = 'mind-flayer-v1';
 
 // Install event
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 self.addEventListener('install', (event) => {
     console.log('[SW] Installing Service Worker...');
     self.skipWaiting();

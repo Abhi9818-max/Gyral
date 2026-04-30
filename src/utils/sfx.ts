@@ -12,6 +12,7 @@ class SoundEngine {
 
     private init() {
         if (!this.initialized && typeof window !== 'undefined') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
             if (AudioContextClass) {
                 this.ctx = new AudioContextClass();
@@ -90,6 +91,7 @@ class SoundEngine {
     public playSuccess() {
         // Nice major chord arpeggio
         if (!this.enabled) return;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const now = 0;
         setTimeout(() => this.playTone(523.25, 'sine', 0.3, 0.1), 0);   // C5
         setTimeout(() => this.playTone(659.25, 'sine', 0.3, 0.1), 100); // E5

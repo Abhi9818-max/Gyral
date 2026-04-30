@@ -3,6 +3,7 @@ import { createAdminClient } from '@/utils/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
 import { adminMessaging } from '@/lib/firebase-admin';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function POST(req: NextRequest) {
     // Auth check for testing trigger
     const supabase = await createClient();
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest) {
             await adminMessaging.send(message);
 
             results.push({ success: true, user: device.user_id });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
             console.error(`Failed to send FCM to ${device.user_id} (${device.token})`, e?.message);
             results.push({ success: false, user: device.user_id });

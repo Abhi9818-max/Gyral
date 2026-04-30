@@ -85,6 +85,7 @@ export function StoriesProvider({ children }: { children: React.ReactNode }) {
                 setStories([]);
             }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.error("Error fetching stories (Exception):", err?.message || err);
         } finally {
@@ -129,6 +130,7 @@ export function StoriesProvider({ children }: { children: React.ReactNode }) {
         return () => {
             supabase.removeChannel(channel);
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const addStory = async (text: string, mediaFile?: File): Promise<boolean> => {
@@ -303,6 +305,7 @@ export function StoriesProvider({ children }: { children: React.ReactNode }) {
             if (error && error.code !== '23505') { // 23505 is unique_violation
                 console.error("Error viewing story:", error);
             }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (err) {
             // ignore
         }

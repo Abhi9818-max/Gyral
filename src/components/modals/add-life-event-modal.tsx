@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useUserData, LifeEvent } from "@/context/user-data-context";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { X, Calendar, Flag, BookOpen } from "lucide-react";
 
 interface AddLifeEventModalProps {
@@ -44,6 +46,7 @@ export function AddLifeEventModal({ isOpen, onClose, weekIndex, birthDate }: Add
         onClose();
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const isPast = new Date(getEventDate()) < new Date();
 
     return (

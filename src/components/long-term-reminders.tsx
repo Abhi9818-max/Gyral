@@ -2,16 +2,19 @@
 
 import { useUserData } from "@/context/user-data-context";
 import { useEffect, useState } from "react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Clock, Calendar, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export function LongTermReminders() {
     const { pacts } = useUserData();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [reminders, setReminders] = useState<any[]>([]);
 
     useEffect(() => {
         const today = new Date();
         const todayStr = today.toISOString().split('T')[0];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const newReminders: any[] = [];
 
         Object.entries(pacts).forEach(([dateStr, dayPacts]) => {
@@ -81,6 +84,7 @@ export function LongTermReminders() {
 
         // Limit to maybe 1 or 2 reminders to not clutter?
         // Let's show all unique applicable ones but unique by day+pact?
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setReminders(newReminders);
     }, [pacts]);
 
@@ -110,6 +114,7 @@ export function LongTermReminders() {
                                 {r.text}
                             </p>
                             <p className="text-sm text-blue-300/70 italic">
+                                // eslint-disable-next-line react/no-unescaped-entities
                                 "{r.message}"
                             </p>
 

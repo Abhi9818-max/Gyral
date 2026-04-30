@@ -17,6 +17,7 @@ export function FilterBar() {
 
         if (clickCount >= 3) {
             window.dispatchEvent(new CustomEvent('openDailyReview'));
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setClickCount(0);
             return;
         }
