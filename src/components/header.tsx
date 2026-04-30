@@ -357,8 +357,10 @@ export function Header() {
             }}
           >
             {currentFaction ? (
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={currentFaction.sigilUrl} alt={currentFaction.name} className="w-full h-full object-cover rounded-full" />
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={currentFaction.sigilUrl} alt={currentFaction.name} className="w-full h-full object-cover rounded-full" />
+              </>
             ) : (
               <Menu className="w-5 h-5" />
             )}
@@ -494,8 +496,10 @@ export function Header() {
             }}
           >
             {currentFaction ? (
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={currentFaction.sigilUrl} alt={currentFaction.name} className="w-full h-full object-cover rounded-full" />
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={currentFaction.sigilUrl} alt={currentFaction.name} className="w-full h-full object-cover rounded-full" />
+              </>
             ) : (
               <Menu className="w-5 h-5" />
             )}
