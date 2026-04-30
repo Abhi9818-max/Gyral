@@ -114,7 +114,7 @@ export function Header() {
           {/* Logo Glow */}
           <div className="absolute -inset-2 bg-white/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <Link href="/" className="relative flex items-center gap-2 md:gap-3">
-            // eslint-disable-next-line @next/next/no-img-element
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/icons/icon-192.png" alt="Gyral Logo" className="w-6 h-6 md:w-8 md:h-8 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
             <span className="text-lg md:text-xl font-bold tracking-[0.2em] text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">GYRAL</span>
           </Link>
@@ -357,7 +357,7 @@ export function Header() {
             }}
           >
             {currentFaction ? (
-              // eslint-disable-next-line @next/next/no-img-element
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={currentFaction.sigilUrl} alt={currentFaction.name} className="w-full h-full object-cover rounded-full" />
             ) : (
               <Menu className="w-5 h-5" />
@@ -494,7 +494,7 @@ export function Header() {
             }}
           >
             {currentFaction ? (
-              // eslint-disable-next-line @next/next/no-img-element
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={currentFaction.sigilUrl} alt={currentFaction.name} className="w-full h-full object-cover rounded-full" />
             ) : (
               <Menu className="w-5 h-5" />
@@ -506,7 +506,7 @@ export function Header() {
 
           {/* Profile Picture Link - Hidden on mobile */}
           <Link href="/profile" className="hidden md:flex w-10 h-10 rounded-full border-2 border-white/10 items-center justify-center relative overflow-hidden group cursor-pointer hover:border-accent/50 transition-all duration-300 shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] bg-gradient-to-tr from-zinc-800 to-zinc-700">
-            // eslint-disable-next-line @next/next/no-img-element
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={user?.id ? getUserAvatar(profile?.avatar_url || user?.user_metadata?.avatar_url, profile?.gender, user.id as string) : '/avatars/default-male1.jpeg.jpeg'}
               alt="Profile"
