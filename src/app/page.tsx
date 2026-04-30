@@ -1,4 +1,3 @@
-import dynamic from "next/dynamic";
 import { Header } from "@/components/header";
 import { StatsCard } from "@/components/stats-card";
 import { FilterBar } from "@/components/filter-bar";
@@ -9,12 +8,7 @@ import { VowWidget } from "@/components/vow-widget";
 import { LongTermReminders } from "@/components/long-term-reminders";
 import { RitualSection } from "@/components/ritual-section";
 import { getQuoteOfTheDay } from "@/lib/quotes";
-
-// Dynamically import heavy modals
-const StreakSuccessModal = dynamic(() => import("@/components/modals/streak-success-modal").then(mod => mod.StreakSuccessModal), { ssr: false });
-const StreakLossModal = dynamic(() => import("@/components/modals/streak-loss-modal").then(mod => mod.StreakLossModal), { ssr: false });
-const MissedVowModal = dynamic(() => import("@/components/modals/missed-vow-modal").then(mod => mod.MissedVowModal), { ssr: false });
-const ArtifactUnlockModal = dynamic(() => import("@/components/modals/artifact-unlock-modal").then(mod => mod.ArtifactUnlockModal), { ssr: false });
+import { HomeModals } from "@/components/home-modals";
 
 export default function Home() {
   const quote = getQuoteOfTheDay();
@@ -56,10 +50,7 @@ export default function Home() {
         </div>
       </main>
 
-      <StreakSuccessModal />
-      <StreakLossModal />
-      <MissedVowModal />
-      <ArtifactUnlockModal />
+      <HomeModals />
     </div>
   );
 }
