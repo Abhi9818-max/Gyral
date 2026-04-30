@@ -113,7 +113,6 @@ export function BlockReportModal({ isOpen, onClose, userId, userName }: BlockRep
                                 <Ban className="w-5 h-5 text-red-500" />
                                 <div className="text-left">
                                     <div className="font-bold text-white">Block User</div>
-                                    // eslint-disable-next-line react/no-unescaped-entities
                                     <div className="text-xs text-zinc-400">They won't be able to message you</div>
                                 </div>
                             </button>

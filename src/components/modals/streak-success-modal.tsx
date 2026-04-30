@@ -150,7 +150,6 @@ export function StreakSuccessModal() {
                                 <>
                                     <span className="text-white/20">•</span>
                                     <span className="text-sm font-medium text-red-400 italic">
-                                        // eslint-disable-next-line react/no-unescaped-entities
                                         You almost didn't. But you did.
                                     </span>
                                 </>
@@ -171,7 +170,6 @@ export function StreakSuccessModal() {
 
                     {/* Quote */}
                     <blockquote className="text-muted-foreground italic font-serif leading-relaxed">
-                        // eslint-disable-next-line react/no-unescaped-entities
                         "{content.quote}"
                     </blockquote>
 

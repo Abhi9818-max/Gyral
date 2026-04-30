@@ -156,7 +156,6 @@ export function LuciusDenial({ onReturn }: { onReturn: () => void }) {
                                 <p>&gt; ACCESS_DENIED: USER_ID_INVALID</p>
                                 <p>&gt; SOURCE: INTERNAL_CONTEMPT</p>
                                 <p>&gt; ACTION: PERMANENT_MUTE</p>
-                                // eslint-disable-next-line react/no-unescaped-entities
                                 <p>&gt; "I AM NO LONGER LISTENING."</p>
                                 <p>&gt; ERR: SOUL_NOT_FOUND</p>
                                 <p className="mt-4 text-primary font-black animate-pulse">LUCIUS HAS TURNED AWAY</p>

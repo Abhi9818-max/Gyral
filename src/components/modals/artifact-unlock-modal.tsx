@@ -129,7 +129,6 @@ export function ArtifactUnlockModal() {
                             transition={{ delay: 0.6 }}
                             className="text-muted-foreground text-sm italic mb-8 relative z-10 max-w-[80%]"
                         >
-                            // eslint-disable-next-line react/no-unescaped-entities
                             "{artifact.description}"
                         </motion.p>
 

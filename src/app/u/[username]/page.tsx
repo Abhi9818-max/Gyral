@@ -148,7 +148,6 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                 <div className="flex-1 flex flex-col items-center justify-center p-6">
                     <User className="w-16 h-16 text-zinc-600 mb-4" />
                     <h1 className="text-2xl font-bold mb-2">User Not Found</h1>
-                    // eslint-disable-next-line react/no-unescaped-entities
                     <p className="text-zinc-500 mb-6">@{username} doesn't exist</p>
                     <button
                         onClick={() => router.back()}

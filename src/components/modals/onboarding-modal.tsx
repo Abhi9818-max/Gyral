@@ -45,7 +45,6 @@ export function OnboardingModal({ isOpen }: OnboardingModalProps) {
                         <User className="w-8 h-8 text-white" />
                     </div>
                     <h2 className="text-2xl font-bold text-white mb-2">Welcome to Diogenes</h2>
-                    // eslint-disable-next-line react/no-unescaped-entities
                     <p className="text-sm text-zinc-400">Let's personalize your experience</p>
                 </div>
 

@@ -60,7 +60,6 @@ export function PactWidget() {
                 <div className="flex justify-between items-start mb-6">
                     <div>
                         <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-                            // eslint-disable-next-line react/no-unescaped-entities
                             {displayDate}'s Pacts
                         </h2>
                         <p className="text-zinc-500 font-medium text-sm mt-1">

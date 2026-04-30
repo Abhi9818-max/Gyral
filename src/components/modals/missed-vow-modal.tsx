@@ -70,7 +70,6 @@ export function MissedVowModal() {
                 <div className="p-6 space-y-6">
                     <div className="bg-black/40 rounded-xl p-4 border border-zinc-800 text-center">
                         <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">Vow of</p>
-                        // eslint-disable-next-line react/no-unescaped-entities
                         <p className="text-xl text-white font-serif italic">"{currentVow.text}"</p>
                     </div>
 

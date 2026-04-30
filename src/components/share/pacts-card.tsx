@@ -35,7 +35,6 @@ export function PactsCard({ pacts, date }: PactsCardProps) {
             <div className="flex justify-between items-start mb-6 z-10">
                 <div>
                     <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-                        // eslint-disable-next-line react/no-unescaped-entities
                         {date}'s Pacts
                     </h2>
                     <p className="text-zinc-500 font-medium text-sm mt-1">

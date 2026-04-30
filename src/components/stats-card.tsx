@@ -66,7 +66,6 @@ export function StatsCard() {
                         </span>
                     </div>
                     <p className="text-sm font-medium text-white/80 italic">
-                        // eslint-disable-next-line react/no-unescaped-entities
                         "{analytics.trajectory}"
                     </p>
                 </div>

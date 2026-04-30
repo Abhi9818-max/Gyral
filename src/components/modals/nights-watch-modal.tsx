@@ -74,7 +74,6 @@ export function NightsWatchModal({ isOpen, onClose }: NightsWatchModalProps) {
                         transition={{ delay: 0.2 }}
                         className="text-4xl md:text-5xl font-serif font-medium text-slate-200 tracking-wider mb-3 drop-shadow-lg"
                     >
-                        // eslint-disable-next-line react/no-unescaped-entities
                         THE NIGHT'S WATCH
                     </motion.h2>
 
@@ -117,7 +116,6 @@ export function NightsWatchModal({ isOpen, onClose }: NightsWatchModalProps) {
                                 <div className="space-y-4">
                                     {activeVows.length === 0 ? (
                                         <div className="text-center py-12 border border-zinc-900 bg-zinc-950/30">
-                                            // eslint-disable-next-line react/no-unescaped-entities
                                             <p className="font-serif text-xl text-zinc-500 italic mb-2">"And now my watch begins..."</p>
                                             <p className="text-xs text-zinc-700 uppercase tracking-widest">No active oaths taken</p>
                                         </div>
@@ -131,7 +129,6 @@ export function NightsWatchModal({ isOpen, onClose }: NightsWatchModalProps) {
                                                 >
                                                     <div className="text-center md:text-left flex-1">
                                                         <h3 className="text-xl md:text-2xl font-serif text-slate-300 tracking-wide group-hover:text-white transition-colors">
-                                                            // eslint-disable-next-line react/no-unescaped-entities
                                                             "{vow.text}"
                                                         </h3>
                                                         <div className="flex items-center justify-center md:justify-start gap-4 mt-3 text-[10px] md:text-xs font-mono uppercase tracking-widest text-zinc-600 group-hover:text-zinc-500 transition-colors">
@@ -207,14 +204,12 @@ export function NightsWatchModal({ isOpen, onClose }: NightsWatchModalProps) {
                             >
                                 {brokenVows.length === 0 ? (
                                     <div className="text-center py-20">
-                                        // eslint-disable-next-line react/no-unescaped-entities
                                         <p className="font-serif text-lg text-zinc-700 italic">"Honor remains intact."</p>
                                     </div>
                                 ) : (
                                     brokenVows.map((vow) => (
                                         <div key={vow.id} className="p-6 bg-red-950/5 border border-red-900/10 flex items-center justify-between gap-4 grayscale hover:grayscale-0 transition-all duration-500 group">
                                             <div className="opacity-50 group-hover:opacity-80 transition-opacity">
-                                                // eslint-disable-next-line react/no-unescaped-entities
                                                 <p className="font-serif text-lg text-red-300/60 line-through decoration-red-900/50">"{vow.text}"</p>
                                                 <div className="text-[10px] font-mono text-red-900 uppercase tracking-widest mt-1">
                                                     Broken {vow.brokenOn ? new Date(vow.brokenOn).toLocaleDateString() : 'Unknown'} • Max Streak: {vow.maxStreak}
@@ -232,7 +227,6 @@ export function NightsWatchModal({ isOpen, onClose }: NightsWatchModalProps) {
                 {/* Footer Quote */}
                 <div className="py-6 text-center border-t border-white/5 bg-[#050505]">
                     <p className="font-serif text-zinc-700 text-sm italic tracking-wide">
-                        // eslint-disable-next-line react/no-unescaped-entities
                         "I am the sword in the darkness."
                     </p>
                 </div>

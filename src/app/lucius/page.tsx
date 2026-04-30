@@ -153,7 +153,6 @@ export default function LuciusPage() {
                                 {/* The Message */}
                                 <div className="space-y-6 max-w-2xl mx-auto">
                                     <p className="text-3xl md:text-5xl font-serif leading-tight italic text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 drop-shadow-lg">
-                                        // eslint-disable-next-line react/no-unescaped-entities
                                         "{reflection?.message}"
                                     </p>
                                 </div>

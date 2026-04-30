@@ -285,7 +285,6 @@ export function LogActivityModal({ isOpen, onClose, dateStr }: LogActivityModalP
                                     {/* Feedback text */}
                                     {activePhase && (
                                         <div className="text-xs text-center text-muted-foreground">
-                                            // eslint-disable-next-line react/no-unescaped-entities
                                             Great job! You've hit the <span className="text-white font-bold">"{selectedTask.metricConfig.phases.find(p => p.intensity === activePhase)?.name}"</span> threshold.
                                         </div>
                                     )}

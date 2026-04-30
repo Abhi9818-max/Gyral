@@ -52,7 +52,6 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-white tracking-wide">THE IRON BANK</h2>
-                            // eslint-disable-next-line react/no-unescaped-entities
                             <p className="text-xs text-yellow-600 font-serif italic">"The Bank will have its due."</p>
                         </div>
                     </div>

@@ -114,7 +114,6 @@ export function LongTermReminders() {
                                 {r.text}
                             </p>
                             <p className="text-sm text-blue-300/70 italic">
-                                // eslint-disable-next-line react/no-unescaped-entities
                                 "{r.message}"
                             </p>
 

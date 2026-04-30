@@ -492,7 +492,6 @@ export function FactionPickerModal({ isOpen, onClose }: FactionPickerModalProps)
 
                                     <div className="flex-1 min-w-0">
                                         <h3 className="text-xl font-bold text-white group-hover:translate-x-1 transition-transform truncate">{f.name}</h3>
-                                        // eslint-disable-next-line react/no-unescaped-entities
                                         <p className="text-sm font-serif italic text-zinc-500 mt-1 line-clamp-1 group-hover:text-zinc-400 transition-colors">"{f.quote}"</p>
                                     </div>
                                 </div>
