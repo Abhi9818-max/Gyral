@@ -4,13 +4,19 @@ import { useState, useEffect } from 'react';
 import { X, Check, Moon, Sparkles, ArrowRight } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
 
+"use client";
+
+import { useState, useEffect } from 'react';
+import { X, Check, Moon, Sparkles, ArrowRight } from 'lucide-react';
+import { useUserData } from '@/context/user-data-context';
+
 interface DailyReviewModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
 export function DailyReviewModal({ isOpen, onClose }: DailyReviewModalProps) {
-    const { tasks, records, addRecord, deleteRecord } = useUserData();
+    const { tasks, records, addRecord, deleteRecord, activeFilterTaskId } = useUserData();
     const [dateStr, setDateStr] = useState<string>('');
     const [updates, setUpdates] = useState<Record<string, { intensity: number | null, value?: number, isMarked: boolean }>>({});
     const [isSaving, setIsSaving] = useState(false);
@@ -46,21 +52,15 @@ export function DailyReviewModal({ isOpen, onClose }: DailyReviewModalProps) {
                     };
                 }
             });
+            // Pre-select the task from filter if set
+            if (activeFilterTaskId && initialUpdates[activeFilterTaskId] && !initialUpdates[activeFilterTaskId].isMarked) {
+                initialUpdates[activeFilterTaskId].isMarked = true;
+                count++;
+            }
             setUpdates(initialUpdates);
             setReviewedCount(count);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isOpen, records, tasks]);
-
-    const handleToggle = (taskId: string) => {
-        setUpdates(prev => {
-            const isMarked = !prev[taskId]?.isMarked;
-            // Update reviewed count roughly
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            setReviewedCount(Object.values({ ...prev, [taskId]: { ...prev[taskId], isMarked } }).filter((u: any) => u.isMarked).length);
-
-            return {
-                ...prev,
                 [taskId]: {
                     ...prev[taskId],
                     isMarked,
