@@ -54,39 +54,46 @@ export function DailyReviewModal({ isOpen, onClose }: DailyReviewModalProps) {
             setUpdates(initialUpdates);
             setReviewedCount(count);
         }
-    function handleToggle(taskId: string) {
-  setUpdates(prev => {
-    const prevTask = prev[taskId] || { isMarked: false, intensity: null, value: undefined };
-    const isMarked = !prevTask.isMarked;
-    const newUpdates = {
-      ...prev,
-      [taskId]: {
-        ...prevTask,
-        isMarked,
-        // Set default intensity when marking if not already set
-        intensity: isMarked && !prevTask.intensity ? 1 : prevTask.intensity,
-      },
-    };
-    setReviewedCount(Object.values(newUpdates).filter((u: any) => u.isMarked).length);
-    return newUpdates;
-  });
-}
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, activeTasks, records, activeFilterTaskId]);
 
-function handleValueChange(taskId: string, value: string) {
-  const numVal = parseFloat(value);
-  setUpdates(prev => {
-    const newState = {
-      ...prev,
-      [taskId]: {
-        ...prev[taskId],
-        value: isNaN(numVal) ? undefined : numVal,
-        isMarked: value !== ''
-      }
+    const handleToggle = (taskId: string) => {
+        setUpdates(prev => {
+            const isMarked = !prev[taskId]?.isMarked;
+            const newUpdates = {
+                ...prev,
+                [taskId]: {
+                    ...prev[taskId],
+                    isMarked,
+                    intensity: isMarked && !prev[taskId]?.intensity ? 1 : prev[taskId]?.intensity
+                }
+            };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            setReviewedCount(Object.values(newUpdates).filter((u: any) => u.isMarked).length);
+            return newUpdates;
+        });
     };
-    setReviewedCount(Object.values(newState).filter((u: any) => u.isMarked).length);
-    return newState;
-  });
-}
+
+    const handleValueChange = (taskId: string, value: string) => {
+        const numVal = parseFloat(value);
+        setUpdates(prev => {
+            const newState = {
+                ...prev,
+                [taskId]: {
+                    ...prev[taskId],
+                    value: isNaN(numVal) ? undefined : numVal,
+                    isMarked: value !== ''
+                }
+            };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            setReviewedCount(Object.values(newState).filter((u: any) => u.isMarked).length);
+            return newState;
+        });
+    };
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        const promises = activeTasks.map(async (task) => {
             const update = updates[task.id];
             if (update?.isMarked) {
                 const status = await addRecord(dateStr, task.id, update.intensity || 1, update.value);
@@ -98,11 +105,10 @@ function handleValueChange(taskId: string, value: string) {
                 } else if (!status.valid) {
                     alert(`❌ Streak Risk for ${task.name}\n\nMercy exhausted. This won't count for streak.`);
                 }
-                // If this task is the active filter, focus its intensity/value input after saving
+                // If this task is the active filter, focus it after saving
                 if (activeFilterTaskId === task.id) {
-                    // Use a short timeout to allow DOM update before scrolling
                     setTimeout(() => {
-                        const el = document.getElementById(`task-input-${task.id}`);
+                        const el = document.getElementById(`task-card-${task.id}`);
                         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }, 100);
                 }
@@ -168,6 +174,29 @@ function handleValueChange(taskId: string, value: string) {
                             <p>No rituals to review.</p>
                         </div>
                     ) : (
+                        activeTasks.map(task => {
+                            const state = updates[task.id] || { isMarked: false, intensity: null };
+                            const isDone = state.isMarked;
+
+                            return (
+                                <div
+                                    id={`task-card-${task.id}`}
+                                    key={task.id}
+                                    onClick={() => handleToggle(task.id)}
+                                    className={`group relative p-4 rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden ${isDone
+                                        ? 'bg-zinc-900 border-white/10'
+                                        : 'bg-black/20 border-white/5 hover:bg-zinc-900/30 hover:border-white/10'
+                                        }`}
+                                    style={isDone ? {
+                                        boxShadow: `inset 0 0 20px ${task.color}10, 0 4px 20px rgba(0,0,0,0.5)`,
+                                        borderColor: `${task.color}40`
+                                    } : {}}
+                                >
+                                    {/* Background Glow Effect */}
+                                    {isDone && (
+                                        <div
+                                            className="absolute inset-0 opacity-10 blur-xl transition-all duration-500"
+                                            style={{ background: `radial-gradient(circle at center, ${task.color}, transparent 70%)` }}
                                         />
                                     )}
 
