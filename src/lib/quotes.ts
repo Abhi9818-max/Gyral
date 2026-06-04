@@ -79,6 +79,43 @@ export const philosophicalQuotes: Quote[] = [
     // Viktor Frankl
     { text: "When we are no longer able to change a situation, we are challenged to change ourselves.", author: "Viktor Frankl", source: "Man's Search for Meaning" },
     { text: "Everything can be taken from a man but one thing: the last of the human freedoms—to choose one's attitude in any given set of circumstances.", author: "Viktor Frankl" },
+
+    // Franz Kafka
+    { text: "I have the true feeling of myself only when I am unbearably unhappy.", author: "Franz Kafka" },
+    { text: "Youth is happy because it has the capacity to see beauty. Anyone who keeps the ability to see beauty never grows old.", author: "Franz Kafka" },
+    { text: "A book must be the axe for the frozen sea within us.", author: "Franz Kafka" },
+
+    // Oscar Wilde
+    { text: "We are all in the gutter, but some of us are looking at the stars.", author: "Oscar Wilde" },
+    { text: "To live is the rarest thing in the world. Most people exist, that is all.", author: "Oscar Wilde" },
+    { text: "Experience is simply the name we give our mistakes.", author: "Oscar Wilde" },
+
+    // Fyodor Dostoevsky
+    { text: "Pain and suffering are always inevitable for a large intelligence and a deep heart.", author: "Fyodor Dostoevsky", source: "Crime and Punishment" },
+    { text: "To go wrong in one's own way is better than to go right in someone else's.", author: "Fyodor Dostoevsky", source: "Crime and Punishment" },
+    { text: "The mystery of human existence lies not in just staying alive, but in finding something to live for.", author: "Fyodor Dostoevsky", source: "The Brothers Karamazov" },
+
+    // Robert Greene
+    { text: "When you show yourself to the world and display your talents, you naturally stir all kinds of resentment, envy, and other manifestations of insecurity... you cannot spend your life worrying about the petty feelings of others.", author: "Robert Greene", source: "The 48 Laws of Power" },
+    { text: "Do not leave your reputation to chance or gossip; it is your life's artwork, and you must craft it, hone it, and display it with the care of an artist.", author: "Robert Greene", source: "The 48 Laws of Power" },
+    { text: "The future belongs to those who learn more skills and combine them in creative ways.", author: "Robert Greene", source: "Mastery" },
+
+    // Arthur Schopenhauer
+    { text: "Talent hits a target no one else can hit; Genius hits a target no one else can see.", author: "Arthur Schopenhauer" },
+    { text: "All truth passes through three stages. First, it is ridiculed. Second, it is violently opposed. Third, it is accepted as being self-evident.", author: "Arthur Schopenhauer" },
+
+    // Albert Camus
+    { text: "The only way to deal with an unfree world is to become so absolutely free that your very existence is an act of rebellion.", author: "Albert Camus" },
+    { text: "In the depth of winter, I finally learned that within me there lay an invincible summer.", author: "Albert Camus" },
+
+    // Miyamoto Musashi
+    { text: "There is nothing outside of yourself that can ever enable you to get better, stronger, richer, quicker, or smarter. Everything is within. Everything exists.", author: "Miyamoto Musashi", source: "The Book of Five Rings" },
+    { text: "Think lightly of yourself and deeply of the world.", author: "Miyamoto Musashi" },
+
+    // Additional classics
+    { text: "Wise men speak because they have something to say; Fools because they have to say something.", author: "Plato" },
+    { text: "Knowing yourself is the beginning of all wisdom.", author: "Aristotle" },
+    { text: "If an injury has to be done to a man it should be so severe that his vengeance need not be feared.", author: "Niccolò Machiavelli", source: "The Prince" }
 ];
 
 /**
