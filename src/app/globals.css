@@ -458,3 +458,8 @@ img {
   opacity: 0;
   transition: transform 280ms ease, opacity 280ms ease;
 }
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}

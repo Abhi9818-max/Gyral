@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { LayoutDashboard, Users, Shield, ScrollText, ClipboardList, Flag, Settings, Plus, Flame, Globe, Ghost, Skull, Coins, Menu, X, Search, MessageCircle, Bell, Sword, Home, User, Brain } from 'lucide-react';
+import { LayoutDashboard, Users, Shield, ScrollText, ClipboardList, Flag, Settings, Plus, Flame, Globe, Ghost, Skull, Coins, Menu, X, Search, MessageCircle, Bell, Sword, Home, User, Brain, Trophy } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { createClient } from '@/utils/supabase/client';
@@ -132,6 +132,10 @@ export function Header() {
 
           <Link href="/goals" className="hover:text-white hover:scale-105 transition-all duration-300 ease-out flex items-center gap-2 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] group">
             <Flag className="w-4 h-4 group-hover:text-blue-500 transition-colors" /> <span className="relative">Goals <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-blue-500 group-hover:w-full transition-all duration-300" /></span>
+          </Link>
+
+          <Link href="/achievements" className="hover:text-white hover:scale-105 transition-all duration-300 ease-out flex items-center gap-2 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] group">
+            <Trophy className="w-4 h-4 group-hover:text-amber-500 transition-colors" /> <span className="relative">Achievements <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-amber-500 group-hover:w-full transition-all duration-300" /></span>
           </Link>
 
           <Link href="/notes" className="hover:text-white hover:scale-105 transition-all duration-300 ease-out flex items-center gap-2 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] group">
@@ -297,6 +301,10 @@ export function Header() {
                       <span>🎯</span>
                       <span class="text-white font-medium">Goals</span>
                     </a>
+                    <a href="/achievements" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                      <span>🏆</span>
+                      <span class="text-white font-medium">Achievements</span>
+                    </a>
                     <a href="/notes" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>📋</span>
                       <span class="text-white font-medium">Notes</span>
@@ -427,6 +435,10 @@ export function Header() {
                     <a href="/goals" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>🎯</span>
                       <span class="text-white font-medium">Goals</span>
+                    </a>
+                    <a href="/achievements" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                      <span>🏆</span>
+                      <span class="text-white font-medium">Achievements</span>
                     </a>
                     <a href="/notes" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>📋</span>

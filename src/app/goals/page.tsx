@@ -2,9 +2,10 @@
 
 import React, { useState, useMemo } from 'react';
 import { useUserData } from '@/context/user-data-context';
-import { Flag, Plus, CheckCircle2, Circle, Target, Trophy, Sparkles, Calendar, Trash2 } from 'lucide-react';
+import { Flag, Plus, CheckCircle2, Circle, Target, Trophy, Sparkles, Calendar, Trash2, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
+import Link from 'next/link';
 
 export default function GoalsPage() {
     const { lifeEvents, addLifeEvent, updateLifeEvent, deleteLifeEvent, theme } = useUserData();
@@ -95,16 +96,19 @@ export default function GoalsPage() {
                     </div>
                 </div>
                 
-                <div className={`p-6 rounded-3xl ${isLight ? 'bg-white shadow-xl shadow-zinc-200' : 'bg-zinc-900/50 border border-white/5'} flex items-center gap-4 relative overflow-hidden group`}>
+                <Link href="/achievements" className={`p-6 rounded-3xl ${isLight ? 'bg-white shadow-xl shadow-zinc-200 hover:shadow-emerald-200' : 'bg-zinc-900/50 border border-white/5 hover:border-emerald-500/30 hover:bg-zinc-900/80'} flex items-center justify-between relative overflow-hidden group transition-all duration-300`}>
                     <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-colors" />
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 text-emerald-500">
-                        <Trophy className="w-7 h-7" />
+                    <div className="flex items-center gap-4 relative z-10">
+                        <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 text-emerald-500 group-hover:scale-110 transition-transform">
+                            <Trophy className="w-7 h-7" />
+                        </div>
+                        <div>
+                            <p className={`text-sm font-bold ${isLight ? 'text-zinc-500' : 'text-zinc-400'} uppercase tracking-wider`}>Conquered</p>
+                            <p className="text-3xl font-black">{completedGoals.length}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p className={`text-sm font-bold ${isLight ? 'text-zinc-500' : 'text-zinc-400'} uppercase tracking-wider`}>Conquered</p>
-                        <p className="text-3xl font-black">{completedGoals.length}</p>
-                    </div>
-                </div>
+                    <ArrowRight className="w-6 h-6 text-emerald-500 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all relative z-10" />
+                </Link>
 
                 <div className={`p-6 rounded-3xl ${isLight ? 'bg-white shadow-xl shadow-zinc-200' : 'bg-zinc-900/50 border border-white/5'} flex flex-col justify-center relative overflow-hidden group`}>
                     <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl group-hover:bg-indigo-500/20 transition-colors" />
@@ -124,13 +128,15 @@ export default function GoalsPage() {
             </div>
 
             {/* Goals Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
+            <div className="max-w-3xl mx-auto relative z-10">
                 {/* Active Goals */}
                 <div className="space-y-6">
-                    <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-                        <div className="w-2 h-8 bg-blue-500 rounded-full" />
-                        <h2 className="text-2xl font-bold">Active Pursuits</h2>
-                        <span className="px-3 py-1 bg-blue-500/10 text-blue-400 text-sm font-bold rounded-full">{pendingGoals.length}</span>
+                    <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-2 h-8 bg-blue-500 rounded-full" />
+                            <h2 className="text-2xl font-bold">Active Pursuits</h2>
+                            <span className="px-3 py-1 bg-blue-500/10 text-blue-400 text-sm font-bold rounded-full">{pendingGoals.length}</span>
+                        </div>
                     </div>
                     
                     <AnimatePresence>
@@ -141,34 +147,6 @@ export default function GoalsPage() {
                             </motion.div>
                         ) : (
                             pendingGoals.map(goal => (
-                                <GoalCard 
-                                    key={goal.id} 
-                                    goal={goal} 
-                                    onToggle={() => toggleGoalStatus(goal.id, goal.description)} 
-                                    onDelete={() => handleDeleteGoal(goal.id)}
-                                    isLight={isLight}
-                                />
-                            ))
-                        )}
-                    </AnimatePresence>
-                </div>
-
-                {/* Completed Goals */}
-                <div className="space-y-6">
-                    <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-                        <div className="w-2 h-8 bg-emerald-500 rounded-full" />
-                        <h2 className="text-2xl font-bold">Triumphs</h2>
-                        <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-sm font-bold rounded-full">{completedGoals.length}</span>
-                    </div>
-
-                    <AnimatePresence>
-                        {completedGoals.length === 0 ? (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`p-8 text-center rounded-3xl border border-dashed ${isLight ? 'border-zinc-300 text-zinc-500' : 'border-zinc-800 text-zinc-500'}`}>
-                                <Trophy className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                                <p className="font-medium">Triumphs await your effort.</p>
-                            </motion.div>
-                        ) : (
-                            completedGoals.map(goal => (
                                 <GoalCard 
                                     key={goal.id} 
                                     goal={goal} 
@@ -272,7 +250,7 @@ function GoalCard({ goal, onToggle, onDelete, isLight }: { goal: any, onToggle: 
             layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            exit={{ opacity: 0, scale: 0.8, x: 200, transition: { duration: 0.4 } }}
             className={`p-6 rounded-3xl border transition-all duration-300 group ${
                 isCompleted 
                     ? isLight ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-950/20 border-emerald-500/20' 

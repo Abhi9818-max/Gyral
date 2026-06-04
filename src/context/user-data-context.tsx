@@ -102,7 +102,7 @@ export type Vow = {
 };
 
 
-export type NavItemKey = 'world' | 'ritual' | 'bank' | 'watch' | 'arena' | 'notes' | 'messages' | 'pacts' | 'memento' | 'citadel' | 'goals';
+export type NavItemKey = 'world' | 'ritual' | 'bank' | 'watch' | 'arena' | 'notes' | 'messages' | 'pacts' | 'memento' | 'citadel' | 'goals' | 'achievements';
 
 export const ALL_NAV_ITEMS: { key: NavItemKey, label: string, icon: string, href?: string }[] = [
     { key: 'world', label: 'World', icon: 'Globe', href: '/world' },
@@ -110,6 +110,8 @@ export const ALL_NAV_ITEMS: { key: NavItemKey, label: string, icon: string, href
     { key: 'bank', label: 'Bank', icon: 'Coins' },
     { key: 'watch', label: 'The Watch', icon: 'Shield' },
     { key: 'arena', label: 'Arena', icon: 'Sword' },
+    { key: 'goals', label: 'Goals', icon: 'Flag', href: '/goals' },
+    { key: 'achievements', label: 'Achievements', icon: 'Trophy', href: '/achievements' },
     { key: 'notes', label: 'Notes', icon: 'ClipboardList', href: '/notes' },
     { key: 'messages', label: 'Messages', icon: 'MessageCircle', href: '/messages' },
     { key: 'pacts', label: 'Pacts Modal', icon: 'ScrollText' },
