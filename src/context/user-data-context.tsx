@@ -102,7 +102,7 @@ export type Vow = {
 };
 
 
-export type NavItemKey = 'world' | 'ritual' | 'bank' | 'watch' | 'arena' | 'notes' | 'messages' | 'pacts' | 'memento' | 'citadel';
+export type NavItemKey = 'world' | 'ritual' | 'bank' | 'watch' | 'arena' | 'notes' | 'messages' | 'pacts' | 'memento' | 'citadel' | 'goals';
 
 export const ALL_NAV_ITEMS: { key: NavItemKey, label: string, icon: string, href?: string }[] = [
     { key: 'world', label: 'World', icon: 'Globe', href: '/world' },
@@ -268,6 +268,7 @@ interface UserDataContextType {
 
     lifeEvents: LifeEvent[];
     addLifeEvent: (event: Omit<LifeEvent, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
+    updateLifeEvent: (id: string, updates: Partial<LifeEvent>) => Promise<void>;
     deleteLifeEvent: (id: string) => Promise<void>;
 
     navPreferences: NavItemKey[];
@@ -1810,7 +1811,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             tasks, records, addTask, updateTask, deleteTask, toggleTaskArchive, addRecord, deleteRecord, getRecordsForDate, activeFilterTaskId, setActiveFilterTaskId,
             consistencyScore, currentStreak, longestStreak, streakStatus, streakTier, streakStrength, rebuildMode, analyzePatterns, getAdaptiveSuggestion, getTaskAnalytics,
             lastCompletion, setLastCompletion, getStreakForDate, showLossModal, setShowLossModal, pacts, addPact, togglePact, deletePact, shiftPact, notes, addNote, updateNote, deleteNote,
-            restoreData, birthDate, setBirthDate: updateBirthDate, showStatsCard, toggleStatsCard, theme, setTheme, language, setLanguage, user, lifeEvents, addLifeEvent, deleteLifeEvent,
+            restoreData, birthDate, setBirthDate: updateBirthDate, showStatsCard, toggleStatsCard, theme, setTheme, language, setLanguage, user, lifeEvents, addLifeEvent, updateLifeEvent, deleteLifeEvent,
             debts, addDebt, payDebt, vows, addVow, completeVowDaily, extendVow, isExiled, exiledUntil, redeemExile, factions, currentFaction, setFaction, investments, addInvestment, completeInvestment,
             navPreferences, updateNavPreferences, ALL_NAV_ITEMS, profile, setProfile, onboardingCompleted, completeOnboarding, mementoViewMode, toggleMementoViewMode,
             breakVow, restoreVowStreak, getBrokenVows,
