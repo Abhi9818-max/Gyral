@@ -12,7 +12,7 @@ interface LogActivityModalProps {
 }
 
 export function LogActivityModal({ isOpen, onClose, dateStr }: LogActivityModalProps) {
-    const { tasks, addRecord, deleteRecord, getRecordsForDate, getTaskAnalytics } = useUserData();
+    const { tasks, addRecord, deleteRecord, getRecordsForDate, getTaskAnalytics, activeFilterTaskId } = useUserData();
     const [selectedTaskId, setSelectedTaskId] = useState<string>('');
     const [useIntensity, setUseIntensity] = useState(false);
     const [intensity, setIntensity] = useState<number>(1);
@@ -41,8 +41,12 @@ export function LogActivityModal({ isOpen, onClose, dateStr }: LogActivityModalP
 
     useEffect(() => {
         if (isOpen) {
-            // Default to first active task if none selected
-            if (!selectedTaskId && activeTasks.length > 0) {
+            // Default to active filter task if set
+            if (activeFilterTaskId && activeTasks.some(t => t.id === activeFilterTaskId)) {
+                setSelectedTaskId(activeFilterTaskId);
+            }
+            // Fallback to first active task if none selected
+            else if (!selectedTaskId && activeTasks.length > 0) {
                 setSelectedTaskId(activeTasks[0].id);
             }
 
@@ -51,7 +55,7 @@ export function LogActivityModal({ isOpen, onClose, dateStr }: LogActivityModalP
             setExistingRecords(records);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isOpen, dateStr, tasks, getRecordsForDate, selectedTaskId]);
+    }, [isOpen, dateStr, tasks, getRecordsForDate, activeFilterTaskId]);
 
     // Load analytics when task changes
     useEffect(() => {
