@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { useUserData } from '@/context/user-data-context';
 import { Trophy, Star, Sparkles, Medal, Calendar, Award } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 
 export default function AchievementsPage() {
@@ -17,7 +17,7 @@ export default function AchievementsPage() {
             .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
     }, [lifeEvents]);
 
-    const containerVariants = {
+    const containerVariants: Variants = {
         hidden: { opacity: 0 },
         show: {
             opacity: 1,
@@ -25,7 +25,7 @@ export default function AchievementsPage() {
         }
     };
 
-    const itemVariants = {
+    const itemVariants: Variants = {
         hidden: { opacity: 0, y: 30, scale: 0.9 },
         show: { 
             opacity: 1, 
