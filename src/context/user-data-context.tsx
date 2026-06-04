@@ -792,6 +792,15 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const updateLifeEvent = async (id: string, updates: Partial<LifeEvent>) => {
+        const { error } = await supabase.from('life_events').update(updates).match({ id });
+        if (!error) {
+            setLifeEvents(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+        } else {
+            console.error("Error updating life event:", error);
+        }
+    };
+
     // --- DEBTS ---
     const fetchDebts = async () => {
         const { data: { user } } = await supabase.auth.getUser();
