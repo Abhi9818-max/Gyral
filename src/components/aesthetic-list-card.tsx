@@ -86,7 +86,7 @@ export const AestheticListCard = ({ id, title, items, isCompleted }: AestheticLi
                                 </h3>
                                 <div className="flex items-center gap-2 text-zinc-400 font-medium text-lg">
                                     <Calendar className="w-5 h-5" />
-                                    {format(parseISO(item.date), 'MMMM do, yyyy')}
+                                    {format(parseISO(item.event_date), 'MMMM do, yyyy')}
                                 </div>
                             </div>
                         </div>
