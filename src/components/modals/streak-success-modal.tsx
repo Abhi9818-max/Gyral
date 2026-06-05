@@ -18,9 +18,9 @@ export function StreakSuccessModal() {
         const titles = STREAK_TITLES[streakTier];
         const quotes = STREAK_QUOTES[streakTier];
 
-        // eslint-disable-next-line react-hooks/purity
+         
         const randomTitle = titles[Math.floor(Math.random() * titles.length)];
-        // eslint-disable-next-line react-hooks/purity
+         
         const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
 
         // Helper to get streak specific to this completion event

@@ -54,7 +54,7 @@ export function DailyReviewModal({ isOpen, onClose }: DailyReviewModalProps) {
             setUpdates(initialUpdates);
             setReviewedCount(count);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [isOpen, activeTasks, records, activeFilterTaskId]);
 
     const handleToggle = (taskId: string) => {

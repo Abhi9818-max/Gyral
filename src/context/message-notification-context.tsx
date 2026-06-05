@@ -41,9 +41,9 @@ export function MessageNotificationProvider({ children }: { children: React.Reac
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 setCurrentUser(user.id);
-                // eslint-disable-next-line react-hooks/immutability
+                 
                 loadUnreadCount(user.id);
-                // eslint-disable-next-line react-hooks/immutability
+                 
                 loadFriendRequestCount(user.id);
             }
         };

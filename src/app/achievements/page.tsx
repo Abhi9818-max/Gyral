@@ -5,20 +5,13 @@ import { useUserData } from '@/context/user-data-context';
 import { Trophy, Star, Sparkles, Medal, Calendar, Award, Download } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
-import { AestheticCard } from '@/components/aesthetic-card';
+import { AestheticListCard } from '@/components/aesthetic-list-card';
 import { downloadAestheticCard } from '@/utils/download-card';
 
 export default function AchievementsPage() {
     const { lifeEvents, theme } = useUserData();
     const isLight = theme === 'light';
-    const [isDownloading, setIsDownloading] = React.useState<string | null>(null);
-
-    const handleDownload = async (id: string, title: string) => {
-        setIsDownloading(id);
-        const filename = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        await downloadAestheticCard(`aesthetic-card-${id}`, `gyral-achievement-${filename}`);
-        setIsDownloading(null);
-    };
+    const [isDownloading, setIsDownloading] = React.useState(false);
 
     // Filter goals that are marked as [DONE]
     const achievements = useMemo(() => {
@@ -91,6 +84,27 @@ export default function AchievementsPage() {
                     <span className={`text-sm font-bold uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>Total Conquered</span>
                     <span className="text-4xl font-black text-amber-500">{achievements.length}</span>
                 </motion.div>
+
+                {achievements.length > 0 && (
+                    <motion.button
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 }}
+                        onClick={async () => {
+                            setIsDownloading(true);
+                            await downloadAestheticCard('aesthetic-card-achievements-list', 'gyral-hall-of-legends');
+                            setIsDownloading(false);
+                        }}
+                        disabled={isDownloading}
+                        className={`px-8 py-4 rounded-3xl flex flex-col items-center justify-center transition-all ${isLight ? 'bg-amber-100 text-amber-700 hover:bg-amber-200 shadow-xl border border-amber-200' : 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/30'} ${isDownloading ? 'opacity-50 cursor-wait' : ''}`}
+                    >
+                        <span className="text-sm font-bold uppercase tracking-widest opacity-80">Forge Legacy</span>
+                        <div className="flex items-center gap-2 mt-1">
+                            <Download className={`w-6 h-6 ${isDownloading ? 'animate-bounce' : ''}`} />
+                            <span className="font-black text-xl">{isDownloading ? 'Forging...' : 'Download Card'}</span>
+                        </div>
+                    </motion.button>
+                )}
             </div>
 
             {achievements.length === 0 ? (
@@ -156,32 +170,24 @@ export default function AchievementsPage() {
 
                                     {/* Action Buttons */}
                                     <div className="absolute bottom-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-4 group-hover:translate-y-0 flex gap-2">
-                                        <button 
-                                            onClick={() => handleDownload(achievement.id, achievement.title)}
-                                            disabled={isDownloading === achievement.id}
-                                            className={`p-3 rounded-xl transition-colors ${isLight ? 'bg-zinc-100 hover:bg-zinc-200 text-zinc-600' : 'bg-white/10 hover:bg-white/20 text-white'} disabled:opacity-50`}
-                                            title="Download Aesthetic Card"
-                                        >
-                                            <Download className={`w-5 h-5 ${isDownloading === achievement.id ? 'animate-bounce text-amber-500' : ''}`} />
-                                        </button>
                                         <div className={`p-3 rounded-xl ${isLight ? 'bg-amber-50 text-amber-500' : 'bg-amber-500/10 text-amber-400'}`}>
                                             <Sparkles className="w-5 h-5" />
                                         </div>
                                     </div>
-                                    
-                                    {/* Hidden element for html2canvas */}
-                                    <AestheticCard 
-                                        id={achievement.id}
-                                        title={achievement.title}
-                                        date={achievement.event_date}
-                                        isCompleted={true}
-                                    />
                                 </motion.div>
                             );
                         })}
                     </AnimatePresence>
                 </motion.div>
             )}
+
+            {/* Hidden List Card */}
+            <AestheticListCard
+                id="achievements-list"
+                title="Hall of Legends"
+                items={achievements}
+                isCompleted={true}
+            />
         </div>
     );
 }

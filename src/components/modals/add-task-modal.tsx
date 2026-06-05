@@ -60,7 +60,7 @@ export function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
     // Reset state when modal opens/closes
     useEffect(() => {
         if (!isOpen) {
-            // eslint-disable-next-line react-hooks/immutability
+             
             resetForm();
         } else if (!isEditing) {
             // When opening fresh, pick a smart color

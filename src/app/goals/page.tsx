@@ -6,13 +6,14 @@ import { Flag, Plus, CheckCircle2, Circle, Target, Trophy, Sparkles, Calendar, T
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
-import { AestheticCard } from '@/components/aesthetic-card';
+import { AestheticListCard } from '@/components/aesthetic-list-card';
 import { downloadAestheticCard } from '@/utils/download-card';
 
 export default function GoalsPage() {
     const { lifeEvents, addLifeEvent, updateLifeEvent, deleteLifeEvent, theme } = useUserData();
 
     const [isAddingGoal, setIsAddingGoal] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
     const [newTitle, setNewTitle] = useState('');
     const [newDescription, setNewDescription] = useState('');
     const [newDate, setNewDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -139,6 +140,20 @@ export default function GoalsPage() {
                             <h2 className="text-2xl font-bold">Active Pursuits</h2>
                             <span className="px-3 py-1 bg-blue-500/10 text-blue-400 text-sm font-bold rounded-full">{pendingGoals.length}</span>
                         </div>
+                        {pendingGoals.length > 0 && (
+                            <button
+                                onClick={async () => {
+                                    setIsDownloading(true);
+                                    await downloadAestheticCard('aesthetic-card-goals-list', 'gyral-active-goals');
+                                    setIsDownloading(false);
+                                }}
+                                disabled={isDownloading}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${isLight ? 'bg-white border-zinc-200 hover:bg-zinc-50' : 'bg-zinc-900/50 border-white/10 hover:bg-white/5'} ${isDownloading ? 'opacity-50 cursor-wait' : ''}`}
+                            >
+                                <Download className={`w-4 h-4 ${isDownloading ? 'animate-bounce text-blue-500' : ''}`} />
+                                {isDownloading ? 'Forging...' : 'Download Goals'}
+                            </button>
+                        )}
                     </div>
                     
                     <AnimatePresence>
@@ -239,6 +254,14 @@ export default function GoalsPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Hidden list card for download */}
+            <AestheticListCard
+                id="goals-list"
+                title="Active Pursuits"
+                items={pendingGoals}
+                isCompleted={false}
+            />
         </div>
     );
 }
@@ -246,15 +269,6 @@ export default function GoalsPage() {
 function GoalCard({ goal, onToggle, onDelete, isLight }: { goal: any, onToggle: () => void, onDelete: () => void, isLight: boolean }) {
     const isCompleted = goal.description?.includes('[DONE]');
     const cleanDescription = goal.description?.replace('[DONE]', '').trim();
-    const [isDownloading, setIsDownloading] = useState(false);
-
-    const handleDownload = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setIsDownloading(true);
-        const filename = goal.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        await downloadAestheticCard(`aesthetic-goal-${goal.id}`, `gyral-goal-${filename}`);
-        setIsDownloading(false);
-    };
 
     return (
         <motion.div 
@@ -305,14 +319,6 @@ function GoalCard({ goal, onToggle, onDelete, isLight }: { goal: any, onToggle: 
 
                 <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
-                        onClick={handleDownload}
-                        disabled={isDownloading}
-                        className={`p-2 rounded-xl transition-colors ${isLight ? 'hover:bg-zinc-200 text-zinc-500' : 'hover:bg-white/10 text-zinc-400'} disabled:opacity-50`}
-                        title="Download Aesthetic Card"
-                    >
-                        <Download className={`w-5 h-5 ${isDownloading ? 'animate-bounce text-blue-500' : ''}`} />
-                    </button>
-                    <button 
                         onClick={(e) => { e.stopPropagation(); onDelete(); }}
                         className={`p-2 rounded-xl transition-colors ${isLight ? 'hover:bg-red-100 text-red-500' : 'hover:bg-red-500/10 text-red-400'}`}
                         title="Delete Goal"
@@ -321,13 +327,6 @@ function GoalCard({ goal, onToggle, onDelete, isLight }: { goal: any, onToggle: 
                     </button>
                 </div>
             </div>
-            
-            <AestheticCard 
-                id={`goal-${goal.id}`}
-                title={goal.title}
-                date={goal.event_date}
-                isCompleted={isCompleted}
-            />
         </motion.div>
     );
 }

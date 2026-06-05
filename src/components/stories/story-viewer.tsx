@@ -30,7 +30,7 @@ export function StoryViewer({ initialStoryIndex, stories, onClose }: StoryViewer
             // If it's MY story, fetch viewers
             // Assuming currentStory has user_id, check against current logged in user (from context or supbase)
             // Ideally pass 'isMine' or fetch 'user' in Context
-            // eslint-disable-next-line react-hooks/immutability
+             
             fetchViewers(currentStory.id);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps

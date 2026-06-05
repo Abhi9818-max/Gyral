@@ -86,7 +86,7 @@ function MessagesContent() {
     // Load friends
     useEffect(() => {
         if (!currentUser) return;
-        // eslint-disable-next-line react-hooks/immutability
+         
         loadFriends();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentUser]);
@@ -106,11 +106,11 @@ function MessagesContent() {
     useEffect(() => {
         if (selectedFriend && currentUser) {
             setActiveChatPartner(selectedFriend.id);
-            // eslint-disable-next-line react-hooks/immutability
+             
             loadMessages();
-            // eslint-disable-next-line react-hooks/immutability
+             
             markMessagesAsRead();
-            // eslint-disable-next-line react-hooks/immutability
+             
             subscribeToMessages();
         } else {
             setActiveChatPartner(null);

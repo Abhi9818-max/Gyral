@@ -18,7 +18,7 @@ export function useFCM() {
 
             // Only auto-init if we already have permission granted
             if (!Capacitor.isNativePlatform() && Notification.permission === 'granted') {
-                // eslint-disable-next-line react-hooks/immutability
+                 
                 await requestPermission();
             }
         };
