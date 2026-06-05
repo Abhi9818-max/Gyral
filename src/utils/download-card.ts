@@ -9,396 +9,380 @@ export const downloadAestheticCard = async (
     filename: string
 ) => {
     const DPR = 2;
-    const W = 720;
-    const HERO_H = 460;
-    const ITEM_H = 66;
-    const ITEM_GAP = 10;
-    const INFO_H = 150;
-    const FOOTER_H = 100;
-    const RADIUS = 36;
-    const PADDING = 32;
+    const W = 800;
+    const PADDING = 56;
+    const isGoals = type === 'goals';
 
-    const count = Math.max(items.length, 1);
-    const LIST_H = count * (ITEM_H + ITEM_GAP) + 24;
+    // ── Pinterest Palette ──────────────────────────────────────────────────
+    // Goals:       warm terracotta / dusty rose / cream
+    // Achievements: rich chocolate / antique gold / warm ivory
+    const BG_DARK    = isGoals ? '#110b09' : '#0d0900';
+    const BG_MID     = isGoals ? '#1c110d' : '#150e03';
+    const ORB_A      = isGoals ? '#8b3a2a' : '#7a5018';  // terracotta / dark gold
+    const ORB_B      = isGoals ? '#6b2d3e' : '#5c3a10';  // dusty plum / chocolate
+    const ACCENT     = isGoals ? '#d4a090' : '#d4aa6a';  // dusty rose / antique gold
+    const ACCENT2    = isGoals ? '#a05060' : '#b88a40';  // muted rose / warm gold
+    const TEXT_MAIN  = '#f5f0e8';                         // warm cream
+    const TEXT_SUB   = isGoals ? '#c4a49a' : '#c4a86a';  // warm muted
+    const TEXT_DIM   = 'rgba(245,240,232,0.35)';
+    const ITEM_BG    = isGoals ? 'rgba(139,58,42,0.08)' : 'rgba(122,80,24,0.10)';
+    const ITEM_BDR   = isGoals ? 'rgba(212,160,144,0.15)' : 'rgba(212,170,106,0.18)';
+    const BAR_A      = isGoals ? '#d4a090' : '#d4aa6a';
+    const BAR_B      = isGoals ? '#a05060' : '#8b6020';
+
+    const ITEM_H  = 80;
+    const ITEM_GAP = 14;
+    const HERO_H  = 440;
+    const INFO_H  = 130;
+    const LIST_H  = Math.max(items.length, 1) * (ITEM_H + ITEM_GAP) + 20;
+    const FOOTER_H = 110;
     const H = HERO_H + INFO_H + LIST_H + FOOTER_H;
 
     const canvas = document.createElement('canvas');
-    canvas.width = W * DPR;
+    canvas.width  = W * DPR;
     canvas.height = H * DPR;
     const ctx = canvas.getContext('2d')!;
     ctx.scale(DPR, DPR);
 
-    const isGoals = type === 'goals';
-
-    // ── Color System ────────────────────────────────────────────────────────
-    const CARD_BG     = '#18181b';
-    const HERO_BG1    = isGoals ? '#1e1b4b' : '#1c1300';
-    const HERO_BG2    = isGoals ? '#312e81' : '#292100';
-    const HERO_BG3    = isGoals ? '#0ea5e9' : '#92400e';
-    const ACCENT_A    = isGoals ? '#818cf8' : '#fbbf24';
-    const ACCENT_B    = isGoals ? '#38bdf8' : '#34d399';
-    const ACCENT_GLOW = isGoals ? '#4f46e5' : '#b45309';
-
-    // ── Outer card clip ──────────────────────────────────────────────────────
+    // ── Full card clipping with soft radius ────────────────────────────────
     ctx.save();
-    roundRectPath(ctx, 0, 0, W, H, RADIUS);
-    ctx.clip();
+    cardClip(ctx, 0, 0, W, H, 28);
 
-    // ── Card Base Background ─────────────────────────────────────────────────
-    ctx.fillStyle = CARD_BG;
+    // ═══════════════════════════════════════════════════════
+    // BACKGROUND
+    // ═══════════════════════════════════════════════════════
+    // Deep warm background
+    const bgGrad = ctx.createLinearGradient(0, 0, W * 0.6, H);
+    bgGrad.addColorStop(0, BG_DARK);
+    bgGrad.addColorStop(0.6, BG_MID);
+    bgGrad.addColorStop(1, BG_DARK);
+    ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, W, H);
 
-    // ═══════════════════════════════════════════════════════════
-    // HERO SECTION
-    // ═══════════════════════════════════════════════════════════
+    // Warm glow top-left
+    const gl1 = ctx.createRadialGradient(W * 0.15, H * 0.1, 0, W * 0.15, H * 0.1, W * 0.7);
+    gl1.addColorStop(0, ORB_A + '40');
+    gl1.addColorStop(0.45, ORB_A + '18');
+    gl1.addColorStop(1, 'transparent');
+    ctx.fillStyle = gl1;
+    ctx.fillRect(0, 0, W, H);
+
+    // Warm glow bottom-right
+    const gl2 = ctx.createRadialGradient(W * 0.88, H * 0.88, 0, W * 0.88, H * 0.88, W * 0.65);
+    gl2.addColorStop(0, ORB_B + '45');
+    gl2.addColorStop(0.45, ORB_B + '18');
+    gl2.addColorStop(1, 'transparent');
+    ctx.fillStyle = gl2;
+    ctx.fillRect(0, 0, W, H);
+
+    // Grain / film noise overlay
+    addGrain(ctx, W, H, 0.038);
+
+    // ═══════════════════════════════════════════════════════
+    // HERO SECTION — warm editorial art
+    // ═══════════════════════════════════════════════════════
     {
         ctx.save();
-        roundRectPath(ctx, 0, 0, W, HERO_H, RADIUS);
-        ctx.clip();
-
-        // Hero base gradient
-        const heroGrad = ctx.createLinearGradient(0, 0, W, HERO_H);
-        heroGrad.addColorStop(0, HERO_BG1);
-        heroGrad.addColorStop(0.5, HERO_BG2);
-        heroGrad.addColorStop(1, HERO_BG1);
-        ctx.fillStyle = heroGrad;
+        // Slightly tinted hero zone
+        const heroZone = ctx.createLinearGradient(0, 0, W, HERO_H);
+        heroZone.addColorStop(0, ORB_A + '28');
+        heroZone.addColorStop(0.5, 'transparent');
+        heroZone.addColorStop(1, ORB_B + '18');
+        ctx.fillStyle = heroZone;
         ctx.fillRect(0, 0, W, HERO_H);
 
-        // Large glow orb top-center
-        const orb1 = ctx.createRadialGradient(W * 0.5, 0, 0, W * 0.5, 0, W * 0.8);
-        orb1.addColorStop(0, ACCENT_A + '55');
-        orb1.addColorStop(0.4, ACCENT_A + '22');
-        orb1.addColorStop(1, 'transparent');
-        ctx.fillStyle = orb1;
-        ctx.fillRect(0, 0, W, HERO_H);
+        // Organic arch shape (like a decorative moon / frame)
+        drawOrganicFrame(ctx, W, HERO_H, ACCENT + '20', ACCENT2 + '15');
 
-        // Bottom-right accent glow
-        const orb2 = ctx.createRadialGradient(W * 0.85, HERO_H * 0.85, 0, W * 0.85, HERO_H * 0.85, W * 0.6);
-        orb2.addColorStop(0, HERO_BG3 + '55');
-        orb2.addColorStop(0.5, HERO_BG3 + '18');
-        orb2.addColorStop(1, 'transparent');
-        ctx.fillStyle = orb2;
-        ctx.fillRect(0, 0, W, HERO_H);
-
-        // Fine dot grid on hero
-        ctx.fillStyle = 'rgba(255,255,255,0.04)';
-        for (let x = 30; x < W; x += 30) {
-            for (let y = 30; y < HERO_H; y += 30) {
-                ctx.beginPath();
-                ctx.arc(x, y, 1.2, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        // Horizontal shimmer lines
-        for (let i = 0; i < 4; i++) {
-            const ly = HERO_H * (0.25 + i * 0.18);
-            const lGrad = ctx.createLinearGradient(0, ly, W, ly);
-            lGrad.addColorStop(0, 'transparent');
-            lGrad.addColorStop(0.3, ACCENT_A + '14');
-            lGrad.addColorStop(0.7, ACCENT_B + '14');
-            lGrad.addColorStop(1, 'transparent');
-            ctx.strokeStyle = lGrad;
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(0, ly);
-            ctx.lineTo(W, ly);
-            ctx.stroke();
-        }
-
-        // Big glowing center ring
-        const ringCX = W / 2;
-        const ringCY = HERO_H * 0.48;
-        const ringR = 100;
-        for (let i = 3; i >= 1; i--) {
-            ctx.beginPath();
-            ctx.arc(ringCX, ringCY, ringR + i * 22, 0, Math.PI * 2);
-            const alpha = ['18', '10', '08'][i - 1];
-            ctx.strokeStyle = ACCENT_A + alpha;
-            ctx.lineWidth = 1;
-            ctx.stroke();
-        }
-
-        // Gradient circle fill
-        const circleGrad = ctx.createLinearGradient(
-            ringCX - ringR, ringCY - ringR,
-            ringCX + ringR, ringCY + ringR
-        );
-        circleGrad.addColorStop(0, ACCENT_A + 'ee');
-        circleGrad.addColorStop(1, ACCENT_B + 'cc');
-        ctx.beginPath();
-        ctx.arc(ringCX, ringCY, ringR, 0, Math.PI * 2);
-        ctx.fillStyle = circleGrad;
-        ctx.fill();
-
-        // Inner highlight on circle
-        const innerLight = ctx.createRadialGradient(
-            ringCX - 30, ringCY - 30, 0,
-            ringCX, ringCY, ringR
-        );
-        innerLight.addColorStop(0, 'rgba(255,255,255,0.35)');
-        innerLight.addColorStop(0.6, 'rgba(255,255,255,0.05)');
-        innerLight.addColorStop(1, 'transparent');
-        ctx.fillStyle = innerLight;
-        ctx.beginPath();
-        ctx.arc(ringCX, ringCY, ringR, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Emoji centered in circle
-        ctx.font = '72px sans-serif';
+        // Large elegant text as hero element
+        ctx.save();
+        ctx.globalAlpha = 0.07;
+        ctx.font = `900 200px Georgia, serif`;
+        ctx.fillStyle = ACCENT;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(isGoals ? '🎯' : '🏆', ringCX, ringCY);
+        ctx.fillText(isGoals ? '◎' : '✦', W / 2, HERO_H * 0.46);
+        ctx.restore();
+
+        // Central glowing ring
+        const cx = W / 2, cy = HERO_H * 0.46;
+        const rings = [100, 72, 48];
+        rings.forEach((r, i) => {
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.strokeStyle = ACCENT + ['30', '22', '18'][i];
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        });
+
+        // Inner filled circle
+        const circGrad = ctx.createRadialGradient(cx - 18, cy - 18, 0, cx, cy, 48);
+        circGrad.addColorStop(0, ACCENT + 'ee');
+        circGrad.addColorStop(0.6, ACCENT2 + 'cc');
+        circGrad.addColorStop(1, ORB_A + 'aa');
+        ctx.beginPath();
+        ctx.arc(cx, cy, 48, 0, Math.PI * 2);
+        ctx.fillStyle = circGrad;
+        ctx.fill();
+        // Inner highlight
+        const ihl = ctx.createRadialGradient(cx - 16, cy - 16, 0, cx, cy, 48);
+        ihl.addColorStop(0, 'rgba(255,255,255,0.3)');
+        ihl.addColorStop(1, 'transparent');
+        ctx.fillStyle = ihl;
+        ctx.fill();
+        // Emoji
+        ctx.font = '40px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(isGoals ? '🎯' : '🏆', cx, cy + 1);
         ctx.textAlign = 'left';
         ctx.textBaseline = 'alphabetic';
 
-        // Bottom gradient fade into card
-        const fadeGrad = ctx.createLinearGradient(0, HERO_H - 80, 0, HERO_H);
-        fadeGrad.addColorStop(0, 'transparent');
-        fadeGrad.addColorStop(1, CARD_BG);
-        ctx.fillStyle = fadeGrad;
-        ctx.fillRect(0, HERO_H - 80, W, 80);
+        // Decorative fine lines (horizontal etching)
+        for (let i = 0; i < 6; i++) {
+            const ly = HERO_H * 0.74 + i * 8;
+            const lg = ctx.createLinearGradient(PADDING, ly, W - PADDING, ly);
+            lg.addColorStop(0, 'transparent');
+            lg.addColorStop(0.35, ACCENT + '28');
+            lg.addColorStop(0.65, ACCENT + '28');
+            lg.addColorStop(1, 'transparent');
+            ctx.strokeStyle = lg;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(PADDING, ly);
+            ctx.lineTo(W - PADDING, ly);
+            ctx.stroke();
+        }
 
-        // ── Overlay pill (bottom-left of hero) ──────────────────────────────
-        const pillText = `${items.length} ${isGoals ? (items.length === 1 ? 'Goal' : 'Goals') : (items.length === 1 ? 'Achievement' : 'Achievements')}`;
-        ctx.font = '700 17px -apple-system, "Helvetica Neue", sans-serif';
-        ctx.letterSpacing = '0.5px';
-        const pillW = ctx.measureText(pillText).width + 44;
-        const pillH = 42;
-        const pillX = 24;
-        const pillY = HERO_H - pillH - 28;
+        // Bottom vignette fade into card bg
+        const vig = ctx.createLinearGradient(0, HERO_H - 100, 0, HERO_H);
+        vig.addColorStop(0, 'transparent');
+        vig.addColorStop(1, BG_MID + 'ff');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, HERO_H - 100, W, 100);
 
-        // Pill glass bg
-        ctx.beginPath();
-        ctx.roundRect(pillX, pillY, pillW, pillH, pillH / 2);
-        ctx.fillStyle = 'rgba(0,0,0,0.55)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        // HERO TITLE — large editorial type
+        ctx.font = `300 16px Georgia, "Times New Roman", serif`;
+        ctx.fillStyle = TEXT_SUB;
+        ctx.letterSpacing = '5px';
+        ctx.textAlign = 'center';
+        ctx.fillText(isGoals ? 'ACTIVE PURSUITS' : 'HALL OF LEGENDS', W / 2, HERO_H * 0.80);
 
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(pillText, pillX + 22, pillY + pillH / 2 + 6);
+        ctx.font = `700 52px Georgia, "Times New Roman", serif`;
+        ctx.letterSpacing = '-1px';
+        ctx.fillStyle = TEXT_MAIN;
+        ctx.fillText(isGoals ? 'My Goals' : 'My Victories', W / 2, HERO_H * 0.80 + 60);
+
+        ctx.textAlign = 'left';
         ctx.letterSpacing = '0px';
 
-        // ── Top-right circle button ──────────────────────────────────────────
-        const btnCX = W - 28 - 24;
-        const btnCY = 28 + 24;
+        // Small item count badge (bottom-left, frosted)
+        const badge = `${items.length} ${isGoals ? (items.length === 1 ? 'goal' : 'goals') : (items.length === 1 ? 'triumph' : 'triumphs')}`;
+        ctx.font = `600 15px -apple-system, "Helvetica Neue", sans-serif`;
+        const bW = ctx.measureText(badge).width + 36;
+        const bH = 38;
+        const bX = PADDING;
+        const bY = HERO_H - bH - 20;
         ctx.beginPath();
-        ctx.arc(btnCX, btnCY, 24, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0,0,0,0.50)';
+        ctx.roundRect(bX, bY, bW, bH, bH / 2);
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
         ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,0.20)';
+        ctx.strokeStyle = ACCENT + '40';
         ctx.lineWidth = 1;
         ctx.stroke();
-        // Arrow icon
-        ctx.strokeStyle = 'rgba(255,255,255,0.85)';
-        ctx.lineWidth = 2.5;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.beginPath();
-        ctx.moveTo(btnCX - 8, btnCY + 8);
-        ctx.lineTo(btnCX + 8, btnCY - 8);
-        ctx.moveTo(btnCX - 2, btnCY - 8);
-        ctx.lineTo(btnCX + 8, btnCY - 8);
-        ctx.lineTo(btnCX + 8, btnCY + 2);
-        ctx.stroke();
-        ctx.lineCap = 'butt';
+        ctx.fillStyle = TEXT_MAIN;
+        ctx.fillText(badge, bX + 18, bY + 25);
 
         ctx.restore();
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // INFO ROW (below hero)
-    // ═══════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
+    // INFO ROW
+    // ═══════════════════════════════════════════════════════
     {
-        const infoY = HERO_H + 10;
+        const iy = HERO_H + 18;
 
-        // Left: Title + subtitle
-        ctx.font = '800 32px -apple-system, "Helvetica Neue", sans-serif';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(isGoals ? 'Active Pursuits' : 'Hall of Legends', PADDING, infoY + 38);
+        // Left: title + caption
+        ctx.font = `700 28px Georgia, serif`;
+        ctx.fillStyle = TEXT_MAIN;
+        ctx.fillText(isGoals ? 'Active Pursuits' : 'Legendary Triumphs', PADDING, iy + 32);
 
-        ctx.font = '400 16px -apple-system, "Helvetica Neue", sans-serif';
-        ctx.fillStyle = 'rgba(255,255,255,0.45)';
-        ctx.fillText(isGoals ? 'My Goals' : 'My Achievements', PADDING, infoY + 64);
+        ctx.font = `400 14px -apple-system, sans-serif`;
+        ctx.fillStyle = TEXT_DIM;
+        ctx.letterSpacing = '0.5px';
+        ctx.fillText(isGoals ? 'Commitments in motion' : 'Victories carved in stone', PADDING, iy + 58);
+        ctx.letterSpacing = '0px';
 
-        // Right: flower icon + level text + progress bar
-        const rightX = W - PADDING - 220;
-
-        // Flower / star badge
-        ctx.font = '20px sans-serif';
-        ctx.fillText(isGoals ? '🎯' : '⭐', rightX, infoY + 36);
-
-        ctx.font = '600 15px -apple-system, "Helvetica Neue", sans-serif';
-        ctx.fillStyle = ACCENT_A;
+        // Right: count + warm bar
+        const bX = W - PADDING - 200;
+        ctx.font = `700 13px -apple-system, sans-serif`;
+        ctx.fillStyle = ACCENT;
+        ctx.letterSpacing = '1px';
+        ctx.textAlign = 'right';
         ctx.fillText(
-            isGoals ? `${items.length} in progress` : `${items.length} conquered`,
-            rightX + 30, infoY + 36
+            isGoals ? `${items.length} IN PROGRESS` : `${items.length} CONQUERED`,
+            W - PADDING, iy + 32
         );
+        ctx.letterSpacing = '0px';
+        ctx.textAlign = 'left';
 
         // Progress bar
-        const barX = rightX;
-        const barY = infoY + 50;
-        const barW = 220;
-        const barH = 8;
-
-        // Bar track
+        const barY = iy + 48;
+        const barW = 200;
         ctx.beginPath();
-        ctx.roundRect(barX, barY, barW, barH, barH / 2);
-        ctx.fillStyle = 'rgba(255,255,255,0.10)';
+        ctx.roundRect(bX, barY, barW, 5, 3);
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
         ctx.fill();
 
-        // Bar fill
-        const fillPct = Math.min(items.length / 10, 1); // 10 = "full"
-        const fillGrad = ctx.createLinearGradient(barX, barY, barX + barW * fillPct, barY);
-        fillGrad.addColorStop(0, ACCENT_A);
-        fillGrad.addColorStop(1, ACCENT_B);
+        const fillW = barW * Math.min(items.length / 10, 1);
+        const barGrad = ctx.createLinearGradient(bX, barY, bX + fillW, barY);
+        barGrad.addColorStop(0, BAR_A);
+        barGrad.addColorStop(1, BAR_B);
         ctx.beginPath();
-        ctx.roundRect(barX, barY, barW * fillPct, barH, barH / 2);
-        ctx.fillStyle = fillGrad;
+        ctx.roundRect(bX, barY, fillW, 5, 3);
+        ctx.fillStyle = barGrad;
         ctx.fill();
     }
 
-    // ── Divider ──────────────────────────────────────────────────────────────
-    const divY = HERO_H + INFO_H - 10;
-    const divGrad = ctx.createLinearGradient(PADDING, divY, W - PADDING, divY);
-    divGrad.addColorStop(0, 'transparent');
-    divGrad.addColorStop(0.3, 'rgba(255,255,255,0.15)');
-    divGrad.addColorStop(0.7, 'rgba(255,255,255,0.15)');
-    divGrad.addColorStop(1, 'transparent');
-    ctx.strokeStyle = divGrad;
+    // ── Elegant divider ─────────────────────────────────────────────────────
+    const divY = HERO_H + INFO_H - 4;
+    const dg = ctx.createLinearGradient(PADDING, divY, W - PADDING, divY);
+    dg.addColorStop(0, 'transparent');
+    dg.addColorStop(0.5, ACCENT + '35');
+    dg.addColorStop(1, 'transparent');
+    ctx.strokeStyle = dg;
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(PADDING, divY);
     ctx.lineTo(W - PADDING, divY);
     ctx.stroke();
 
-    // ═══════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     // ITEMS LIST
-    // ═══════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     {
-        const listStartY = HERO_H + INFO_H + 8;
-
+        const listY0 = HERO_H + INFO_H + 8;
         if (items.length === 0) {
-            ctx.font = 'italic 18px -apple-system, sans-serif';
-            ctx.fillStyle = 'rgba(255,255,255,0.25)';
+            ctx.font = 'italic 18px Georgia, serif';
+            ctx.fillStyle = TEXT_DIM;
             ctx.textAlign = 'center';
-            ctx.fillText('No items yet.', W / 2, listStartY + 50);
+            ctx.fillText('Nothing yet. The page is blank.', W / 2, listY0 + 55);
             ctx.textAlign = 'left';
         } else {
             items.forEach((item, i) => {
-                const yTop = listStartY + i * (ITEM_H + ITEM_GAP);
-                const itemX = PADDING;
-                const itemW = W - PADDING * 2;
+                const yT = listY0 + i * (ITEM_H + ITEM_GAP);
+                const iW = W - PADDING * 2;
 
-                // Item glass background
+                // Glass card bg
                 ctx.beginPath();
-                ctx.roundRect(itemX, yTop, itemW, ITEM_H, 16);
-                ctx.fillStyle = 'rgba(255,255,255,0.04)';
+                ctx.roundRect(PADDING, yT, iW, ITEM_H, 14);
+                ctx.fillStyle = ITEM_BG;
                 ctx.fill();
-                ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+                ctx.strokeStyle = ITEM_BDR;
                 ctx.lineWidth = 1;
                 ctx.stroke();
+
+                // Inner top shimmer
+                const shim = ctx.createLinearGradient(PADDING, yT, PADDING, yT + 2);
+                shim.addColorStop(0, 'rgba(255,255,255,0.07)');
+                shim.addColorStop(1, 'transparent');
+                ctx.beginPath();
+                ctx.roundRect(PADDING, yT, iW, 2, [14, 14, 0, 0]);
+                ctx.fillStyle = shim;
+                ctx.fill();
 
                 // Left accent bar gradient
-                const barGrad = ctx.createLinearGradient(itemX, yTop, itemX, yTop + ITEM_H);
-                barGrad.addColorStop(0, ACCENT_A);
-                barGrad.addColorStop(1, ACCENT_B);
+                const lb = ctx.createLinearGradient(PADDING, yT, PADDING, yT + ITEM_H);
+                lb.addColorStop(0, BAR_A);
+                lb.addColorStop(1, BAR_B);
                 ctx.beginPath();
-                ctx.roundRect(itemX, yTop, 4, ITEM_H, [16, 0, 0, 16]);
-                ctx.fillStyle = barGrad;
+                ctx.roundRect(PADDING, yT, 4, ITEM_H, [14, 0, 0, 14]);
+                ctx.fillStyle = lb;
                 ctx.fill();
 
-                // Item number
-                const numCX = itemX + 28;
-                const numCY = yTop + ITEM_H / 2;
+                // Number
+                const nCX = PADDING + 30, nCY = yT + ITEM_H / 2;
                 ctx.beginPath();
-                ctx.arc(numCX, numCY, 16, 0, Math.PI * 2);
-                ctx.fillStyle = ACCENT_A + '22';
+                ctx.arc(nCX, nCY, 15, 0, Math.PI * 2);
+                ctx.fillStyle = ACCENT + '22';
                 ctx.fill();
-                ctx.strokeStyle = ACCENT_A + '44';
+                ctx.strokeStyle = ACCENT + '50';
                 ctx.lineWidth = 1;
                 ctx.stroke();
-                ctx.font = '700 13px -apple-system, sans-serif';
-                ctx.fillStyle = ACCENT_A;
+                ctx.font = '600 13px -apple-system, sans-serif';
+                ctx.fillStyle = ACCENT;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(String(i + 1), numCX, numCY);
+                ctx.fillText(String(i + 1), nCX, nCY);
                 ctx.textAlign = 'left';
                 ctx.textBaseline = 'alphabetic';
 
                 // Title
-                const titleX = itemX + 54;
-                const maxTW = itemW - 54 - 130;
-                ctx.font = '600 18px -apple-system, "Helvetica Neue", sans-serif';
-                ctx.fillStyle = '#ffffff';
-                ctx.fillText(truncateText(ctx, item.title, maxTW), titleX, yTop + 28);
+                const tx = PADDING + 58;
+                const maxTW = iW - 58 - 120;
+                ctx.font = `600 19px Georgia, "Times New Roman", serif`;
+                ctx.fillStyle = TEXT_MAIN;
+                ctx.fillText(truncate(ctx, item.title, maxTW), tx, yT + 31);
 
                 // Date
-                let dateStr = '';
-                try { dateStr = format(parseISO(item.event_date), 'MMM d, yyyy'); }
-                catch { dateStr = ''; }
+                let ds = '';
+                try { ds = format(parseISO(item.event_date), 'MMM d, yyyy'); } catch { ds = ''; }
                 ctx.font = '400 13px -apple-system, sans-serif';
-                ctx.fillStyle = 'rgba(255,255,255,0.38)';
-                ctx.fillText(dateStr, titleX, yTop + 50);
+                ctx.fillStyle = TEXT_DIM;
+                ctx.fillText(ds, tx, yT + 56);
 
-                // Status pill (right)
-                const pillLabel = isGoals ? 'In Progress' : 'Conquered';
+                // Status pill right
+                const pl = isGoals ? 'Ongoing' : 'Done ✦';
                 ctx.font = '600 12px -apple-system, sans-serif';
-                ctx.letterSpacing = '0.5px';
-                const pillW2 = ctx.measureText(pillLabel).width + 24;
-                const pillX2 = itemX + itemW - pillW2 - 12;
-                const pillY2 = yTop + ITEM_H / 2 - 13;
+                const pW = ctx.measureText(pl).width + 24;
+                const pX = PADDING + iW - pW - 10;
+                const pY = yT + ITEM_H / 2 - 13;
                 ctx.beginPath();
-                ctx.roundRect(pillX2, pillY2, pillW2, 26, 13);
-                ctx.fillStyle = isGoals ? 'rgba(99,102,241,0.18)' : 'rgba(251,191,36,0.18)';
+                ctx.roundRect(pX, pY, pW, 26, 13);
+                ctx.fillStyle = ACCENT + '1a';
                 ctx.fill();
-                ctx.strokeStyle = isGoals ? 'rgba(129,140,248,0.35)' : 'rgba(251,191,36,0.35)';
+                ctx.strokeStyle = ACCENT + '38';
                 ctx.lineWidth = 1;
                 ctx.stroke();
-                ctx.fillStyle = ACCENT_A;
-                ctx.fillText(pillLabel, pillX2 + 12, pillY2 + 17);
-                ctx.letterSpacing = '0px';
+                ctx.fillStyle = ACCENT;
+                ctx.fillText(pl, pX + 12, pY + 17);
             });
         }
     }
 
-    // ── Second divider before footer ─────────────────────────────────────────
-    const div2Y = HERO_H + INFO_H + LIST_H + 10;
-    const div2Grad = ctx.createLinearGradient(PADDING, div2Y, W - PADDING, div2Y);
-    div2Grad.addColorStop(0, 'transparent');
-    div2Grad.addColorStop(0.3, 'rgba(255,255,255,0.12)');
-    div2Grad.addColorStop(0.7, 'rgba(255,255,255,0.12)');
-    div2Grad.addColorStop(1, 'transparent');
-    ctx.strokeStyle = div2Grad;
+    // ── Second divider ───────────────────────────────────────────────────────
+    const d2Y = HERO_H + INFO_H + LIST_H + 8;
+    const dg2 = ctx.createLinearGradient(PADDING, d2Y, W - PADDING, d2Y);
+    dg2.addColorStop(0, 'transparent');
+    dg2.addColorStop(0.5, ACCENT + '28');
+    dg2.addColorStop(1, 'transparent');
+    ctx.strokeStyle = dg2;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(PADDING, div2Y);
-    ctx.lineTo(W - PADDING, div2Y);
+    ctx.moveTo(PADDING, d2Y);
+    ctx.lineTo(W - PADDING, d2Y);
     ctx.stroke();
 
-    // ═══════════════════════════════════════════════════════════
-    // FOOTER (like S.I.G.I.L. in reference)
-    // ═══════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
+    // FOOTER — like S.I.G.I.L.
+    // ═══════════════════════════════════════════════════════
     {
-        const footerCY = div2Y + FOOTER_H / 2;
-
-        ctx.font = '800 22px -apple-system, "Helvetica Neue", sans-serif';
-        ctx.letterSpacing = '6px';
+        const fY = d2Y + FOOTER_H / 2 + 10;
+        ctx.font = `800 20px Georgia, serif`;
+        ctx.letterSpacing = '8px';
+        ctx.fillStyle = 'rgba(245,240,232,0.75)';
         ctx.textAlign = 'center';
-        ctx.fillStyle = 'rgba(255,255,255,0.80)';
-        ctx.fillText('G Y R A L', W / 2, footerCY - 4);
+        ctx.fillText('G Y R A L', W / 2, fY - 4);
 
-        ctx.font = '400 14px -apple-system, sans-serif';
-        ctx.letterSpacing = '1px';
-        ctx.fillStyle = 'rgba(255,255,255,0.30)';
-        ctx.fillText(isGoals ? 'System of Personal Growth' : 'Hall of Legends', W / 2, footerCY + 22);
+        ctx.font = `300 13px -apple-system, "Helvetica Neue", sans-serif`;
+        ctx.letterSpacing = '2px';
+        ctx.fillStyle = TEXT_DIM;
+        ctx.fillText(isGoals ? 'System of Personal Growth' : 'Hall of Legends', W / 2, fY + 22);
         ctx.letterSpacing = '0px';
         ctx.textAlign = 'left';
     }
 
-    ctx.restore(); // card clip
+    ctx.restore();
 
     // ── Download ─────────────────────────────────────────────────────────────
     const link = document.createElement('a');
@@ -408,10 +392,8 @@ export const downloadAestheticCard = async (
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-function roundRectPath(
-    ctx: CanvasRenderingContext2D,
-    x: number, y: number, w: number, h: number, r: number
-) {
+
+function cardClip(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
     ctx.lineTo(x + w - r, y);
@@ -423,28 +405,40 @@ function roundRectPath(
     ctx.lineTo(x, y + r);
     ctx.arcTo(x, y, x + r, y, r);
     ctx.closePath();
+    ctx.clip();
 }
 
-function roundRect(
-    ctx: CanvasRenderingContext2D,
-    x: number, y: number, w: number, h: number,
-    r: number | [number, number, number, number] = 12
-) {
-    const [tl, tr, br, bl] = typeof r === 'number' ? [r, r, r, r] : r;
+function drawOrganicFrame(ctx: CanvasRenderingContext2D, W: number, H: number, stroke1: string, stroke2: string) {
+    // Decorative arc at the top — like an editorial arch shape
+    ctx.save();
     ctx.beginPath();
-    ctx.moveTo(x + tl, y);
-    ctx.lineTo(x + w - tr, y);
-    ctx.arcTo(x + w, y, x + w, y + tr, tr);
-    ctx.lineTo(x + w, y + h - br);
-    ctx.arcTo(x + w, y + h, x + w - br, y + h, br);
-    ctx.lineTo(x + bl, y + h);
-    ctx.arcTo(x, y + h, x, y + h - bl, bl);
-    ctx.lineTo(x, y + tl);
-    ctx.arcTo(x, y, x + tl, y, tl);
-    ctx.closePath();
+    ctx.arc(W / 2, H * 0.05, W * 0.75, 0, Math.PI);
+    ctx.strokeStyle = stroke1;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(W / 2, H * 0.05, W * 0.58, 0, Math.PI);
+    ctx.strokeStyle = stroke2;
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+    ctx.restore();
 }
 
-function truncateText(ctx: CanvasRenderingContext2D, text: string, maxW: number): string {
+function addGrain(ctx: CanvasRenderingContext2D, W: number, H: number, intensity: number) {
+    // Lightweight film grain using tiny random dots
+    const imageData = ctx.getImageData(0, 0, W * 2, H * 2);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+        const noise = (Math.random() - 0.5) * intensity * 255;
+        data[i]     = Math.min(255, Math.max(0, data[i]     + noise));
+        data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+        data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
+    }
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function truncate(ctx: CanvasRenderingContext2D, text: string, maxW: number): string {
     if (ctx.measureText(text).width <= maxW) return text;
     let t = text;
     while (ctx.measureText(t + '…').width > maxW && t.length > 0) t = t.slice(0, -1);
