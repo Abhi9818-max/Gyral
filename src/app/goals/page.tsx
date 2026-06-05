@@ -6,7 +6,6 @@ import { Flag, Plus, CheckCircle2, Circle, Target, Trophy, Sparkles, Calendar, T
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
-import { AestheticListCard } from '@/components/aesthetic-list-card';
 import { downloadAestheticCard } from '@/utils/download-card';
 
 export default function GoalsPage() {
@@ -144,7 +143,7 @@ export default function GoalsPage() {
                             <button
                                 onClick={async () => {
                                     setIsDownloading(true);
-                                    await downloadAestheticCard('aesthetic-card-goals-list', 'gyral-active-goals');
+                                    await downloadAestheticCard(pendingGoals, 'goals', 'gyral-active-goals');
                                     setIsDownloading(false);
                                 }}
                                 disabled={isDownloading}
@@ -254,14 +253,6 @@ export default function GoalsPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-
-            {/* Hidden list card for download */}
-            <AestheticListCard
-                id="goals-list"
-                title="Active Pursuits"
-                items={pendingGoals}
-                isCompleted={false}
-            />
         </div>
     );
 }

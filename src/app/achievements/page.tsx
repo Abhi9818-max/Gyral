@@ -5,7 +5,6 @@ import { useUserData } from '@/context/user-data-context';
 import { Trophy, Star, Sparkles, Medal, Calendar, Award, Download } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
-import { AestheticListCard } from '@/components/aesthetic-list-card';
 import { downloadAestheticCard } from '@/utils/download-card';
 
 export default function AchievementsPage() {
@@ -92,7 +91,7 @@ export default function AchievementsPage() {
                         transition={{ delay: 0.5 }}
                         onClick={async () => {
                             setIsDownloading(true);
-                            await downloadAestheticCard('aesthetic-card-achievements-list', 'gyral-hall-of-legends');
+                            await downloadAestheticCard(achievements, 'achievements', 'gyral-hall-of-legends');
                             setIsDownloading(false);
                         }}
                         disabled={isDownloading}
@@ -180,14 +179,6 @@ export default function AchievementsPage() {
                     </AnimatePresence>
                 </motion.div>
             )}
-
-            {/* Hidden List Card */}
-            <AestheticListCard
-                id="achievements-list"
-                title="Hall of Legends"
-                items={achievements}
-                isCompleted={true}
-            />
         </div>
     );
 }
