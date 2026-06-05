@@ -8,206 +8,305 @@ export const downloadAestheticCard = async (
     type: CardType,
     filename: string
 ) => {
-    const W = 900;
-    const HEADER_H = 280;
-    const ITEM_H = 130;
-    const FOOTER_H = 120;
-    const GAP = 24;
-    const PADDING = 64;
-    const totalItems = items.length > 0 ? items.length : 1;
-    const H = HEADER_H + totalItems * (ITEM_H + GAP) + FOOTER_H;
+    const DPR = 2; // Retina
+    const W = 1080;
+    const PADDING = 72;
+    const HEADER_H = 320;
+    const ITEM_H = 110;
+    const ITEM_GAP = 18;
+    const FOOTER_H = 130;
+    const count = Math.max(items.length, 1);
+    const H = HEADER_H + count * (ITEM_H + ITEM_GAP) + FOOTER_H;
 
     const canvas = document.createElement('canvas');
-    canvas.width = W * 2;
-    canvas.height = H * 2;
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
     const ctx = canvas.getContext('2d')!;
-    ctx.scale(2, 2); // retina
+    ctx.scale(DPR, DPR);
 
     const isGoals = type === 'goals';
-    const accentColor = isGoals ? '#3b82f6' : '#f59e0b';
-    const accentLight = isGoals ? '#60a5fa' : '#fcd34d';
-    const accentGlow = isGoals ? 'rgba(59,130,246,0.15)' : 'rgba(245,158,11,0.15)';
 
-    // ── Background ──────────────────────────────────────────────────────────
-    const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-    bgGrad.addColorStop(0, '#09090b');
-    bgGrad.addColorStop(0.5, '#18181b');
-    bgGrad.addColorStop(1, '#09090b');
+    // ─── Color Palettes ──────────────────────────────────────────────────────
+    // Goals: deep indigo → violet → blue
+    // Achievements: rich deep gold → amber → emerald
+    const bg1 = isGoals ? '#0a0a1a' : '#0d0a00';
+    const bg2 = isGoals ? '#0f0f2e' : '#110900';
+    const bg3 = isGoals ? '#0a0a1a' : '#0d0a00';
+    const orb1Color = isGoals ? '#4f46e5' : '#b45309';
+    const orb2Color = isGoals ? '#7c3aed' : '#065f46';
+    const accentA = isGoals ? '#818cf8' : '#fbbf24'; // soft indigo / gold
+    const accentB = isGoals ? '#c084fc' : '#f59e0b';
+    const accentC = isGoals ? '#38bdf8' : '#10b981'; // sky / emerald
+    const itemBg = isGoals ? 'rgba(99, 102, 241, 0.07)' : 'rgba(251, 191, 36, 0.07)';
+    const itemBorder = isGoals ? 'rgba(129, 140, 248, 0.18)' : 'rgba(251, 191, 36, 0.2)';
+    const barGradA = isGoals ? '#818cf8' : '#fbbf24';
+    const barGradB = isGoals ? '#38bdf8' : '#34d399';
+
+    // ─── Background ──────────────────────────────────────────────────────────
+    const bgGrad = ctx.createLinearGradient(0, 0, W * 0.7, H);
+    bgGrad.addColorStop(0, bg1);
+    bgGrad.addColorStop(0.5, bg2);
+    bgGrad.addColorStop(1, bg3);
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, W, H);
 
-    // Glowing orb - top left
-    const orb1 = ctx.createRadialGradient(0, 0, 0, 0, 0, 400);
-    orb1.addColorStop(0, accentGlow);
-    orb1.addColorStop(1, 'transparent');
-    ctx.fillStyle = orb1;
+    // Glowing orb – top left corner
+    const g1 = ctx.createRadialGradient(W * 0.1, H * 0.08, 0, W * 0.1, H * 0.08, W * 0.55);
+    g1.addColorStop(0, orb1Color + '38');
+    g1.addColorStop(0.5, orb1Color + '14');
+    g1.addColorStop(1, 'transparent');
+    ctx.fillStyle = g1;
     ctx.fillRect(0, 0, W, H);
 
-    // Glowing orb - bottom right
-    const orb2 = ctx.createRadialGradient(W, H, 0, W, H, 500);
-    orb2.addColorStop(0, accentGlow);
-    orb2.addColorStop(1, 'transparent');
-    ctx.fillStyle = orb2;
+    // Glowing orb – bottom right corner
+    const g2 = ctx.createRadialGradient(W * 0.92, H * 0.95, 0, W * 0.92, H * 0.95, W * 0.55);
+    g2.addColorStop(0, orb2Color + '38');
+    g2.addColorStop(0.5, orb2Color + '12');
+    g2.addColorStop(1, 'transparent');
+    ctx.fillStyle = g2;
     ctx.fillRect(0, 0, W, H);
 
-    // Subtle dot grid
-    ctx.fillStyle = 'rgba(255,255,255,0.04)';
-    for (let x = 32; x < W; x += 32) {
-        for (let y = 32; y < H; y += 32) {
+    // Subtle mid-glow
+    const g3 = ctx.createRadialGradient(W * 0.5, H * 0.3, 0, W * 0.5, H * 0.3, W * 0.4);
+    g3.addColorStop(0, accentA + '0c');
+    g3.addColorStop(1, 'transparent');
+    ctx.fillStyle = g3;
+    ctx.fillRect(0, 0, W, H);
+
+    // Fine dot grid
+    ctx.fillStyle = 'rgba(255,255,255,0.028)';
+    for (let x = 36; x < W; x += 36) {
+        for (let y = 36; y < H; y += 36) {
             ctx.beginPath();
             ctx.arc(x, y, 1, 0, Math.PI * 2);
             ctx.fill();
         }
     }
 
-    // ── Border glow ─────────────────────────────────────────────────────────
-    ctx.strokeStyle = isGoals ? 'rgba(59,130,246,0.25)' : 'rgba(245,158,11,0.25)';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(1.5, 1.5, W - 3, H - 3);
-
-    // ── Header - Gyral logo ──────────────────────────────────────────────────
-    ctx.font = 'bold 18px sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.letterSpacing = '6px';
-    ctx.fillText('GYRAL', PADDING, 56);
-
-    // Pill badge
-    const badge = isGoals ? 'ACTIVE PURSUITS' : 'LEGENDARY TRIUMPHS';
-    ctx.font = 'bold 13px sans-serif';
-    const badgeW = ctx.measureText(badge).width + 36;
-    const badgeX = W - PADDING - badgeW;
-    roundRect(ctx, badgeX, 32, badgeW, 34, 17);
-    ctx.strokeStyle = accentColor + '60';
-    ctx.lineWidth = 1.5;
+    // Outer glow border
+    const borderGrad = ctx.createLinearGradient(0, 0, W, H);
+    borderGrad.addColorStop(0, accentA + '55');
+    borderGrad.addColorStop(0.5, accentB + '22');
+    borderGrad.addColorStop(1, accentC + '55');
+    ctx.strokeStyle = borderGrad;
+    ctx.lineWidth = 2;
+    roundRect(ctx, 1, 1, W - 2, H - 2, 0);
     ctx.stroke();
-    ctx.fillStyle = accentColor + '25';
-    ctx.fill();
-    ctx.fillStyle = accentColor;
-    ctx.fillText(badge, badgeX + 18, 54);
 
-    // ── Hero icon circle ────────────────────────────────────────────────────
-    const cx = W / 2;
-    const cy = 160;
-    const r = 56;
-
-    // Glow behind circle
-    const iconGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 2.5);
-    iconGlow.addColorStop(0, accentColor + '55');
-    iconGlow.addColorStop(1, 'transparent');
-    ctx.fillStyle = iconGlow;
+    // ─── Top bar accent line ─────────────────────────────────────────────────
+    const topBar = ctx.createLinearGradient(PADDING, 0, W - PADDING, 0);
+    topBar.addColorStop(0, 'transparent');
+    topBar.addColorStop(0.3, accentA + 'aa');
+    topBar.addColorStop(0.7, accentC + 'aa');
+    topBar.addColorStop(1, 'transparent');
+    ctx.strokeStyle = topBar;
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 2.5, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(PADDING, 0);
+    ctx.lineTo(W - PADDING, 0);
+    ctx.stroke();
 
-    // Circle background
-    const circleGrad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
-    circleGrad.addColorStop(0, accentLight);
-    circleGrad.addColorStop(1, accentColor);
+    // ─── LOGO ────────────────────────────────────────────────────────────────
+    ctx.font = '700 16px "Helvetica Neue", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.30)';
+    ctx.letterSpacing = '8px';
+    ctx.fillText('GYRAL', PADDING, 58);
+    ctx.letterSpacing = '0px';
+
+    // Badge pill top-right
+    const badgeLabel = isGoals ? 'ACTIVE PURSUITS' : 'LEGENDARY TRIUMPHS';
+    ctx.font = '700 13px "Helvetica Neue", sans-serif';
+    ctx.letterSpacing = '2px';
+    const badgeW = ctx.measureText(badgeLabel).width + 40;
+    const badgeX = W - PADDING - badgeW;
+    const badgeY = 36;
+    const badgeH = 32;
+    roundRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeH / 2);
+    const badgeFill = ctx.createLinearGradient(badgeX, badgeY, badgeX + badgeW, badgeY);
+    badgeFill.addColorStop(0, accentA + '22');
+    badgeFill.addColorStop(1, accentC + '22');
+    ctx.fillStyle = badgeFill;
+    ctx.fill();
+    ctx.strokeStyle = accentA + '55';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = accentA;
+    ctx.fillText(badgeLabel, badgeX + 20, badgeY + 20);
+    ctx.letterSpacing = '0px';
+
+    // ─── Icon Circle ─────────────────────────────────────────────────────────
+    const iconCX = W / 2;
+    const iconCY = 185;
+    const iconR = 62;
+
+    // Outer glow ring
+    for (let i = 4; i >= 1; i--) {
+        ctx.beginPath();
+        ctx.arc(iconCX, iconCY, iconR + i * 8, 0, Math.PI * 2);
+        ctx.strokeStyle = accentA + `${Math.round(14 / i).toString(16).padStart(2, '0')}`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+
+    // Circle gradient fill
+    const circleGrad = ctx.createLinearGradient(iconCX - iconR, iconCY - iconR, iconCX + iconR, iconCY + iconR);
+    circleGrad.addColorStop(0, accentA + 'dd');
+    circleGrad.addColorStop(1, accentC + 'cc');
+    ctx.beginPath();
+    ctx.arc(iconCX, iconCY, iconR, 0, Math.PI * 2);
     ctx.fillStyle = circleGrad;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fill();
 
-    // Icon text in circle
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 36px sans-serif';
+    // Inner glow
+    const innerGlow = ctx.createRadialGradient(iconCX - 15, iconCY - 15, 0, iconCX, iconCY, iconR);
+    innerGlow.addColorStop(0, 'rgba(255,255,255,0.35)');
+    innerGlow.addColorStop(1, 'transparent');
+    ctx.fillStyle = innerGlow;
+    ctx.beginPath();
+    ctx.arc(iconCX, iconCY, iconR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Emoji icon
+    ctx.font = '48px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(isGoals ? '◎' : '★', cx, cy);
+    ctx.fillText(isGoals ? '🎯' : '🏆', iconCX, iconCY);
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
 
-    // ── Title ────────────────────────────────────────────────────────────────
-    ctx.font = 'bold 42px sans-serif';
-    ctx.fillStyle = '#ffffff';
+    // ─── Main Title ───────────────────────────────────────────────────────────
+    ctx.font = '800 52px "Helvetica Neue", Arial, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(isGoals ? 'Active Pursuits' : 'Hall of Legends', cx, 252);
+    const titleGrad = ctx.createLinearGradient(W * 0.2, 0, W * 0.8, 0);
+    titleGrad.addColorStop(0, accentA);
+    titleGrad.addColorStop(0.5, '#ffffff');
+    titleGrad.addColorStop(1, accentC);
+    ctx.fillStyle = titleGrad;
+    ctx.fillText(isGoals ? 'Active Pursuits' : 'Hall of Legends', W / 2, 284);
     ctx.textAlign = 'left';
 
-    // ── Divider ──────────────────────────────────────────────────────────────
-    const divY = HEADER_H - 20;
-    const divGrad = ctx.createLinearGradient(PADDING, divY, W - PADDING, divY);
+    // ─── Subtitle ────────────────────────────────────────────────────────────
+    ctx.font = '400 18px "Helvetica Neue", Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,255,255,0.38)';
+    ctx.fillText(
+        isGoals ? 'The path to your future legacy' : 'A chronicle of your greatest victories',
+        W / 2, 316
+    );
+    ctx.textAlign = 'left';
+
+    // ─── Divider ─────────────────────────────────────────────────────────────
+    const divGrad = ctx.createLinearGradient(PADDING, 0, W - PADDING, 0);
     divGrad.addColorStop(0, 'transparent');
-    divGrad.addColorStop(0.5, 'rgba(255,255,255,0.15)');
+    divGrad.addColorStop(0.2, accentA + '66');
+    divGrad.addColorStop(0.5, accentC + '88');
+    divGrad.addColorStop(0.8, accentA + '66');
     divGrad.addColorStop(1, 'transparent');
     ctx.strokeStyle = divGrad;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(PADDING, divY);
-    ctx.lineTo(W - PADDING, divY);
+    ctx.moveTo(PADDING, HEADER_H - 8);
+    ctx.lineTo(W - PADDING, HEADER_H - 8);
     ctx.stroke();
 
-    // ── Items ────────────────────────────────────────────────────────────────
+    // ─── Items ───────────────────────────────────────────────────────────────
     if (items.length === 0) {
-        ctx.font = 'italic 20px sans-serif';
-        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.font = 'italic 22px "Helvetica Neue", sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.22)';
         ctx.textAlign = 'center';
-        ctx.fillText('No items yet.', cx, HEADER_H + 80);
+        ctx.fillText('No items yet.', W / 2, HEADER_H + 80);
         ctx.textAlign = 'left';
     } else {
         items.forEach((item, i) => {
-            const yTop = HEADER_H + i * (ITEM_H + GAP);
-            const cardH = ITEM_H;
+            const yTop = HEADER_H + i * (ITEM_H + ITEM_GAP);
 
-            // Card background
-            roundRect(ctx, PADDING, yTop, W - PADDING * 2, cardH, 20);
-            ctx.fillStyle = 'rgba(255,255,255,0.04)';
+            // Card glass bg
+            roundRect(ctx, PADDING, yTop, W - PADDING * 2, ITEM_H, 20);
+            ctx.fillStyle = itemBg;
             ctx.fill();
-            ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+            ctx.strokeStyle = itemBorder;
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            // Left accent bar
-            roundRect(ctx, PADDING, yTop, 4, cardH, [2, 0, 0, 2]);
-            ctx.fillStyle = accentColor;
-            ctx.globalAlpha = 0.8;
+            // Inner highlight (top edge shimmer)
+            const shimmer = ctx.createLinearGradient(PADDING, yTop, PADDING, yTop + 2);
+            shimmer.addColorStop(0, 'rgba(255,255,255,0.10)');
+            shimmer.addColorStop(1, 'transparent');
+            roundRect(ctx, PADDING, yTop, W - PADDING * 2, 2, [20, 20, 0, 0]);
+            ctx.fillStyle = shimmer;
             ctx.fill();
-            ctx.globalAlpha = 1;
+
+            // Left accent gradient bar
+            const barGrad = ctx.createLinearGradient(PADDING, yTop, PADDING, yTop + ITEM_H);
+            barGrad.addColorStop(0, barGradA);
+            barGrad.addColorStop(1, barGradB);
+            roundRect(ctx, PADDING, yTop, 5, ITEM_H, [20, 0, 0, 20]);
+            ctx.fillStyle = barGrad;
+            ctx.fill();
+
+            // Number badge
+            const numX = PADDING + 28;
+            const numY = yTop + ITEM_H / 2;
+            ctx.beginPath();
+            ctx.arc(numX, numY, 18, 0, Math.PI * 2);
+            const numBgGrad = ctx.createRadialGradient(numX, numY, 0, numX, numY, 18);
+            numBgGrad.addColorStop(0, accentA + '40');
+            numBgGrad.addColorStop(1, accentA + '15');
+            ctx.fillStyle = numBgGrad;
+            ctx.fill();
+            ctx.strokeStyle = accentA + '55';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.font = '700 14px "Helvetica Neue", sans-serif';
+            ctx.fillStyle = accentA;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(String(i + 1), numX, numY);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
 
             // Goal title
-            ctx.font = 'bold 22px sans-serif';
-            ctx.fillStyle = '#ffffff';
-            const titleX = PADDING + 28;
+            const titleX = PADDING + 62;
             const titleY = yTop + 44;
-            const maxTitleW = W - PADDING * 2 - 28 - 100;
-            const truncated = truncateText(ctx, item.title, maxTitleW);
-            ctx.fillText(truncated, titleX, titleY);
+            const maxW = W - PADDING * 2 - 62 - 180;
+            ctx.font = '700 22px "Helvetica Neue", Arial, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(truncateText(ctx, item.title, maxW), titleX, titleY);
 
             // Date
-            ctx.font = '16px sans-serif';
-            ctx.fillStyle = 'rgba(255,255,255,0.45)';
             let dateStr = '';
-            try {
-                dateStr = format(parseISO(item.event_date), 'MMM d, yyyy');
-            } catch { dateStr = item.event_date; }
-            ctx.fillText(dateStr, titleX, titleY + 36);
+            try { dateStr = format(parseISO(item.event_date), 'MMM d, yyyy'); }
+            catch { dateStr = item.event_date || ''; }
+            ctx.font = '400 15px "Helvetica Neue", Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.38)';
+            ctx.fillText('📅  ' + dateStr, titleX, titleY + 30);
 
-            // Checkmark / circle icon
-            const iconX = W - PADDING - 48;
-            const iconY = yTop + cardH / 2;
-            ctx.strokeStyle = accentColor;
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.arc(iconX, iconY, 16, 0, Math.PI * 2);
+            // Status pill (right side)
+            const pillLabel = isGoals ? 'In Progress' : 'Conquered';
+            ctx.font = '600 13px "Helvetica Neue", sans-serif';
+            ctx.letterSpacing = '1px';
+            const pillW = ctx.measureText(pillLabel).width + 28;
+            const pillX = W - PADDING - pillW - 12;
+            const pillY = yTop + ITEM_H / 2 - 14;
+            roundRect(ctx, pillX, pillY, pillW, 28, 14);
+            ctx.fillStyle = isGoals ? 'rgba(99,102,241,0.2)' : 'rgba(251,191,36,0.2)';
+            ctx.fill();
+            ctx.strokeStyle = isGoals ? 'rgba(129,140,248,0.4)' : 'rgba(251,191,36,0.4)';
+            ctx.lineWidth = 1;
             ctx.stroke();
-            if (!isGoals) {
-                // checkmark
-                ctx.strokeStyle = accentColor;
-                ctx.lineWidth = 2.5;
-                ctx.beginPath();
-                ctx.moveTo(iconX - 8, iconY);
-                ctx.lineTo(iconX - 2, iconY + 7);
-                ctx.lineTo(iconX + 8, iconY - 7);
-                ctx.stroke();
-            }
+            ctx.fillStyle = isGoals ? '#a5b4fc' : '#fcd34d';
+            ctx.fillText(pillLabel, pillX + 14, pillY + 18);
+            ctx.letterSpacing = '0px';
         });
     }
 
-    // ── Footer ───────────────────────────────────────────────────────────────
-    const footerY = HEADER_H + totalItems * (ITEM_H + GAP) + 20;
+    // ─── Footer ──────────────────────────────────────────────────────────────
+    const footerY = HEADER_H + count * (ITEM_H + ITEM_GAP) + 30;
+
     const footDivGrad = ctx.createLinearGradient(PADDING, footerY, W - PADDING, footerY);
     footDivGrad.addColorStop(0, 'transparent');
-    footDivGrad.addColorStop(0.5, 'rgba(255,255,255,0.12)');
+    footDivGrad.addColorStop(0.3, accentA + '55');
+    footDivGrad.addColorStop(0.7, accentC + '55');
     footDivGrad.addColorStop(1, 'transparent');
     ctx.strokeStyle = footDivGrad;
     ctx.lineWidth = 1;
@@ -216,21 +315,35 @@ export const downloadAestheticCard = async (
     ctx.lineTo(W - PADDING, footerY);
     ctx.stroke();
 
-    ctx.font = 'bold 13px sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.letterSpacing = '4px';
+    // Count badge
+    const countLabel = `${items.length} ${isGoals ? (items.length === 1 ? 'Goal' : 'Goals') : (items.length === 1 ? 'Achievement' : 'Achievements')}`;
+    ctx.font = '700 15px "Helvetica Neue", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('FORGED IN THE HALL OF LEGENDS', cx, footerY + 50);
+    ctx.fillStyle = 'rgba(255,255,255,0.22)';
+    ctx.fillText(countLabel, W / 2, footerY + 38);
+
+    ctx.font = '500 13px "Helvetica Neue", sans-serif';
+    ctx.letterSpacing = '4px';
+    ctx.fillStyle = 'rgba(255,255,255,0.14)';
+    ctx.fillText('FORGED IN THE HALL OF LEGENDS', W / 2, footerY + 68);
+    ctx.letterSpacing = '0px';
     ctx.textAlign = 'left';
 
-    // ── Trigger download ─────────────────────────────────────────────────────
+    // Bottom gradient fade
+    const fadeGrad = ctx.createLinearGradient(0, H - 60, 0, H);
+    fadeGrad.addColorStop(0, 'transparent');
+    fadeGrad.addColorStop(1, bg1 + 'cc');
+    ctx.fillStyle = fadeGrad;
+    ctx.fillRect(0, H - 60, W, 60);
+
+    // ─── Download ────────────────────────────────────────────────────────────
     const link = document.createElement('a');
     link.download = `${filename}.png`;
     link.href = canvas.toDataURL('image/png', 1.0);
     link.click();
 };
 
-// Helpers
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 function roundRect(
     ctx: CanvasRenderingContext2D,
     x: number, y: number, w: number, h: number,
@@ -252,9 +365,7 @@ function roundRect(
 
 function truncateText(ctx: CanvasRenderingContext2D, text: string, maxW: number): string {
     if (ctx.measureText(text).width <= maxW) return text;
-    let truncated = text;
-    while (ctx.measureText(truncated + '…').width > maxW && truncated.length > 0) {
-        truncated = truncated.slice(0, -1);
-    }
-    return truncated + '…';
+    let t = text;
+    while (ctx.measureText(t + '…').width > maxW && t.length > 0) t = t.slice(0, -1);
+    return t + '…';
 }
