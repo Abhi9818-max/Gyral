@@ -75,10 +75,10 @@ export function ChecklistWidget() {
                 <div className="flex items-center px-2 pb-2 border-b border-white/10">
                     <div className="flex-1 font-medium tracking-[0.2em] text-[10px] md:text-xs uppercase text-zinc-500">Habit</div>
                     <div className="flex gap-1 md:gap-1.5 pr-1">
-                        <div className="w-[16px] md:w-[20px] text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">1</div>
-                        <div className="w-[16px] md:w-[20px] text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">2</div>
-                        <div className="w-[16px] md:w-[20px] text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">3</div>
-                        <div className="w-[16px] md:w-[20px] text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">4</div>
+                        <div className="w-[9px] md:w-[10px] text-center font-medium tracking-[0.2em] text-[8px] md:text-[9px] uppercase text-zinc-500">1</div>
+                        <div className="w-[9px] md:w-[10px] text-center font-medium tracking-[0.2em] text-[8px] md:text-[9px] uppercase text-zinc-500">2</div>
+                        <div className="w-[9px] md:w-[10px] text-center font-medium tracking-[0.2em] text-[8px] md:text-[9px] uppercase text-zinc-500">3</div>
+                        <div className="w-[9px] md:w-[10px] text-center font-medium tracking-[0.2em] text-[8px] md:text-[9px] uppercase text-zinc-500">4</div>
                     </div>
                 </div>
                 
@@ -113,11 +113,11 @@ export function ChecklistWidget() {
                                                 <div key={phase} className="flex justify-center items-center">
                                                     <button
                                                         onClick={() => handleTogglePhased(task.id, phase)}
-                                                        className={`w-[16px] h-[16px] md:w-[20px] md:h-[20px] rounded-[3px] md:rounded-[4px] flex items-center justify-center transition-all duration-300 active:scale-90 border-[1px] md:border-[1.5px] ${isChecked ? 'bg-white border-white shadow-[0_0_8px_rgba(255,255,255,0.3)]' : 'bg-transparent border-white/30 hover:border-white/60'}`}
+                                                        className={`w-[9px] h-[9px] md:w-[10px] md:h-[10px] rounded-[2px] md:rounded-[3px] flex items-center justify-center transition-all duration-300 active:scale-90 border-[1px] ${isChecked ? 'bg-white border-white shadow-[0_0_5px_rgba(255,255,255,0.3)]' : 'bg-transparent border-white/30 hover:border-white/60'}`}
                                                         title={`Set Phase ${phase}`}
                                                     >
                                                         {isChecked && (
-                                                            <Check className="w-[10px] h-[10px] md:w-[12px] md:h-[12px] text-black" strokeWidth={3} />
+                                                            <Check className="w-[6px] h-[6px] md:w-[7px] md:h-[7px] text-black" strokeWidth={3} />
                                                         )}
                                                     </button>
                                                 </div>
