@@ -34,7 +34,8 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
         user, profile, theme, setTheme, language, setLanguage,
         navPreferences, updateNavPreferences,
         lifeEvents, debts, vows, investments, currentFaction, isExiled, exiledUntil, onboardingCompleted,
-        profileStreakMode, setProfileStreakMode
+        profileStreakMode, setProfileStreakMode,
+        dailyPacts, deleteDailyPact
     } = useUserData();
 
     const { isInstallable, promptInstall } = useInstallPrompt();
@@ -398,6 +399,23 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                                     )}
                                 </button>
                             </div>
+                        </div>
+                    </SettingsGroup>
+
+                    <SettingsGroup title="Daily Recurring Pacts">
+                        <div className="p-4 space-y-2">
+                            {dailyPacts.length === 0 ? (
+                                <p className="text-xs text-zinc-500 italic px-1">No recurring pacts defined.</p>
+                            ) : (
+                                dailyPacts.map(dp => (
+                                    <div key={dp.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all">
+                                        <span className="text-sm font-medium text-white">{dp.text}</span>
+                                        <button onClick={() => deleteDailyPact(dp.id)} className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </SettingsGroup>
 

@@ -6,9 +6,10 @@ import { Dumbbell, BookOpen, Droplet, Carrot, Circle, Check, Zap, Brain, Moon, P
 import { useState, useRef } from 'react';
 
 export function PactWidget() {
-    const { pacts, addPact, togglePact, deletePact, shiftPact } = useUserData();
+    const { pacts, addPact, togglePact, deletePact, shiftPact, addDailyPact, dailyPacts, deleteDailyPact } = useUserData();
     const [newPactText, setNewPactText] = useState('');
     const [isAdding, setIsAdding] = useState(false);
+    const [isDaily, setIsDaily] = useState(false);
     const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
 
     // Date State
@@ -41,7 +42,11 @@ export function PactWidget() {
         e.preventDefault();
         if (newPactText.trim()) {
             addPact(newPactText.trim(), selectedDate);
+            if (isDaily) {
+                addDailyPact(newPactText.trim());
+            }
             setNewPactText('');
+            setIsDaily(false);
             // If we have pacts, close the adding mode
             if (currentPacts.length >= 0) {
                 setIsAdding(false);
@@ -139,22 +144,36 @@ export function PactWidget() {
 
                 {/* Input Form */}
                 {showInput && (
-                    <form onSubmit={handleAddPact} className="mb-6 relative animate-[fadeIn_0.3s_ease-out]">
-                        <input
-                            type="text"
-                            value={newPactText}
-                            onChange={(e) => setNewPactText(e.target.value)}
-                            placeholder={`Add a pact for ${displayDate}...`}
-                            autoFocus={isAdding}
-                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 pr-12 text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/30 transition-all"
-                        />
-                        <button
-                            type="submit"
-                            disabled={!newPactText.trim()}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-white text-black rounded-lg disabled:opacity-50 disabled:bg-zinc-800 disabled:text-zinc-600 transition-all hover:scale-105 flex items-center justify-center"
-                        >
-                            <Plus className="w-4 h-4" />
-                        </button>
+                    <form onSubmit={handleAddPact} className="mb-6 animate-[fadeIn_0.3s_ease-out]">
+                        <div className="relative mb-2">
+                            <input
+                                type="text"
+                                value={newPactText}
+                                onChange={(e) => setNewPactText(e.target.value)}
+                                placeholder={`Add a pact for ${displayDate}...`}
+                                autoFocus={isAdding}
+                                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 pr-12 text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/30 transition-all"
+                            />
+                            <button
+                                type="submit"
+                                disabled={!newPactText.trim()}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-white text-black rounded-lg disabled:opacity-50 disabled:bg-zinc-800 disabled:text-zinc-600 transition-all hover:scale-105 flex items-center justify-center"
+                            >
+                                <Plus className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <div className="flex items-center gap-2 pl-2">
+                            <input
+                                type="checkbox"
+                                id="isDaily"
+                                checked={isDaily}
+                                onChange={(e) => setIsDaily(e.target.checked)}
+                                className="w-4 h-4 rounded bg-white/5 border-white/20 text-white focus:ring-0 focus:ring-offset-0 cursor-pointer accent-white"
+                            />
+                            <label htmlFor="isDaily" className="text-xs text-zinc-400 cursor-pointer select-none hover:text-white transition-colors">
+                                Make this a recurring daily pact
+                            </label>
+                        </div>
                     </form>
                 )}
 
@@ -164,40 +183,61 @@ export function PactWidget() {
                         const isDeleting = deleteCandidateId === pact.id;
 
                         if (isDeleting) {
-                            return (
-                                <div key={pact.id} className="relative flex items-center justify-between p-4 rounded-2xl bg-red-900/20 border border-red-500/30 animate-[pulse_2s_infinite]">
-                                    <span className="text-red-200 font-bold ml-2">Delete this pact?</span>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => setDeleteCandidateId(null)}
-                                            className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold text-zinc-400 hover:text-white transition-colors"
-                                        >
-                                            CANCEL
-                                        </button>
+                            const matchedDailyPact = dailyPacts?.find(dp => dp.text.trim().toLowerCase() === pact.text.trim().toLowerCase());
 
-                                        {(!pact.shiftedCount || pact.shiftedCount < 1) && (
+                            return (
+                                <div key={pact.id} className="relative flex flex-col p-4 rounded-2xl bg-red-900/20 border border-red-500/30 animate-[pulse_2s_infinite]">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-red-200 font-bold ml-2">Delete this pact?</span>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setDeleteCandidateId(null)}
+                                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold text-zinc-400 hover:text-white transition-colors"
+                                            >
+                                                CANCEL
+                                            </button>
+
+                                            {(!pact.shiftedCount || pact.shiftedCount < 1) && (
+                                                <button
+                                                    onClick={() => {
+                                                        shiftPact(pact.id, selectedDate);
+                                                        setDeleteCandidateId(null);
+                                                    }}
+                                                    className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-xs font-bold text-white transition-all shadow-lg shadow-blue-900/50 flex items-center gap-1 hover:scale-105 active:scale-95"
+                                                    title="Move to tomorrow (One-time use)"
+                                                >
+                                                    SHIFT <ChevronRight className="w-3 h-3" />
+                                                </button>
+                                            )}
+
                                             <button
                                                 onClick={() => {
-                                                    shiftPact(pact.id, selectedDate);
+                                                    deletePact(pact.id, selectedDate);
                                                     setDeleteCandidateId(null);
                                                 }}
-                                                className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-xs font-bold text-white transition-all shadow-lg shadow-blue-900/50 flex items-center gap-1 hover:scale-105 active:scale-95"
-                                                title="Move to tomorrow (One-time use)"
+                                                className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-xs font-bold text-white transition-colors shadow-lg shadow-red-900/50"
                                             >
-                                                SHIFT <ChevronRight className="w-3 h-3" />
+                                                DELETE
                                             </button>
-                                        )}
-
-                                        <button
-                                            onClick={() => {
-                                                deletePact(pact.id, selectedDate);
-                                                setDeleteCandidateId(null);
-                                            }}
-                                            className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-xs font-bold text-white transition-colors shadow-lg shadow-red-900/50"
-                                        >
-                                            DELETE
-                                        </button>
+                                        </div>
                                     </div>
+                                    
+                                    {matchedDailyPact && (
+                                        <div className="mt-3 pt-3 border-t border-red-500/20 flex items-center justify-between pl-2">
+                                            <span className="text-[10px] text-red-300 uppercase tracking-wider font-semibold">Recurring Template</span>
+                                            <button
+                                                onClick={() => {
+                                                    deleteDailyPact(matchedDailyPact.id);
+                                                    // Optional: also delete from today
+                                                    deletePact(pact.id, selectedDate);
+                                                    setDeleteCandidateId(null);
+                                                }}
+                                                className="px-3 py-1.5 rounded-lg bg-orange-600/80 hover:bg-orange-500 text-[10px] font-bold text-white transition-colors shadow-lg shadow-orange-900/50"
+                                            >
+                                                STOP RECURRING
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         }

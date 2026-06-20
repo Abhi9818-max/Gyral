@@ -59,8 +59,14 @@ export type Pact = {
     createdAt?: string;
 };
 
+export type DailyPact = {
+    id: string;
+    text: string;
+    createdAt?: string;
+};
+
 export type PactsMap = {
-    [date: string]: Pact[];
+    [dateStr: string]: Pact[];
 };
 
 export type Note = {
@@ -262,6 +268,11 @@ interface UserDataContextType {
     deletePact: (id: string, date: string) => void;
     shiftPact: (id: string, currentDate: string) => void;
 
+    // Daily Pacts
+    dailyPacts: DailyPact[];
+    addDailyPact: (text: string) => Promise<void>;
+    deleteDailyPact: (id: string) => Promise<void>;
+
     // Notes
     notes: Note[];
     addNote: () => Promise<void>;
@@ -362,6 +373,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [records, setRecords] = useState<RecordsMap>({});
     const [pacts, setPacts] = useState<PactsMap>({});
+    const [dailyPacts, setDailyPacts] = useState<DailyPact[]>([]);
     const [notes, setNotes] = useState<Note[]>([]);
     const [birthDate, setBirthDate] = useState<string | null>(null);
     const [mementoViewMode, setMementoViewMode] = useState<'life' | 'year'>('life');
@@ -465,8 +477,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
                     // 3. Pacts
                     const { data: dbPacts } = await supabase.from('pacts').select('*');
+                    const newPacts: PactsMap = {};
                     if (dbPacts) {
-                        const newPacts: PactsMap = {};
                         dbPacts.forEach(p => {
                             const d = p.date;
                             if (!newPacts[d]) newPacts[d] = [];
@@ -478,8 +490,44 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                                 createdAt: p.created_at
                             });
                         });
-                        setPacts(newPacts);
                     }
+
+                    // 3.5 Daily Pacts (Templates)
+                    let loadedDailyPacts: DailyPact[] = [];
+                    const { data: dbDailyPacts } = await supabase.from('daily_pacts').select('*');
+                    if (dbDailyPacts) {
+                        loadedDailyPacts = dbDailyPacts.map(dp => ({
+                            id: dp.id,
+                            text: dp.text,
+                            createdAt: dp.created_at
+                        }));
+                        setDailyPacts(loadedDailyPacts);
+                    }
+
+                    // Auto-inject daily pacts if today has none
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    if (!newPacts[todayStr] && loadedDailyPacts.length > 0) {
+                        const autoPacts = loadedDailyPacts.map(dp => ({
+                            id: crypto.randomUUID(),
+                            text: dp.text,
+                            isCompleted: false
+                        }));
+                        newPacts[todayStr] = autoPacts;
+                        
+                        // Async insert to DB
+                        const inserts = autoPacts.map(p => ({
+                            id: p.id,
+                            user_id: user.id,
+                            text: p.text,
+                            date: todayStr,
+                            is_completed: false
+                        }));
+                        supabase.from('pacts').insert(inserts).then(({ error }) => {
+                            if (error) console.error("Failed auto-injecting daily pacts:", error);
+                        });
+                    }
+
+                    setPacts(newPacts);
 
                     try {
                         // 4. Notes
@@ -1352,6 +1400,27 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const addDailyPact = async (text: string) => {
+        const createdAt = new Date().toISOString();
+        const newDaily = { id: crypto.randomUUID(), text, createdAt };
+        setDailyPacts(prev => [...prev, newDaily]);
+        if (user) {
+            await supabase.from('daily_pacts').insert({
+                id: newDaily.id,
+                user_id: user.id,
+                text,
+                created_at: createdAt
+            });
+        }
+    };
+
+    const deleteDailyPact = async (id: string) => {
+        setDailyPacts(prev => prev.filter(dp => dp.id !== id));
+        if (user) {
+            await supabase.from('daily_pacts').delete().eq('id', id);
+        }
+    };
+
     const addNote = async () => {
         const newNote: Note = {
             id: crypto.randomUUID(), title: 'Untitled Note', content: '', updatedAt: new Date().toISOString()
@@ -1821,7 +1890,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         <UserDataContext.Provider value={{
             tasks, records, addTask, updateTask, deleteTask, toggleTaskArchive, addRecord, deleteRecord, getRecordsForDate, activeFilterTaskId, setActiveFilterTaskId,
             consistencyScore, currentStreak, longestStreak, streakStatus, streakTier, streakStrength, rebuildMode, analyzePatterns, getAdaptiveSuggestion, getTaskAnalytics,
-            lastCompletion, setLastCompletion, getStreakForDate, showLossModal, setShowLossModal, pacts, addPact, togglePact, deletePact, shiftPact, notes, addNote, updateNote, deleteNote,
+            lastCompletion, setLastCompletion, getStreakForDate, showLossModal, setShowLossModal, pacts, addPact, togglePact, deletePact, shiftPact, dailyPacts, addDailyPact, deleteDailyPact, notes, addNote, updateNote, deleteNote,
             restoreData, birthDate, setBirthDate: updateBirthDate, showStatsCard, toggleStatsCard, theme, setTheme, language, setLanguage, user, lifeEvents, addLifeEvent, updateLifeEvent, deleteLifeEvent,
             debts, addDebt, payDebt, vows, addVow, completeVowDaily, extendVow, isExiled, exiledUntil, redeemExile, factions, currentFaction, setFaction, investments, addInvestment, completeInvestment,
             navPreferences, updateNavPreferences, ALL_NAV_ITEMS, profile, setProfile, onboardingCompleted, completeOnboarding, mementoViewMode, toggleMementoViewMode,
