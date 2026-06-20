@@ -8,6 +8,7 @@ import {
     ClipboardList, MessageCircle, ScrollText, User, Skull
 } from 'lucide-react';
 import { useUserData, ALL_NAV_ITEMS, NavItemKey } from '@/context/user-data-context';
+import { useToday } from '@/hooks/use-today';
 import { getUserAvatar } from '@/utils/avatar-helpers';
 import { RitualModal } from './modals/ritual-modal';
 import { BankModal } from './modals/bank-modal';
@@ -22,7 +23,8 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string; strokeW
 
 export function MobileNav() {
     const pathname = usePathname();
-    const { navPreferences, profile, user } = useUserData();
+    const { navPreferences, profile, user, pacts } = useUserData();
+    const todayStr = useToday();
 
     const [isRitualModalOpen, setIsRitualModalOpen] = useState(false);
     const [isBankModalOpen, setIsBankModalOpen] = useState(false);
@@ -55,6 +57,10 @@ export function MobileNav() {
         ? getUserAvatar(profile?.avatar_url, profile?.gender, user.id)
         : null;
 
+    // Check for incomplete pacts today
+    const todaysPacts = pacts[todayStr] || [];
+    const hasIncompletePacts = todaysPacts.some(p => !p.isCompleted);
+
     return (
         <>
             {!hideNav && (
@@ -76,6 +82,8 @@ export function MobileNav() {
                             const Icon = ICON_MAP[item.icon];
                             if (!Icon) return null;
                             const active = item.href ? isActive(item.href) : false;
+                            
+                            const showRedDot = item.key === 'pacts' && hasIncompletePacts;
 
                             if (item.href) {
                                 return (
@@ -84,10 +92,15 @@ export function MobileNav() {
                                         href={item.href}
                                         className="flex flex-col items-center justify-center flex-1 h-full relative"
                                     >
-                                        <Icon
-                                            className={`w-6 h-6 transition-all ${active ? 'text-white scale-110' : 'text-white/50'}`}
-                                            strokeWidth={active ? 2.5 : 2}
-                                        />
+                                        <div className="relative">
+                                            <Icon
+                                                className={`w-6 h-6 transition-all ${active ? 'text-white scale-110' : 'text-white/50'}`}
+                                                strokeWidth={active ? 2.5 : 2}
+                                            />
+                                            {showRedDot && (
+                                                <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-[1.5px] border-black" />
+                                            )}
+                                        </div>
                                     </Link>
                                 );
                             }
@@ -98,7 +111,12 @@ export function MobileNav() {
                                     onClick={() => handleAction(item.key)}
                                     className="flex flex-col items-center justify-center flex-1 h-full relative"
                                 >
-                                    <Icon className="w-6 h-6 text-white/50 hover:text-white transition-all" />
+                                    <div className="relative">
+                                        <Icon className="w-6 h-6 text-white/50 hover:text-white transition-all" />
+                                        {showRedDot && (
+                                            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-[1.5px] border-black" />
+                                        )}
+                                    </div>
                                 </button>
                             );
                         })}
