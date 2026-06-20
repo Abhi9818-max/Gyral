@@ -1,7 +1,7 @@
 import { Header } from "@/components/header";
 import { StatsCard } from "@/components/stats-card";
 import { FilterBar } from "@/components/filter-bar";
-import { Heatmap } from "@/components/heatmap";
+import { TaskViews } from "@/components/task-views";
 import { WeeklyProgress } from "@/components/weekly-progress";
 import { HydrationWidget } from "@/components/hydration-widget";
 import { VowWidget } from "@/components/vow-widget";
@@ -39,7 +39,7 @@ export default function Home() {
         <div className="space-y-4 md:space-y-6">
           <StatsCard />
           <FilterBar />
-          <Heatmap />
+          <TaskViews />
         </div>
 
         <div className="pt-6 md:pt-8 space-y-6">
