@@ -6,7 +6,7 @@ import { WeeklyProgress } from "@/components/weekly-progress";
 import { HydrationWidget } from "@/components/hydration-widget";
 import { VowWidget } from "@/components/vow-widget";
 import { LongTermReminders } from "@/components/long-term-reminders";
-import { RitualSection } from "@/components/ritual-section";
+
 import { getQuoteOfTheDay } from "@/lib/quotes";
 import { HomeModals } from "@/components/home-modals";
 
@@ -19,7 +19,6 @@ export default function Home() {
       <main className="flex-1 p-4 md:p-8 pt-24 md:pt-28 max-w-7xl mx-auto w-full space-y-6 md:space-y-8 pb-20 md:pb-8">
         <LongTermReminders />
 
-        <RitualSection />
 
         <div className="text-center py-8 md:py-12 max-w-4xl mx-auto relative group">
           <div className="absolute inset-0 bg-accent/5 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />

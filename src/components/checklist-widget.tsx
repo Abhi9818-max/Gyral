@@ -10,20 +10,34 @@ export function ChecklistWidget() {
 
     const activeTasks = tasks.filter(t => !t.isArchived);
 
-    const getIntensity = (taskId: string) => {
+    const getRecordStatus = (taskId: string) => {
         const todaysRecords = records[todayStr] || [];
         const record = todaysRecords.find(r => r.taskId === taskId);
-        return record?.intensity || 0;
+        if (!record) return { isCompleted: false, intensity: 0 };
+        return { 
+            isCompleted: true, 
+            intensity: record.intensity === null ? 4 : record.intensity 
+        };
     };
 
-    const handleToggle = async (taskId: string, targetPhase: number) => {
-        const currentIntensity = getIntensity(taskId);
-        if (currentIntensity === targetPhase) {
+    const handleTogglePhased = async (taskId: string, targetPhase: number) => {
+        const { intensity } = getRecordStatus(taskId);
+        if (intensity === targetPhase) {
             // Uncheck
             await deleteRecord(todayStr, taskId);
         } else {
             // Update to target phase
             await addRecord(todayStr, taskId, targetPhase);
+        }
+    };
+
+    const handleToggleBoolean = async (taskId: string) => {
+        const { isCompleted } = getRecordStatus(taskId);
+        if (isCompleted) {
+            await deleteRecord(todayStr, taskId);
+        } else {
+            // Log as standard completion (null intensity)
+            await addRecord(todayStr, taskId, null);
         }
     };
 
@@ -63,7 +77,8 @@ export function ChecklistWidget() {
                     </thead>
                     <tbody className="divide-y divide-white/5">
                         {activeTasks.map((task, index) => {
-                            const currentIntensity = getIntensity(task.id);
+                            const { isCompleted, intensity } = getRecordStatus(task.id);
+                            const isBooleanTask = !task.metricConfig || !task.metricConfig.phases || task.metricConfig.phases.length === 0;
 
                             return (
                                 <tr key={task.id} className="group hover:bg-white/[0.02] transition-colors">
@@ -72,22 +87,34 @@ export function ChecklistWidget() {
                                             {index + 1}. {task.name}
                                         </div>
                                     </td>
-                                    {[1, 2, 3, 4].map((phase) => {
-                                        const isChecked = currentIntensity >= phase;
-                                        return (
-                                            <td key={phase} className="px-0.5 md:px-2 py-3 md:py-4 text-center align-middle">
-                                                <button
-                                                    onClick={() => handleToggle(task.id, phase)}
-                                                    className={`mx-auto w-4 h-4 md:w-6 md:h-6 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 border-[1px] md:border-[1.5px] ${isChecked ? 'bg-white border-white' : 'bg-transparent border-white/30 hover:border-white/60'}`}
-                                                    title={`Set Phase ${phase}`}
-                                                >
-                                                    {isChecked && (
-                                                        <Check className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-black" strokeWidth={3} />
-                                                    )}
-                                                </button>
-                                            </td>
-                                        );
-                                    })}
+                                    {isBooleanTask ? (
+                                        <td colSpan={4} className="px-0.5 md:px-2 py-3 md:py-4 text-center align-middle">
+                                            <button
+                                                onClick={() => handleToggleBoolean(task.id)}
+                                                className={`mx-auto w-full max-w-[120px] py-1.5 md:py-2 text-[9px] md:text-xs rounded-full flex items-center justify-center gap-1.5 transition-all duration-300 active:scale-95 border-[1px] md:border-[1.5px] ${isCompleted ? 'bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'bg-transparent text-zinc-400 border-white/30 hover:border-white/60'}`}
+                                            >
+                                                {isCompleted && <Check className="w-3 h-3 md:w-3.5 md:h-3.5" strokeWidth={3} />}
+                                                {isCompleted ? 'COMPLETED' : 'MARK DONE'}
+                                            </button>
+                                        </td>
+                                    ) : (
+                                        [1, 2, 3, 4].map((phase) => {
+                                            const isChecked = intensity >= phase;
+                                            return (
+                                                <td key={phase} className="px-0.5 md:px-2 py-3 md:py-4 text-center align-middle">
+                                                    <button
+                                                        onClick={() => handleTogglePhased(task.id, phase)}
+                                                        className={`mx-auto w-3.5 h-3.5 md:w-5 md:h-5 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 border-[1px] md:border-[1.5px] ${isChecked ? 'bg-white border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'bg-transparent border-white/30 hover:border-white/60'}`}
+                                                        title={`Set Phase ${phase}`}
+                                                    >
+                                                        {isChecked && (
+                                                            <Check className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-black" strokeWidth={3} />
+                                                        )}
+                                                    </button>
+                                                </td>
+                                            );
+                                        })
+                                    )}
                                 </tr>
                             );
                         })}
