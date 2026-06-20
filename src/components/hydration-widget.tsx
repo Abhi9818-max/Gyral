@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { Droplet, Plus, Minus, Waves, CupSoda, Milk, Wine } from 'lucide-react';
+import { useToday } from '@/hooks/use-today';
 import { useUserData } from '@/context/user-data-context';
 
 export function HydrationWidget() {
     const { tasks, records, addTask, addRecord } = useUserData();
+    const todayStr = useToday();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [waterTask, setWaterTask] = useState<any>(null);
     const [amount, setAmount] = useState(500);
@@ -26,8 +28,7 @@ export function HydrationWidget() {
     useEffect(() => {
         if (!waterTask) return;
 
-        const today = new Date().toISOString().split('T')[0];
-        const todaysRecords = records[today] || [];
+        const todaysRecords = records[todayStr] || [];
         const taskRecords = todaysRecords.filter(r => r.taskId === waterTask.id);
 
         const total = taskRecords.reduce((sum, r) => sum + (r.value || 0), 0);
@@ -51,8 +52,7 @@ export function HydrationWidget() {
         if (!waterTask) return;
 
         setIsAnimating(true);
-        const today = new Date().toISOString().split('T')[0];
-        addRecord(today, waterTask.id, null, value);
+        addRecord(todayStr, waterTask.id, null, value);
         setTimeout(() => setIsAnimating(false), 1000);
     };
 

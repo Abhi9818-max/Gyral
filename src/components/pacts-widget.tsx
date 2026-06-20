@@ -3,7 +3,8 @@
 import { useUserData } from '@/context/user-data-context';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Dumbbell, BookOpen, Droplet, Carrot, Circle, Check, Zap, Brain, Moon, Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useToday } from '@/hooks/use-today';
 
 export function PactWidget() {
     const { pacts, addPact, togglePact, deletePact, shiftPact, addDailyPact, dailyPacts, deleteDailyPact } = useUserData();
@@ -11,11 +12,19 @@ export function PactWidget() {
     const [isAdding, setIsAdding] = useState(false);
     const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
 
-    // Date State
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const todayStr = useToday();
+    const [selectedDate, setSelectedDate] = useState(todayStr);
     const dateInputRef = useRef<HTMLInputElement>(null);
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const previousToday = useRef(todayStr);
+    useEffect(() => {
+        if (todayStr !== previousToday.current) {
+            if (selectedDate === previousToday.current) {
+                setSelectedDate(todayStr);
+            }
+            previousToday.current = todayStr;
+        }
+    }, [todayStr, selectedDate]);
     const isToday = selectedDate === todayStr;
     const displayDate = isToday ? "Today" : new Date(selectedDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 

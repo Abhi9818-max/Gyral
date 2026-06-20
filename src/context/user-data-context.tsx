@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { useToday } from '@/hooks/use-today';
 import { createClient } from '@/utils/supabase/client';
 
 import { User } from '@supabase/supabase-js';
@@ -366,6 +367,7 @@ interface UserDataContextType {
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
 
 export function UserDataProvider({ children }: { children: React.ReactNode }) {
+    const todayStr = useToday();
     // --- STATE ---
     const [user, setUser] = useState<User | null>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -505,7 +507,6 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                     }
 
                     // Auto-inject daily pacts if today has none
-                    const todayStr = new Date().toISOString().split('T')[0];
                     if (!newPacts[todayStr] && loadedDailyPacts.length > 0) {
                         const autoPacts = loadedDailyPacts.map(dp => ({
                             id: crypto.randomUUID(),
@@ -779,6 +780,36 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         initData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Automatically inject daily pacts on midnight rollover
+    useEffect(() => {
+        if (!user || dailyPacts.length === 0) return;
+        
+        setPacts(prev => {
+            if (prev[todayStr]) return prev; // Already has pacts
+
+            const autoPacts = dailyPacts.map(dp => ({
+                id: crypto.randomUUID(),
+                text: dp.text,
+                isCompleted: false
+            }));
+
+            // Async insert to DB
+            const inserts = autoPacts.map(p => ({
+                id: p.id,
+                user_id: user.id,
+                text: p.text,
+                date: todayStr,
+                is_completed: false
+            }));
+            
+            supabase.from('pacts').insert(inserts).then(({ error }) => {
+                if (error) console.error("Failed auto-injecting daily pacts at midnight:", error);
+            });
+
+            return { ...prev, [todayStr]: autoPacts };
+        });
+    }, [todayStr, user, dailyPacts]);
 
     // --- LOCAL STORAGE BACKUP (Only if Guest) ---
     useEffect(() => {
