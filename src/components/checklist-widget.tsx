@@ -99,7 +99,8 @@ export function ChecklistWidget() {
                                     <div className="flex justify-end pr-1">
                                         <button
                                             onClick={() => handleToggleBoolean(task.id)}
-                                            className={`w-[80px] py-1 text-[9px] md:text-xs rounded-md flex items-center justify-center gap-1.5 transition-all duration-300 active:scale-95 border-[1px] ${isCompleted ? 'bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'bg-transparent text-zinc-400 border-white/30 hover:border-white/60'}`}
+                                            style={{ width: 64, paddingTop: 3, paddingBottom: 3 }}
+                                            className={`text-[8px] md:text-[10px] rounded-[4px] flex items-center justify-center gap-1 transition-all duration-300 active:scale-95 border-[1px] ${isCompleted ? 'bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'bg-transparent text-zinc-400 border-white/30 hover:border-white/60'}`}
                                         >
                                             {isCompleted && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
                                             {isCompleted ? 'DONE' : 'MARK'}
