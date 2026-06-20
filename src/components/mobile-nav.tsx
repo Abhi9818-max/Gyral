@@ -69,9 +69,6 @@ export function MobileNav() {
                                 className={`w-6 h-6 transition-all ${isActive('/') ? 'text-white scale-110' : 'text-white/50'}`}
                                 strokeWidth={isActive('/') ? 2.5 : 2}
                             />
-                            {isActive('/') && (
-                                <div className="absolute -top-1 w-1 h-1 rounded-full bg-accent" />
-                            )}
                         </Link>
 
                         {/* Dynamic User Items */}
@@ -91,9 +88,6 @@ export function MobileNav() {
                                             className={`w-6 h-6 transition-all ${active ? 'text-white scale-110' : 'text-white/50'}`}
                                             strokeWidth={active ? 2.5 : 2}
                                         />
-                                        {active && (
-                                            <div className="absolute -top-1 w-1 h-1 rounded-full bg-accent" />
-                                        )}
                                     </Link>
                                 );
                             }
@@ -130,9 +124,6 @@ export function MobileNav() {
                                     <User className="w-4 h-4 text-white/50" />
                                 )}
                             </div>
-                            {isActive('/profile') && (
-                                <div className="absolute -top-1 w-1 h-1 rounded-full bg-accent" />
-                            )}
                         </Link>
                     </div>
                 </nav>
