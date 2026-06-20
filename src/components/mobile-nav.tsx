@@ -83,7 +83,7 @@ export function MobileNav() {
                             if (!Icon) return null;
                             const active = item.href ? isActive(item.href) : false;
                             
-                            const showRedDot = item.key === 'pacts' && hasIncompletePacts;
+                            const showRedDot = (item.key === 'pacts' || item.key === 'citadel') && hasIncompletePacts;
 
                             if (item.href) {
                                 return (
