@@ -235,7 +235,7 @@ interface UserDataContextType {
     updateTask: (taskId: string, updates: Partial<Task>) => void;
     deleteTask: (taskId: string) => void;
     toggleTaskArchive: (taskId: string) => void;
-    addRecord: (date: string, taskId: string, intensity: number | null, value?: number) => Promise<{ valid: boolean; mercyUsed: boolean; mercyRemaining: number }>;
+    addRecord: (date: string, taskId: string, intensity: number | null, value?: number, silent?: boolean) => Promise<{ valid: boolean; mercyUsed: boolean; mercyRemaining: number }>;
     deleteRecord: (date: string, taskId: string) => void;
     getRecordsForDate: (date: string) => Record[];
     activeFilterTaskId: string | null;
@@ -1112,19 +1112,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
             if (!processedMonths.has(monthKey)) {
                 // Reuse calculateStreak's logic or extract it?
-                // Since calculateStreak is a closure, we can't easily reuse without extracting.
-                // Duplicating logic here for safety or extracting to a scope-accessible function is better.
-                // For now, I'll essentially replicate the analyzeMonthValidity logic here or move it up.
-                // Moving 'analyzeMonthValidity' up to component scope is cleaner.
-                // But for this diff, I'll define a local version.
-
-                // --- Local Re-implementation of Month Analysis ---
-                // Note: We use 'activeFilterTaskId' from context for calculating global consistency? 
-                // Or is consistency always global/combined? 
-                // User request context implies general consistency. Let's assume Combined if calculating globally.
-                // But wait, setConsistencyScore is setting global state.
-                // It likely uses 'records' (all).
-                // Should it check Phase 1? Yes.
+                // Actually we can just call the helper for each month involved (usually 1 or 2 months)
 
                 const validInMonth = new Set<string>();
                 const [yearStr, monthStr] = monthKey.split('-');
@@ -1235,7 +1223,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         if (task) updateTask(taskId, { isArchived: !task.isArchived });
     };
 
-    const addRecord = async (date: string, taskId: string, intensity: number | null, value?: number) => {
+    const addRecord = async (date: string, taskId: string, intensity: number | null, value?: number, silent: boolean = false) => {
         const timestamp = new Date().toISOString();
         const newRecord: Record = { taskId, intensity, value, timestamp };
 
@@ -1300,7 +1288,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
         setRecords((prev) => {
             const dayRecords = prev[date] || [];
-            setLastCompletion({ date, taskId });
+            if (!silent) setLastCompletion({ date, taskId });
             const filteredRecords = dayRecords.filter(r => r.taskId !== taskId);
             return { ...prev, [date]: [...filteredRecords, newRecord] };
         });

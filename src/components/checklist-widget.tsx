@@ -32,8 +32,8 @@ export function ChecklistWidget() {
             // Uncheck
             await deleteRecord(todayStr, taskId);
         } else {
-            // Update to target phase
-            await addRecord(todayStr, taskId, targetPhase);
+            // Update to target phase, passing true to silence the Streak Success Modal
+            await addRecord(todayStr, taskId, targetPhase, undefined, true);
         }
     };
 
@@ -42,8 +42,8 @@ export function ChecklistWidget() {
         if (isCompleted) {
             await deleteRecord(todayStr, taskId);
         } else {
-            // Log as standard completion (null intensity)
-            await addRecord(todayStr, taskId, null);
+            // Log as standard completion (null intensity), silence the modal
+            await addRecord(todayStr, taskId, null, undefined, true);
         }
     };
 
@@ -110,11 +110,11 @@ export function ChecklistWidget() {
                                             <div key={phase} className="w-[14%] flex justify-center items-center">
                                                 <button
                                                     onClick={() => handleTogglePhased(task.id, phase)}
-                                                    className={`w-[14px] h-[14px] md:w-5 md:h-5 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 border-[1px] md:border-[1.5px] ${isChecked ? 'bg-white border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'bg-transparent border-white/30 hover:border-white/60'}`}
+                                                    className={`w-2.5 h-2.5 md:w-4 md:h-4 rounded-[3px] md:rounded-sm flex items-center justify-center transition-all duration-300 active:scale-90 border-[1px] md:border-[1.5px] ${isChecked ? 'bg-white border-white shadow-[0_0_8px_rgba(255,255,255,0.3)]' : 'bg-transparent border-white/30 hover:border-white/60'}`}
                                                     title={`Set Phase ${phase}`}
                                                 >
                                                     {isChecked && (
-                                                        <Check className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-black" strokeWidth={3} />
+                                                        <Check className="w-[7px] h-[7px] md:w-2.5 md:h-2.5 text-black" strokeWidth={3} />
                                                     )}
                                                 </button>
                                             </div>
