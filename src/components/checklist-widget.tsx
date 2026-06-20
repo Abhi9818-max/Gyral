@@ -70,56 +70,60 @@ export function ChecklistWidget() {
                 </p>
             </div>
 
-            <div className="w-full flex flex-col font-sans">
+            <div className="w-full flex flex-col font-sans gap-2">
                 {/* Header */}
-                <div className="flex items-center border-y border-white/10 py-3 px-2">
-                    <div className="w-[44%] font-medium tracking-[0.1em] md:tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">Habit</div>
-                    <div className="w-[14%] text-center font-medium tracking-[0.1em] md:tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">P1</div>
-                    <div className="w-[14%] text-center font-medium tracking-[0.1em] md:tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">P2</div>
-                    <div className="w-[14%] text-center font-medium tracking-[0.1em] md:tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">P3</div>
-                    <div className="w-[14%] text-center font-medium tracking-[0.1em] md:tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">P4</div>
+                <div className="flex items-center px-2 pb-2 border-b border-white/10">
+                    <div className="flex-1 font-medium tracking-[0.2em] text-[10px] md:text-xs uppercase text-zinc-500">Habit</div>
+                    <div className="flex gap-3 md:gap-6 pr-1">
+                        <div className="w-4 text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">P1</div>
+                        <div className="w-4 text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">P2</div>
+                        <div className="w-4 text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">P3</div>
+                        <div className="w-4 text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">P4</div>
+                    </div>
                 </div>
                 
                 {/* Body */}
-                <div className="flex flex-col divide-y divide-white/5">
+                <div className="flex flex-col gap-2">
                     {activeTasks.map((task, index) => {
                         const { isCompleted, intensity } = getRecordStatus(task.id);
                         const isBooleanTask = !task.metricConfig || !task.metricConfig.phases || task.metricConfig.phases.length === 0;
 
                         return (
-                            <div key={task.id} className="flex items-center py-3 md:py-4 px-2 group hover:bg-white/[0.02] transition-colors">
-                                <div className="w-[44%] font-normal text-zinc-300 pr-2">
-                                    <div className="line-clamp-2 md:truncate md:max-w-[300px] text-[11px] md:text-[15px] tracking-wide leading-snug">
+                            <div key={task.id} className="flex items-center py-2.5 px-3 bg-white/[0.02] rounded-lg hover:bg-white/[0.04] transition-colors border border-white/5">
+                                <div className="flex-1 font-normal text-zinc-300 pr-4">
+                                    <div className="line-clamp-2 text-[11px] md:text-[14px] tracking-wide leading-snug">
                                         {index + 1}. {task.name}
                                     </div>
                                 </div>
                                 {isBooleanTask ? (
-                                    <div className="w-[56%] flex justify-center px-1">
+                                    <div className="flex justify-end">
                                         <button
                                             onClick={() => handleToggleBoolean(task.id)}
-                                            className={`w-full max-w-[140px] py-2 md:py-2.5 text-[9px] md:text-xs rounded-full flex items-center justify-center gap-1.5 transition-all duration-300 active:scale-95 border-[1px] md:border-[1.5px] ${isCompleted ? 'bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'bg-transparent text-zinc-400 border-white/30 hover:border-white/60'}`}
+                                            className={`w-[80px] py-1.5 text-[9px] md:text-xs rounded-md flex items-center justify-center gap-1.5 transition-all duration-300 active:scale-95 border-[1px] ${isCompleted ? 'bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'bg-transparent text-zinc-400 border-white/30 hover:border-white/60'}`}
                                         >
-                                            {isCompleted && <Check className="w-3 h-3 md:w-3.5 md:h-3.5" strokeWidth={3} />}
-                                            {isCompleted ? 'COMPLETED' : 'MARK DONE'}
+                                            {isCompleted && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
+                                            {isCompleted ? 'DONE' : 'MARK'}
                                         </button>
                                     </div>
                                 ) : (
-                                    [1, 2, 3, 4].map((phase) => {
-                                        const isChecked = intensity >= phase;
-                                        return (
-                                            <div key={phase} className="w-[14%] flex justify-center items-center">
-                                                <button
-                                                    onClick={() => handleTogglePhased(task.id, phase)}
-                                                    className={`w-2.5 h-2.5 md:w-4 md:h-4 rounded-[3px] md:rounded-sm flex items-center justify-center transition-all duration-300 active:scale-90 border-[1px] md:border-[1.5px] ${isChecked ? 'bg-white border-white shadow-[0_0_8px_rgba(255,255,255,0.3)]' : 'bg-transparent border-white/30 hover:border-white/60'}`}
-                                                    title={`Set Phase ${phase}`}
-                                                >
-                                                    {isChecked && (
-                                                        <Check className="w-[7px] h-[7px] md:w-2.5 md:h-2.5 text-black" strokeWidth={3} />
-                                                    )}
-                                                </button>
-                                            </div>
-                                        );
-                                    })
+                                    <div className="flex gap-3 md:gap-6 pr-1 items-center">
+                                        {[1, 2, 3, 4].map((phase) => {
+                                            const isChecked = intensity >= phase;
+                                            return (
+                                                <div key={phase} className="flex justify-center items-center w-4">
+                                                    <button
+                                                        onClick={() => handleTogglePhased(task.id, phase)}
+                                                        className={`w-[12px] h-[12px] md:w-5 md:h-5 rounded-[4px] md:rounded-md flex items-center justify-center transition-all duration-300 active:scale-90 border-[1px] md:border-[1.5px] ${isChecked ? 'bg-white border-white shadow-[0_0_8px_rgba(255,255,255,0.3)]' : 'bg-transparent border-white/30 hover:border-white/60'}`}
+                                                        title={`Set Phase ${phase}`}
+                                                    >
+                                                        {isChecked && (
+                                                            <Check className="w-[8px] h-[8px] md:w-3 md:h-3 text-black" strokeWidth={3} />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 )}
                             </div>
                         );
