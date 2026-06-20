@@ -146,12 +146,12 @@ export function PactWidget() {
                             onChange={(e) => setNewPactText(e.target.value)}
                             placeholder={`Add a pact for ${displayDate}...`}
                             autoFocus={isAdding}
-                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/30 transition-all"
+                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 pr-12 text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/30 transition-all"
                         />
                         <button
                             type="submit"
                             disabled={!newPactText.trim()}
-                            className="absolute right-2 top-2 p-1.5 bg-white text-black rounded-lg disabled:opacity-50 disabled:bg-zinc-800 disabled:text-zinc-600 transition-all hover:scale-105 flex items-center justify-center"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-white text-black rounded-lg disabled:opacity-50 disabled:bg-zinc-800 disabled:text-zinc-600 transition-all hover:scale-105 flex items-center justify-center"
                         >
                             <Plus className="w-4 h-4" />
                         </button>
@@ -214,14 +214,14 @@ export function PactWidget() {
                                         : 'bg-zinc-800/40 text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200 border border-transparent hover:border-white/5'}
                                 `}
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-full ${pact.isCompleted ? 'bg-black text-white' : 'bg-white/5 text-current'}`}>
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    <div className={`p-2 rounded-full shrink-0 ${pact.isCompleted ? 'bg-black text-white' : 'bg-white/5 text-current'}`}>
                                         {getIcon(pact.text)}
                                     </div>
-                                    <span className={`font-bold text-sm ${pact.isCompleted ? 'line-through decoration-black/20' : ''}`}>
+                                    <span className={`font-bold text-sm break-words whitespace-normal flex-1 ${pact.isCompleted ? 'line-through decoration-black/20' : ''}`}>
                                         {pact.text}
                                         {pact.shiftedCount && pact.shiftedCount > 0 && (
-                                            <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                            <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 whitespace-nowrap">
                                                 Shifted
                                             </span>
                                         )}
@@ -229,7 +229,7 @@ export function PactWidget() {
                                 </div>
 
                                 <div className={`
-                                    w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300
+                                    w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 shrink-0
                                     ${pact.isCompleted
                                         ? 'border-black bg-black text-white'
                                         : 'border-zinc-600 group-hover/item:border-zinc-400'}
