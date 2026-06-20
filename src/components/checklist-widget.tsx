@@ -74,11 +74,11 @@ export function ChecklistWidget() {
                 {/* Header */}
                 <div className="flex items-center px-2 pb-2 border-b border-white/10">
                     <div className="flex-1 font-medium tracking-[0.2em] text-[10px] md:text-xs uppercase text-zinc-500">Habit</div>
-                    <div className="flex gap-1 md:gap-1.5 pr-1">
-                        <div style={{ width: 14 }} className="text-center font-medium tracking-[0.2em] text-[8px] md:text-[10px] uppercase text-zinc-500">1</div>
-                        <div style={{ width: 14 }} className="text-center font-medium tracking-[0.2em] text-[8px] md:text-[10px] uppercase text-zinc-500">2</div>
-                        <div style={{ width: 14 }} className="text-center font-medium tracking-[0.2em] text-[8px] md:text-[10px] uppercase text-zinc-500">3</div>
-                        <div style={{ width: 14 }} className="text-center font-medium tracking-[0.2em] text-[8px] md:text-[10px] uppercase text-zinc-500">4</div>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', paddingRight: 4 }}>
+                        <div style={{ width: 14, textAlign: 'center', fontSize: 8, letterSpacing: '0.1em' }} className="font-medium uppercase text-zinc-500">1</div>
+                        <div style={{ width: 14, textAlign: 'center', fontSize: 8, letterSpacing: '0.1em' }} className="font-medium uppercase text-zinc-500">2</div>
+                        <div style={{ width: 14, textAlign: 'center', fontSize: 8, letterSpacing: '0.1em' }} className="font-medium uppercase text-zinc-500">3</div>
+                        <div style={{ width: 14, textAlign: 'center', fontSize: 8, letterSpacing: '0.1em' }} className="font-medium uppercase text-zinc-500">4</div>
                     </div>
                 </div>
                 
@@ -106,21 +106,38 @@ export function ChecklistWidget() {
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="flex gap-1 md:gap-1.5 pr-1 items-center">
+                                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', paddingRight: 4 }}>
                                         {[1, 2, 3, 4].map((phase) => {
                                             const isChecked = intensity >= phase;
                                             return (
-                                                <div key={phase} className="flex justify-center items-center">
-                                                    <button
-                                                        onClick={() => handleTogglePhased(task.id, phase)}
-                                                        style={{ width: 14, height: 14 }}
-                                                        className={`rounded-[3px] flex items-center justify-center transition-all duration-300 active:scale-90 border-[1px] md:border-[1.5px] ${isChecked ? 'bg-white border-white shadow-[0_0_8px_rgba(255,255,255,0.3)]' : 'bg-transparent border-white/30 hover:border-white/60'}`}
-                                                        title={`Set Phase ${phase}`}
-                                                    >
-                                                        {isChecked && (
-                                                            <Check style={{ width: 10, height: 10 }} className="text-black" strokeWidth={3} />
-                                                        )}
-                                                    </button>
+                                                <div
+                                                    key={phase}
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    onClick={() => handleTogglePhased(task.id, phase)}
+                                                    style={{
+                                                        width: 14,
+                                                        height: 14,
+                                                        minWidth: 14,
+                                                        minHeight: 14,
+                                                        maxWidth: 14,
+                                                        maxHeight: 14,
+                                                        borderRadius: 3,
+                                                        border: isChecked ? '1px solid white' : '1px solid rgba(255,255,255,0.3)',
+                                                        backgroundColor: isChecked ? 'white' : 'transparent',
+                                                        boxShadow: isChecked ? '0 0 8px rgba(255,255,255,0.3)' : 'none',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.3s',
+                                                        flexShrink: 0,
+                                                    }}
+                                                    title={`Set Phase ${phase}`}
+                                                >
+                                                    {isChecked && (
+                                                        <Check style={{ width: 9, height: 9 }} className="text-black" strokeWidth={3} />
+                                                    )}
                                                 </div>
                                             );
                                         })}
