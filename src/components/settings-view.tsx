@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, MouseEvent } from 'react';
+import Link from 'next/link';
 import {
     Download, Shield, Cloud, RefreshCw, Skull, Calendar,
     User, Lock, Bell, Globe, Moon, ChevronRight, Eye, EyeOff, Trash2,
@@ -305,9 +306,9 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                         {user?.email || 'Guest Access'}
                     </p>
                     {!user && (
-                        <a href="/login" className="text-xs text-indigo-400 hover:text-indigo-300 mt-1 inline-block">
+                        <Link href="/login" className="text-xs text-indigo-400 hover:text-indigo-300 mt-1 inline-block">
                             Sign In to Sync
-                        </a>
+                        </Link>
                     )}
                 </div>
             </div>

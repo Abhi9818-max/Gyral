@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { LayoutDashboard, Users, Shield, ScrollText, ClipboardList, Flag, Settings, Plus, Flame, Globe, Ghost, Skull, Coins, Menu, X, Search, MessageCircle, Bell, Sword, Home, User, Brain, Trophy } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
@@ -41,6 +41,7 @@ export function Header() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { consistencyScore, currentStreak, streakStatus, streakTier, streakStrength, activeFilterTaskId, tasks, currentFaction, user, profile } = useUserData();
   const { unreadCount, friendRequestCount } = useMessageNotifications();
+  const router = useRouter();
 
   // Smart Header Logic
   const pathname = usePathname();
@@ -293,26 +294,26 @@ export function Header() {
                       <span class="text-emerald-500">💎</span>
                       <span class="text-white font-medium">Negotiate</span>
                     </button>
-                    <a href="/feed" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                    <button id="feed-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>👻</span>
                       <span class="text-white font-medium">Feed</span>
-                    </a>
-                    <a href="/goals" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                    </button>
+                    <button id="goals-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>🎯</span>
                       <span class="text-white font-medium">Goals</span>
-                    </a>
-                    <a href="/achievements" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                    </button>
+                    <button id="achievements-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>🏆</span>
                       <span class="text-white font-medium">Achievements</span>
-                    </a>
-                    <a href="/notes" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                    </button>
+                    <button id="notes-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>📋</span>
                       <span class="text-white font-medium">Notes</span>
-                    </a>
-                    <a href="/settings" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                    </button>
+                    <button id="settings-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>⚙️</span>
                       <span class="text-white font-medium">Settings</span>
-                    </a>
+                    </button>
                     <button id="habits-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>➕</span>
                       <span class="text-white font-medium">Manage Habits</span>
@@ -370,6 +371,26 @@ export function Header() {
                 closeMenu();
                 setIsAddModalOpen(true);
               });
+              document.getElementById('feed-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/feed');
+              });
+              document.getElementById('goals-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/goals');
+              });
+              document.getElementById('achievements-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/achievements');
+              });
+              document.getElementById('notes-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/notes');
+              });
+              document.getElementById('settings-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/settings');
+              });
             }}
           >
             {currentFaction ? (
@@ -407,11 +428,11 @@ export function Header() {
                       <span class="text-white font-medium">Friend Requests</span>
                       ${friendRequestCount > 0 ? `<span class="ml-auto w-5 h-5 bg-purple-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${friendRequestCount > 9 ? '9+' : friendRequestCount}</span>` : ''}
                     </button>
-                    <a href="/messages" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left relative">
+                    <button id="mobile-messages-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left relative">
                       <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                       <span class="text-white font-medium">Messages</span>
                       ${unreadCount > 0 ? `<span class="ml-auto w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${unreadCount > 9 ? '9+' : unreadCount}</span>` : ''}
-                    </a>
+                    </button>
                     <button id="faction-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                        <span class="text-white">🚩</span>
                        <span class="text-white font-medium">House</span>
@@ -432,22 +453,22 @@ export function Header() {
                       <span class="text-accent">⚔️</span>
                       <span class="text-white font-medium">Arena</span>
                     </button>
-                    <a href="/goals" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                    <button id="mobile-goals-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>🎯</span>
                       <span class="text-white font-medium">Goals</span>
-                    </a>
-                    <a href="/achievements" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                    </button>
+                    <button id="mobile-achievements-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>🏆</span>
                       <span class="text-white font-medium">Achievements</span>
-                    </a>
-                    <a href="/notes" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                    </button>
+                    <button id="mobile-notes-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>📋</span>
                       <span class="text-white font-medium">Notes</span>
-                    </a>
-                    <a href="/settings" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                    </button>
+                    <button id="mobile-settings-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>⚙️</span>
                       <span class="text-white font-medium">Settings</span>
-                    </a>
+                    </button>
                     <button id="habits-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>➕</span>
                       <span class="text-white font-medium">Manage Habits</span>
@@ -515,7 +536,27 @@ export function Header() {
                 const { createClient } = await import('@/utils/supabase/client');
                 const supabase = createClient();
                 await supabase.auth.signOut();
-                window.location.href = '/login';
+                router.push('/login');
+              });
+              document.getElementById('mobile-messages-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/messages');
+              });
+              document.getElementById('mobile-goals-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/goals');
+              });
+              document.getElementById('mobile-achievements-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/achievements');
+              });
+              document.getElementById('mobile-notes-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/notes');
+              });
+              document.getElementById('mobile-settings-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/settings');
               });
             }}
           >

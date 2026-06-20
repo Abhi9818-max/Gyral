@@ -2,14 +2,31 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const CACHE_KEY = '@life_events_cache';
 
 export function HomeScreen() {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOffline, setIsOffline] = useState(false);
 
   useEffect(() => {
+    loadCachedEvents();
     fetchEvents();
   }, []);
+
+  async function loadCachedEvents() {
+    try {
+      const cached = await AsyncStorage.getItem(CACHE_KEY);
+      if (cached) {
+        setEvents(JSON.parse(cached));
+        setLoading(false); // Stop loading immediately if we have cache
+      }
+    } catch (e) {
+      console.error('Failed to load cache', e);
+    }
+  }
 
   async function fetchEvents() {
     try {
@@ -23,10 +40,15 @@ export function HomeScreen() {
         .order('event_date', { ascending: false });
 
       if (error) {
-        console.error(error);
+        throw error;
       } else {
         setEvents(data || []);
+        setIsOffline(false);
+        await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(data || []));
       }
+    } catch (error) {
+      console.log('Fetch failed, likely offline:', error);
+      setIsOffline(true);
     } finally {
       setLoading(false);
     }
@@ -49,7 +71,15 @@ export function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Dashboard</Text>
+        <View>
+          <Text style={styles.title}>Dashboard</Text>
+          {isOffline && (
+            <View style={styles.offlineIndicator}>
+              <View style={styles.offlineDot} />
+              <Text style={styles.offlineText}>Offline Mode (Cached)</Text>
+            </View>
+          )}
+        </View>
         <TouchableOpacity onPress={signOut} style={styles.signOutButton}>
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
@@ -96,6 +126,28 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  offlineIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  offlineDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#f59e0b',
+    marginRight: 6,
+  },
+  offlineText: {
+    color: '#f59e0b',
+    fontSize: 12,
+    fontWeight: '600',
   },
   signOutButton: {
     padding: 8,
