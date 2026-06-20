@@ -8,7 +8,13 @@ export function ChecklistWidget() {
     const { tasks, records, addRecord, deleteRecord } = useUserData();
     const todayStr = useToday();
 
-    const activeTasks = tasks.filter(t => !t.isArchived);
+    const activeTasks = tasks.filter(t => !t.isArchived).sort((a, b) => {
+        const aIsBoolean = !a.metricConfig || !a.metricConfig.phases || a.metricConfig.phases.length === 0;
+        const bIsBoolean = !b.metricConfig || !b.metricConfig.phases || b.metricConfig.phases.length === 0;
+        if (aIsBoolean && !bIsBoolean) return 1;
+        if (!aIsBoolean && bIsBoolean) return -1;
+        return 0;
+    });
 
     const getRecordStatus = (taskId: string) => {
         const todaysRecords = records[todayStr] || [];
@@ -104,11 +110,11 @@ export function ChecklistWidget() {
                                                 <td key={phase} className="px-0.5 md:px-2 py-3 md:py-4 text-center align-middle">
                                                     <button
                                                         onClick={() => handleTogglePhased(task.id, phase)}
-                                                        className={`mx-auto w-3.5 h-3.5 md:w-5 md:h-5 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 border-[1px] md:border-[1.5px] ${isChecked ? 'bg-white border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'bg-transparent border-white/30 hover:border-white/60'}`}
+                                                        className={`mx-auto w-3 h-3 md:w-5 md:h-5 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 border-[1px] md:border-[1.5px] ${isChecked ? 'bg-white border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'bg-transparent border-white/30 hover:border-white/60'}`}
                                                         title={`Set Phase ${phase}`}
                                                     >
                                                         {isChecked && (
-                                                            <Check className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-black" strokeWidth={3} />
+                                                            <Check className="w-2 h-2 md:w-3.5 md:h-3.5 text-black" strokeWidth={3} />
                                                         )}
                                                     </button>
                                                 </td>
