@@ -74,11 +74,11 @@ export function ChecklistWidget() {
                 {/* Header */}
                 <div className="flex items-center px-2 pb-2 border-b border-white/10">
                     <div className="flex-1 font-medium tracking-[0.2em] text-[10px] md:text-xs uppercase text-zinc-500">Habit</div>
-                    <div className="flex gap-3 md:gap-6 pr-1">
-                        <div className="w-4 text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">P1</div>
-                        <div className="w-4 text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">P2</div>
-                        <div className="w-4 text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">P3</div>
-                        <div className="w-4 text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">P4</div>
+                    <div className="flex gap-1 md:gap-1.5 pr-1">
+                        <div className="w-[28px] md:w-[25px] text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">1</div>
+                        <div className="w-[28px] md:w-[25px] text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">2</div>
+                        <div className="w-[28px] md:w-[25px] text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">3</div>
+                        <div className="w-[28px] md:w-[25px] text-center font-medium tracking-[0.2em] text-[9px] md:text-xs uppercase text-zinc-500">4</div>
                     </div>
                 </div>
                 
@@ -89,35 +89,35 @@ export function ChecklistWidget() {
                         const isBooleanTask = !task.metricConfig || !task.metricConfig.phases || task.metricConfig.phases.length === 0;
 
                         return (
-                            <div key={task.id} className="flex items-center py-2.5 px-3 bg-white/[0.02] rounded-lg hover:bg-white/[0.04] transition-colors border border-white/5">
+                            <div key={task.id} className="flex items-center py-1.5 px-2 bg-white/[0.02] rounded-md hover:bg-white/[0.04] transition-colors border border-white/5">
                                 <div className="flex-1 font-normal text-zinc-300 pr-4">
                                     <div className="line-clamp-2 text-[11px] md:text-[14px] tracking-wide leading-snug">
                                         {index + 1}. {task.name}
                                     </div>
                                 </div>
                                 {isBooleanTask ? (
-                                    <div className="flex justify-end">
+                                    <div className="flex justify-end pr-1">
                                         <button
                                             onClick={() => handleToggleBoolean(task.id)}
-                                            className={`w-[80px] py-1.5 text-[9px] md:text-xs rounded-md flex items-center justify-center gap-1.5 transition-all duration-300 active:scale-95 border-[1px] ${isCompleted ? 'bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'bg-transparent text-zinc-400 border-white/30 hover:border-white/60'}`}
+                                            className={`w-[80px] py-1 text-[9px] md:text-xs rounded-md flex items-center justify-center gap-1.5 transition-all duration-300 active:scale-95 border-[1px] ${isCompleted ? 'bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'bg-transparent text-zinc-400 border-white/30 hover:border-white/60'}`}
                                         >
                                             {isCompleted && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
                                             {isCompleted ? 'DONE' : 'MARK'}
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="flex gap-3 md:gap-6 pr-1 items-center">
+                                    <div className="flex gap-1 md:gap-1.5 pr-1 items-center">
                                         {[1, 2, 3, 4].map((phase) => {
                                             const isChecked = intensity >= phase;
                                             return (
-                                                <div key={phase} className="flex justify-center items-center w-4">
+                                                <div key={phase} className="flex justify-center items-center">
                                                     <button
                                                         onClick={() => handleTogglePhased(task.id, phase)}
-                                                        className={`w-[12px] h-[12px] md:w-5 md:h-5 rounded-[4px] md:rounded-md flex items-center justify-center transition-all duration-300 active:scale-90 border-[1px] md:border-[1.5px] ${isChecked ? 'bg-white border-white shadow-[0_0_8px_rgba(255,255,255,0.3)]' : 'bg-transparent border-white/30 hover:border-white/60'}`}
+                                                        className={`w-[28px] h-[28px] md:w-[25px] md:h-[25px] rounded-[5px] md:rounded-[4px] flex items-center justify-center transition-all duration-300 active:scale-90 border-[1px] md:border-[1.5px] ${isChecked ? 'bg-white border-white shadow-[0_0_8px_rgba(255,255,255,0.3)]' : 'bg-transparent border-white/30 hover:border-white/60'}`}
                                                         title={`Set Phase ${phase}`}
                                                     >
                                                         {isChecked && (
-                                                            <Check className="w-[8px] h-[8px] md:w-3 md:h-3 text-black" strokeWidth={3} />
+                                                            <Check className="w-[14px] h-[14px] md:w-[12px] md:h-[12px] text-black" strokeWidth={3} />
                                                         )}
                                                     </button>
                                                 </div>
