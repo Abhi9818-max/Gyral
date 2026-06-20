@@ -49,7 +49,10 @@ export function TaskViews() {
                 {viewMode === 'standard' ? (
                     <Heatmap />
                 ) : (
-                    <ChecklistWidget />
+                    <div className="space-y-6">
+                        <ChecklistWidget />
+                        <Heatmap />
+                    </div>
                 )}
             </div>
         </div>
