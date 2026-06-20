@@ -362,6 +362,7 @@ interface UserDataContextType {
     profileStreakMode: 'pinned' | 'combined';
     setProfileStreakMode: (mode: 'pinned' | 'combined') => Promise<void>;
     calculateAverageStreak: () => number;
+    isLoaded: boolean;
 }
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
@@ -1929,7 +1930,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             unlockedArtifacts, displayedArtifactId, equipArtifact, checkUnlockables,
             defaultFilterTaskId, setDefaultFilterTask,
             newlyUnlockedArtifacts, clearNewlyUnlocked,
-            profileStreakMode, setProfileStreakMode, calculateAverageStreak
+            profileStreakMode, setProfileStreakMode, calculateAverageStreak,
+            isLoaded
         }}>
             {children}
         </UserDataContext.Provider>

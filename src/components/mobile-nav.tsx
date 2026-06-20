@@ -23,7 +23,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string; strokeW
 
 export function MobileNav() {
     const pathname = usePathname();
-    const { navPreferences, profile, user, pacts } = useUserData();
+    const { navPreferences, profile, user, pacts, isLoaded } = useUserData();
     const todayStr = useToday();
 
     const [isRitualModalOpen, setIsRitualModalOpen] = useState(false);
@@ -61,91 +61,99 @@ export function MobileNav() {
     const todaysPacts = pacts[todayStr] || [];
     const hasIncompletePacts = todaysPacts.some(p => !p.isCompleted);
 
+    if (hideNav) return null;
+
+    if (!isLoaded) {
+        return (
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-white/10 z-[60] pb-safe">
+                <div className="h-16" />
+            </nav>
+        );
+    }
+
     return (
         <>
-            {!hideNav && (
-                <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-white/10 z-[60] pb-safe">
-                    <div className="flex items-center justify-around h-16 px-2">
-                        {/* Home Button - Fixed */}
-                        <Link
-                            href="/"
-                            className="flex flex-col items-center justify-center flex-1 h-full relative"
-                        >
-                            <Home
-                                className={`w-6 h-6 transition-all ${isActive('/') ? 'text-white scale-110' : 'text-white/50'}`}
-                                strokeWidth={isActive('/') ? 2.5 : 2}
-                            />
-                        </Link>
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-white/10 z-[60] pb-safe">
+                <div className="flex items-center justify-around h-16 px-2">
+                    {/* Home Button - Fixed */}
+                    <Link
+                        href="/"
+                        className="flex flex-col items-center justify-center flex-1 h-full relative"
+                    >
+                        <Home
+                            className={`w-6 h-6 transition-all ${isActive('/') ? 'text-white scale-110' : 'text-white/50'}`}
+                            strokeWidth={isActive('/') ? 2.5 : 2}
+                        />
+                    </Link>
 
-                        {/* Dynamic User Items */}
-                        {activeNavItems.map((item) => {
-                            const Icon = ICON_MAP[item.icon];
-                            if (!Icon) return null;
-                            const active = item.href ? isActive(item.href) : false;
-                            
-                            const showRedDot = (item.key === 'pacts' || item.key === 'citadel') && hasIncompletePacts;
+                    {/* Dynamic User Items */}
+                    {activeNavItems.map((item) => {
+                        const Icon = ICON_MAP[item.icon];
+                        if (!Icon) return null;
+                        const active = item.href ? isActive(item.href) : false;
+                        
+                        const showRedDot = (item.key === 'pacts' || item.key === 'citadel') && hasIncompletePacts;
 
-                            if (item.href) {
-                                return (
-                                    <Link
-                                        key={item.key}
-                                        href={item.href}
-                                        className="flex flex-col items-center justify-center flex-1 h-full relative"
-                                    >
-                                        <div className="relative">
-                                            <Icon
-                                                className={`w-6 h-6 transition-all ${active ? 'text-white scale-110' : 'text-white/50'}`}
-                                                strokeWidth={active ? 2.5 : 2}
-                                            />
-                                            {showRedDot && (
-                                                <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-[1.5px] border-black" />
-                                            )}
-                                        </div>
-                                    </Link>
-                                );
-                            }
-
+                        if (item.href) {
                             return (
-                                <button
+                                <Link
                                     key={item.key}
-                                    onClick={() => handleAction(item.key)}
+                                    href={item.href}
                                     className="flex flex-col items-center justify-center flex-1 h-full relative"
                                 >
                                     <div className="relative">
-                                        <Icon className="w-6 h-6 text-white/50 hover:text-white transition-all" />
+                                        <Icon
+                                            className={`w-6 h-6 transition-all ${active ? 'text-white scale-110' : 'text-white/50'}`}
+                                            strokeWidth={active ? 2.5 : 2}
+                                        />
                                         {showRedDot && (
                                             <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-[1.5px] border-black" />
                                         )}
                                     </div>
-                                </button>
+                                </Link>
                             );
-                        })}
+                        }
 
-                        {/* Profile Button - Fixed */}
-                        <Link
-                            href="/profile"
-                            className="flex flex-col items-center justify-center flex-1 h-full relative"
-                        >
-                            <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center overflow-hidden transition-all ${isActive('/profile') ? 'border-white scale-110' : 'border-white/30'} bg-gradient-to-tr from-zinc-800 to-zinc-700`}>
-                                {avatarSrc ? (
-                                    /* eslint-disable-next-line @next/next/no-img-element */
-                                    <img
-                                        src={avatarSrc}
-                                        alt="Profile"
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                            // Fallback to User icon if image fails to load
-                                            (e.target as HTMLImageElement).style.display = 'none';
-                                        }}
-                                    />
-                                ) : (
-                                    <User className="w-4 h-4 text-white/50" />
-                                )}
-                            </div>
-                        </Link>
-                    </div>
-                </nav>
-            )}
+                        return (
+                            <button
+                                key={item.key}
+                                onClick={() => handleAction(item.key)}
+                                className="flex flex-col items-center justify-center flex-1 h-full relative"
+                            >
+                                <div className="relative">
+                                    <Icon className="w-6 h-6 text-white/50 hover:text-white transition-all" />
+                                    {showRedDot && (
+                                        <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-[1.5px] border-black" />
+                                    )}
+                                </div>
+                            </button>
+                        );
+                    })}
+
+                    {/* Profile Button - Fixed */}
+                    <Link
+                        href="/profile"
+                        className="flex flex-col items-center justify-center flex-1 h-full relative"
+                    >
+                        <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center overflow-hidden transition-all ${isActive('/profile') ? 'border-white scale-110' : 'border-white/30'} bg-gradient-to-tr from-zinc-800 to-zinc-700`}>
+                            {avatarSrc ? (
+                                /* eslint-disable-next-line @next/next/no-img-element */
+                                <img
+                                    src={avatarSrc}
+                                    alt="Profile"
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        // Fallback to User icon if image fails to load
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                    }}
+                                />
+                            ) : (
+                                <User className="w-4 h-4 text-white/50" />
+                            )}
+                        </div>
+                    </Link>
+                </div>
+            </nav>
 
             <RitualModal isOpen={isRitualModalOpen} onClose={() => setIsRitualModalOpen(false)} />
             <BankModal isOpen={isBankModalOpen} onClose={() => setIsBankModalOpen(false)} />
