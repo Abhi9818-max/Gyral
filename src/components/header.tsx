@@ -111,25 +111,11 @@ export function Header() {
   return (
     <>
       <header className={`${isHome ? 'flex' : 'hidden md:flex'} items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-white/10 bg-black/90 backdrop-blur-3xl fixed top-0 w-full z-50 shadow-[0_4px_30px_rgba(0,0,0,0.8)] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] transform-gpu ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
-        <div className="flex items-center gap-3 relative group cursor-pointer">
-          <Link href="/" className="relative flex items-center gap-2.5 md:gap-3 group">
-            {/* Premium Icon Container */}
-            <div className="relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-b from-zinc-800 to-black border border-white/10 shadow-[0_4px_15px_rgba(0,0,0,0.5)] overflow-hidden group-hover:border-white/20 transition-all duration-500">
-              {/* Inner glow effect on hover */}
-              <div className="absolute inset-0 bg-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-md" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/icons/icon-192.png" alt="Gyral Logo" className="w-4 h-4 md:w-5 md:h-5 object-contain z-10 drop-shadow-[0_0_5px_rgba(255,255,255,0.4)] group-hover:scale-110 group-hover:brightness-125 transition-all duration-500" />
-            </div>
-            
-            {/* Typographic Lockup */}
-            <div className="flex flex-col justify-center">
-              <span className="text-[15px] md:text-lg font-black tracking-[0.25em] text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/60 uppercase leading-none drop-shadow-sm">
-                GYRAL
-              </span>
-              <span className="text-[8px] md:text-[9px] text-accent font-bold tracking-[0.3em] uppercase mt-0.5 opacity-80 leading-none pl-0.5">
-                PROTOCOL
-              </span>
-            </div>
+        <div className="flex items-center relative group cursor-pointer">
+          <Link href="/" className="relative flex items-center">
+            <span className="text-lg md:text-2xl font-light tracking-[0.4em] text-white/90 hover:text-white transition-all duration-500 uppercase">
+              GYRAL
+            </span>
           </Link>
         </div>
 
