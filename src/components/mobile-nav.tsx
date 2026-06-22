@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
     Home, Globe, Flame, Coins, Shield, Sword,
-    ClipboardList, MessageCircle, ScrollText, User, Skull
+    ClipboardList, MessageCircle, ScrollText, User, Skull, PlusCircle
 } from 'lucide-react';
 import { useUserData, ALL_NAV_ITEMS, NavItemKey } from '@/context/user-data-context';
 import { useToday } from '@/hooks/use-today';
@@ -15,10 +15,11 @@ import { BankModal } from './modals/bank-modal';
 import { NightsWatchModal } from './modals/nights-watch-modal';
 import { ShareModal } from './modals/share-modal';
 import { PactsModal } from './modals/pacts-modal';
+import { AddBucketItemModal } from './modals/add-bucket-item-modal';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
     Home, Globe, Flame, Coins, Shield, Sword,
-    ClipboardList, MessageCircle, ScrollText, User, Skull
+    ClipboardList, MessageCircle, ScrollText, User, Skull, PlusCircle
 };
 
 export function MobileNav() {
@@ -31,6 +32,7 @@ export function MobileNav() {
     const [isWatchModalOpen, setIsWatchModalOpen] = useState(false);
     const [isArenaModalOpen, setIsArenaModalOpen] = useState(false);
     const [isPactsModalOpen, setIsPactsModalOpen] = useState(false);
+    const [isAddBucketModalOpen, setIsAddBucketModalOpen] = useState(false);
 
     // Get the actual nav items based on preferences
     const activeNavItems = navPreferences
@@ -43,6 +45,7 @@ export function MobileNav() {
         if (key === 'watch') setIsWatchModalOpen(true);
         if (key === 'arena') setIsArenaModalOpen(true);
         if (key === 'pacts') setIsPactsModalOpen(true);
+        if (key === 'bucket-add') setIsAddBucketModalOpen(true);
     };
 
     const isActive = (href: string) => {
@@ -160,6 +163,7 @@ export function MobileNav() {
             <NightsWatchModal isOpen={isWatchModalOpen} onClose={() => setIsWatchModalOpen(false)} />
             <ShareModal isOpen={isArenaModalOpen} onClose={() => setIsArenaModalOpen(false)} />
             <PactsModal isOpen={isPactsModalOpen} onClose={() => setIsPactsModalOpen(false)} />
+            <AddBucketItemModal isOpen={isAddBucketModalOpen} onClose={() => setIsAddBucketModalOpen(false)} />
         </>
     );
 }
