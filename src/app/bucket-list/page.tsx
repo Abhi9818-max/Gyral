@@ -338,7 +338,7 @@ export default function BucketListPage() {
                     className="flex flex-col gap-2"
                 >
                     {/* 1. Pending Items */}
-                    {pendingItems.map((item, index) => {
+                    {pendingItems.map((item) => {
                         const { isCompleted, notes } = parseItem(item);
                         const isExpanded = expandedId === item.id;
 
@@ -347,21 +347,38 @@ export default function BucketListPage() {
                                 key={item.id}
                                 layout
                                 variants={itemVariants}
-                                className="flex flex-col py-1.5 px-2 bg-white/[0.02] rounded-md hover:bg-white/[0.04] transition-colors border border-white/5 group"
+                                onClick={() => toggleDone(item.id, item.description)}
+                                className="flex flex-col py-2 px-3 bg-white/[0.02] rounded-md hover:bg-white/[0.04] transition-all border border-white/5 group cursor-pointer"
                             >
                                 <div className="flex items-center justify-between">
-                                    {/* Title Click to Edit */}
-                                    <div 
-                                        onClick={() => startEditing(item)}
-                                        className="flex-1 font-normal text-zinc-300 pr-4 cursor-pointer"
-                                    >
-                                        <div className="line-clamp-2 text-[11px] md:text-[14px] tracking-wide leading-snug">
-                                            {item.title}
+                                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                                        {/* Tick box on the left */}
+                                        <div
+                                            className="rounded-[3px] border flex-shrink-0 flex items-center justify-center transition-all"
+                                            style={{
+                                                width: '13px',
+                                                height: '13px',
+                                                minWidth: '13px',
+                                                minHeight: '13px',
+                                                maxWidth: '13px',
+                                                maxHeight: '13px',
+                                                borderColor: 'rgba(255,255,255,0.3)',
+                                                backgroundColor: 'transparent',
+                                                flexShrink: 0
+                                            }}
+                                        >
+                                            {isCompleted && <Check className="w-2.5 h-2.5 text-black stroke-[3.5]" />}
+                                        </div>
+
+                                        <div className="flex-1 min-w-0 pr-4">
+                                            <div className="line-clamp-2 text-xs md:text-sm tracking-wide leading-relaxed text-zinc-300 group-hover:text-white transition-colors">
+                                                {item.title}
+                                            </div>
                                         </div>
                                     </div>
 
                                     {/* Action items and check button */}
-                                    <div className="flex items-center gap-3 flex-shrink-0 select-none">
+                                    <div className="flex items-center gap-3 flex-shrink-0 select-none" onClick={(e) => e.stopPropagation()}>
                                         {item.event_date && !isExpanded && (
                                             <span className="text-[9px] font-mono text-zinc-500 uppercase">
                                                 {formatDateStr(item.event_date)}
@@ -372,7 +389,7 @@ export default function BucketListPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => startEditing(item)}
-                                                className="text-white/20 hover:text-white/50 transition-colors p-1"
+                                                className="text-white/20 hover:text-white/50 transition-colors p-1 cursor-pointer"
                                                 title="Edit details"
                                             >
                                                 <Edit3 className="w-3.5 h-3.5" />
@@ -380,26 +397,18 @@ export default function BucketListPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => handleDelete(item.id)}
-                                                className="text-white/20 hover:text-red-400 transition-colors p-1"
+                                                className="text-white/20 hover:text-red-400 transition-colors p-1 cursor-pointer"
                                                 title="Delete item"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </button>
                                         </div>
-
-                                        <button
-                                            onClick={() => toggleDone(item.id, item.description)}
-                                            style={{ width: 64, paddingTop: 3, paddingBottom: 3 }}
-                                            className="text-[8px] md:text-[10px] rounded-[4px] flex items-center justify-center gap-1 transition-all duration-300 active:scale-95 border-[1px] bg-transparent text-zinc-400 border-white/30 hover:border-white/60 cursor-pointer"
-                                        >
-                                            MARK
-                                        </button>
                                     </div>
                                 </div>
 
                                 {/* Notes snippet */}
                                 {!isExpanded && notes && (
-                                    <div className="text-[10px] text-zinc-500 font-serif italic mt-0.5 pl-2 select-none">
+                                    <div className="text-[10px] text-zinc-500 font-serif italic mt-0.5 pl-[27px] select-none">
                                         {notes}
                                     </div>
                                 )}
@@ -412,7 +421,8 @@ export default function BucketListPage() {
                                             animate={{ height: 'auto', opacity: 1 }}
                                             exit={{ height: 0, opacity: 0 }}
                                             transition={{ duration: 0.18, ease: 'easeOut' }}
-                                            className="overflow-hidden pr-1 mt-3 border-t border-white/5 pt-3 space-y-3.5"
+                                            className="overflow-hidden pl-[27px] pr-1 mt-3 border-t border-white/5 pt-3 space-y-3.5"
+                                            onClick={(e) => e.stopPropagation()}
                                         >
                                             <div>
                                                 <label className="text-[8px] font-mono uppercase tracking-wider text-white/30 block mb-0.5">Aspiration Title</label>
@@ -491,22 +501,44 @@ export default function BucketListPage() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="flex items-center py-1.5 px-2 bg-white/[0.01] rounded-md hover:bg-white/[0.02] transition-colors border border-white/5 group"
+                                onClick={() => toggleDone(item.id, item.description)}
+                                className="flex items-center py-2 px-3 bg-white/[0.01] rounded-md hover:bg-white/[0.02] transition-all border border-white/5 group cursor-pointer"
                             >
-                                {/* Title strikethrough */}
-                                <div className="flex-1 font-normal text-zinc-500 pr-4">
-                                    <div className="line-clamp-2 text-[11px] md:text-[14px] tracking-wide leading-snug line-through">
-                                        {item.title}
+                                <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                                    {/* Checked Box on the left */}
+                                    <div
+                                        className="rounded-[3px] border flex-shrink-0 flex items-center justify-center transition-all"
+                                        style={{
+                                            width: '13px',
+                                            height: '13px',
+                                            minWidth: '13px',
+                                            minHeight: '13px',
+                                            maxWidth: '13px',
+                                            maxHeight: '13px',
+                                            borderColor: 'white',
+                                            backgroundColor: 'white',
+                                            boxShadow: '0 0 8px rgba(255,255,255,0.3)',
+                                            flexShrink: 0
+                                        }}
+                                    >
+                                        <Check className="w-2.5 h-2.5 text-black stroke-[3.5]" />
                                     </div>
-                                    {notes && (
-                                        <div className="text-[10px] text-zinc-600 font-serif italic mt-0.5 pl-2 line-through">
-                                            {notes}
+
+                                    {/* Title strikethrough */}
+                                    <div className="flex-1 min-w-0 pr-4">
+                                        <div className="line-clamp-2 text-xs md:text-sm tracking-wide leading-relaxed text-zinc-500 line-through">
+                                            {item.title}
                                         </div>
-                                    )}
+                                        {notes && (
+                                            <div className="text-[10px] text-zinc-650 font-serif italic mt-0.5 pl-0 line-through">
+                                                {notes}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Checked Status and Actions */}
-                                <div className="flex items-center gap-3 flex-shrink-0 select-none">
+                                <div className="flex items-center gap-3 flex-shrink-0 select-none" onClick={(e) => e.stopPropagation()}>
                                     {item.event_date && (
                                         <span className="text-[9px] font-mono text-zinc-600 uppercase">
                                             {formatDateStr(item.event_date)}
@@ -515,22 +547,14 @@ export default function BucketListPage() {
                                     
                                     <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
+                                            type="button"
                                             onClick={() => handleDelete(item.id)}
-                                            className="text-white/25 hover:text-red-400 transition-colors p-1"
+                                            className="text-white/20 hover:text-red-400 transition-colors p-1 cursor-pointer"
                                             title="Delete item"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
                                         </button>
                                     </div>
-
-                                    <button
-                                        onClick={() => toggleDone(item.id, item.description)}
-                                        style={{ width: 64, paddingTop: 3, paddingBottom: 3 }}
-                                        className="text-[8px] md:text-[10px] rounded-[4px] flex items-center justify-center gap-1 transition-all duration-300 active:scale-95 border-[1px] bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.3)] font-semibold cursor-pointer"
-                                    >
-                                        <Check className="w-2.5 h-2.5" strokeWidth={3} />
-                                        DONE
-                                    </button>
                                 </div>
                             </motion.div>
                         );
