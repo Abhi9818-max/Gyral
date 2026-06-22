@@ -428,8 +428,12 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                                     const toggleItem = () => {
                                         if (isNavActive) {
                                             updateNavPreferences(navPreferences.filter((k: NavItemKey) => k !== item.key));
-                                        } else if (navPreferences.length < 3) {
-                                            updateNavPreferences([...navPreferences, item.key]);
+                                        } else {
+                                            if (navPreferences.length < 3) {
+                                                updateNavPreferences([...navPreferences, item.key]);
+                                            } else {
+                                                updateNavPreferences([...navPreferences.slice(1), item.key]);
+                                            }
                                         }
                                     };
                                     const Icon = ICON_MAP[item.icon as keyof typeof ICON_MAP] || Globe;
