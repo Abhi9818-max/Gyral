@@ -26,18 +26,24 @@ export function ChecklistWidget() {
         };
     };
 
-    const handleToggleSingleBox = async (taskId: string, isBooleanTask: boolean) => {
+    const handleTogglePhased = async (taskId: string, targetPhase: number) => {
+        const { intensity } = getRecordStatus(taskId);
+        if (intensity === targetPhase) {
+            // Uncheck
+            await deleteRecord(todayStr, taskId);
+        } else {
+            // Update to target phase, passing true to silence the Streak Success Modal
+            await addRecord(todayStr, taskId, targetPhase, undefined, true);
+        }
+    };
+
+    const handleToggleBoolean = async (taskId: string) => {
         const { isCompleted } = getRecordStatus(taskId);
         if (isCompleted) {
             await deleteRecord(todayStr, taskId);
         } else {
-            if (isBooleanTask) {
-                // Log as standard completion (null intensity), silence the modal
-                await addRecord(todayStr, taskId, null, undefined, true);
-            } else {
-                // For phased tasks, set to phase 4 (full completion), silence the modal
-                await addRecord(todayStr, taskId, 4, undefined, true);
-            }
+            // Log as standard completion (null intensity), silence the modal
+            await addRecord(todayStr, taskId, null, undefined, true);
         }
     };
 
@@ -68,13 +74,18 @@ export function ChecklistWidget() {
                 {/* Header */}
                 <div className="flex items-center px-2 pb-2 border-b border-white/10 select-none">
                     <div className="flex-1 font-medium tracking-[0.2em] text-[10px] md:text-xs uppercase text-zinc-500">Habit</div>
-                    <div className="font-medium tracking-[0.2em] text-[10px] md:text-xs uppercase text-zinc-500 pr-1.5">Status</div>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', paddingRight: 4 }}>
+                        <div style={{ width: 14, textAlign: 'center', fontSize: 8, letterSpacing: '0.1em' }} className="font-medium uppercase text-zinc-500">1</div>
+                        <div style={{ width: 14, textAlign: 'center', fontSize: 8, letterSpacing: '0.1em' }} className="font-medium uppercase text-zinc-500">2</div>
+                        <div style={{ width: 14, textAlign: 'center', fontSize: 8, letterSpacing: '0.1em' }} className="font-medium uppercase text-zinc-500">3</div>
+                        <div style={{ width: 14, textAlign: 'center', fontSize: 8, letterSpacing: '0.1em' }} className="font-medium uppercase text-zinc-500">4</div>
+                    </div>
                 </div>
                 
                 {/* Body */}
                 <div className="flex flex-col gap-2">
                     {activeTasks.map((task, index) => {
-                        const { isCompleted } = getRecordStatus(task.id);
+                        const { isCompleted, intensity } = getRecordStatus(task.id);
                         const isBooleanTask = !task.metricConfig || !task.metricConfig.phases || task.metricConfig.phases.length === 0;
 
                         return (
@@ -84,46 +95,79 @@ export function ChecklistWidget() {
                                         {index + 1}. {task.name}
                                     </div>
                                 </div>
-                                <div className="flex justify-end pr-1.5 select-none">
-                                    <div
-                                        role="button"
-                                        tabIndex={0}
-                                        onClick={() => handleToggleSingleBox(task.id, isBooleanTask)}
-                                        style={{
-                                            width: 15,
-                                            height: 15,
-                                            minWidth: 15,
-                                            minHeight: 15,
-                                            maxWidth: 15,
-                                            maxHeight: 15,
-                                            borderRadius: 3,
-                                            border: isCompleted ? '1px solid white' : '1px solid rgba(255,255,255,0.3)',
-                                            backgroundColor: isCompleted ? 'white' : 'transparent',
-                                            boxShadow: isCompleted ? '0 0 8px rgba(255,255,255,0.3)' : 'none',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s',
-                                            flexShrink: 0,
-                                        }}
-                                        title={isCompleted ? "Mark incomplete" : "Mark complete"}
-                                    >
-                                        {isCompleted && (
-                                            <Check style={{ width: 10, height: 10 }} className="text-black stroke-[3.5]" />
-                                        )}
+                                {isBooleanTask ? (
+                                    <div style={{ display: 'flex', width: 74, justifyContent: 'flex-end', alignItems: 'center', paddingRight: 4 }} className="select-none">
+                                        <div
+                                            role="button"
+                                            tabIndex={0}
+                                            onClick={() => handleToggleBoolean(task.id)}
+                                            style={{
+                                                width: 14,
+                                                height: 14,
+                                                minWidth: 14,
+                                                minHeight: 14,
+                                                maxWidth: 14,
+                                                maxHeight: 14,
+                                                borderRadius: 3,
+                                                border: isCompleted ? '1px solid white' : '1px solid rgba(255,255,255,0.3)',
+                                                backgroundColor: isCompleted ? 'white' : 'transparent',
+                                                boxShadow: isCompleted ? '0 0 8px rgba(255,255,255,0.3)' : 'none',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                                flexShrink: 0,
+                                            }}
+                                            title={isCompleted ? "Mark incomplete" : "Mark complete"}
+                                        >
+                                            {isCompleted && (
+                                                <Check style={{ width: 9, height: 9 }} className="text-black stroke-[3.5]" />
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', paddingRight: 4 }}>
+                                        {[1, 2, 3, 4].map((phase) => {
+                                            const isChecked = intensity >= phase;
+                                            return (
+                                                <div
+                                                    key={phase}
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    onClick={() => handleTogglePhased(task.id, phase)}
+                                                    style={{
+                                                        width: 14,
+                                                        height: 14,
+                                                        minWidth: 14,
+                                                        minHeight: 14,
+                                                        maxWidth: 14,
+                                                        maxHeight: 14,
+                                                        borderRadius: 3,
+                                                        border: isChecked ? '1px solid white' : '1px solid rgba(255,255,255,0.3)',
+                                                        backgroundColor: isChecked ? 'white' : 'transparent',
+                                                        boxShadow: isChecked ? '0 0 8px rgba(255,255,255,0.3)' : 'none',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.3s',
+                                                        flexShrink: 0,
+                                                    }}
+                                                    title={`Set Phase ${phase}`}
+                                                >
+                                                    {isChecked && (
+                                                        <Check style={{ width: 9, height: 9 }} className="text-black stroke-[3.5]" />
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
                 </div>
-            </div>
-
-            <div className="mt-8 md:mt-16 text-center">
-                <p className="font-serif italic text-sm md:text-xl text-zinc-400 tracking-wide">
-                    remember, <span className="font-bold text-zinc-300">consistency over perfection.</span>
-                </p>
             </div>
         </div>
     );
