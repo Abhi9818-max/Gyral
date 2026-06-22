@@ -83,7 +83,7 @@ export type LifeEvent = {
     event_date: string;
     title: string;
     description?: string;
-    type: 'MEMORY' | 'GOAL';
+    type: 'MEMORY' | 'GOAL' | 'BUCKET_LIFE' | 'BUCKET_YEAR';
     created_at?: string;
 };
 

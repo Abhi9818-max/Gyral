@@ -133,6 +133,10 @@ export function Header() {
             <Flag className="w-4 h-4 group-hover:text-blue-500 transition-colors" /> <span className="relative">Goals <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-blue-500 group-hover:w-full transition-all duration-300" /></span>
           </Link>
 
+          <Link href="/bucket-list" className="hover:text-white hover:scale-105 transition-all duration-300 ease-out flex items-center gap-2 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] group">
+            <ScrollText className="w-4 h-4 group-hover:text-emerald-400 transition-colors" /> <span className="relative">Bucket List <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-emerald-400 group-hover:w-full transition-all duration-300" /></span>
+          </Link>
+
           <Link href="/achievements" className="hover:text-white hover:scale-105 transition-all duration-300 ease-out flex items-center gap-2 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] group">
             <Trophy className="w-4 h-4 group-hover:text-amber-500 transition-colors" /> <span className="relative">Achievements <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-amber-500 group-hover:w-full transition-all duration-300" /></span>
           </Link>
@@ -300,6 +304,10 @@ export function Header() {
                       <span>🎯</span>
                       <span class="text-white font-medium">Goals</span>
                     </button>
+                    <button id="bucket-list-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                      <span>📜</span>
+                      <span class="text-white font-medium">Bucket List</span>
+                    </button>
                     <button id="achievements-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>🏆</span>
                       <span class="text-white font-medium">Achievements</span>
@@ -376,6 +384,10 @@ export function Header() {
               document.getElementById('goals-nav-btn')?.addEventListener('click', () => {
                 closeMenu();
                 router.push('/goals');
+              });
+              document.getElementById('bucket-list-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/bucket-list');
               });
               document.getElementById('achievements-nav-btn')?.addEventListener('click', () => {
                 closeMenu();
@@ -454,6 +466,10 @@ export function Header() {
                     <button id="mobile-goals-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>🎯</span>
                       <span class="text-white font-medium">Goals</span>
+                    </button>
+                    <button id="mobile-bucket-list-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                      <span>📜</span>
+                      <span class="text-white font-medium">Bucket List</span>
                     </button>
                     <button id="mobile-achievements-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>🏆</span>
@@ -543,6 +559,10 @@ export function Header() {
               document.getElementById('mobile-goals-nav-btn')?.addEventListener('click', () => {
                 closeMenu();
                 router.push('/goals');
+              });
+              document.getElementById('mobile-bucket-list-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/bucket-list');
               });
               document.getElementById('mobile-achievements-nav-btn')?.addEventListener('click', () => {
                 closeMenu();
