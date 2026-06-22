@@ -146,7 +146,7 @@ export default function BucketListPage() {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white py-12 px-4 md:px-8 flex items-start justify-center">
+        <div className="min-h-screen bg-black text-white py-12 px-4 md:px-8 flex items-start justify-center relative">
             
             {/* Checklist Container Card */}
             <div className="bg-black/60 backdrop-blur-xl text-zinc-200 p-5 md:p-8 rounded-2xl border border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-w-2xl w-full">
@@ -208,127 +208,6 @@ export default function BucketListPage() {
                         </p>
                     </div>
                 )}
-
-                {/* Floating Modal Window for Adding Item */}
-                <AnimatePresence>
-                    {isAdding && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
-                        >
-                            <motion.div
-                                initial={{ scale: 0.95, y: 10, opacity: 0 }}
-                                animate={{ scale: 1, y: 0, opacity: 1 }}
-                                exit={{ scale: 0.95, y: 10, opacity: 0 }}
-                                transition={{ type: "spring", stiffness: 350, damping: 28 }}
-                                className="bg-[#0c0c0c] border border-white/10 rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.8)] max-w-md w-full relative overflow-hidden"
-                            >
-                                {/* Glowing top line */}
-                                <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-white/0 via-white/20 to-white/0" />
-
-                                <div className="flex justify-between items-center mb-5 select-none">
-                                    <h3 className="text-xs font-mono uppercase tracking-[0.2em] text-white/50 flex items-center gap-2">
-                                        <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
-                                        Forge Aspiration
-                                    </h3>
-                                    <button
-                                        type="button"
-                                        onClick={() => { setIsAdding(false); setNewTitle(''); setNewNotes(''); setErrorMsg(null); }}
-                                        className="text-white/20 hover:text-white/60 transition-colors p-1"
-                                    >
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                </div>
-
-                                <form onSubmit={handleAdd} className="space-y-4">
-                                    <div className="space-y-3.5">
-                                        <div>
-                                            <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1">Title</label>
-                                            <input
-                                                type="text"
-                                                value={newTitle}
-                                                onChange={(e) => setNewTitle(e.target.value)}
-                                                placeholder={
-                                                    activeTab === 'BUCKET_LIFE'
-                                                        ? 'e.g. Kyoto in Autumn, Learn skydiving...'
-                                                        : `e.g. Complete a marathon, Publish a web app...`
-                                                }
-                                                className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/40 transition-colors"
-                                                autoFocus
-                                                required
-                                            />
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <div>
-                                                <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1">Target Date</label>
-                                                <input
-                                                    type="date"
-                                                    value={newDate}
-                                                    onChange={(e) => setNewDate(e.target.value)}
-                                                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="flex flex-col justify-end">
-                                                <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1">Horizon</label>
-                                                <div className="flex gap-2 items-center text-xs text-white/40 h-[40px] px-1 font-mono text-[9px] tracking-wider uppercase select-none">
-                                                    {activeTab === 'BUCKET_LIFE' ? (
-                                                        <>
-                                                            <Infinity className="w-3.5 h-3.5 text-white/20" />
-                                                            <span>Lifetime</span>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <CalendarClock className="w-3.5 h-3.5 text-white/20" />
-                                                            <span>{currentYear} Year</span>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1">Motivation Notes</label>
-                                            <textarea
-                                                value={newNotes}
-                                                onChange={(e) => setNewNotes(e.target.value)}
-                                                placeholder="Detail what this achievement will look like..."
-                                                rows={3}
-                                                className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-white/25 focus:outline-none focus:border-white/40 transition-colors resize-none"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {errorMsg && (
-                                        <div className="text-[10px] text-red-400 font-mono bg-red-950/15 border border-red-500/10 px-3 py-2 rounded-lg">
-                                            {errorMsg}
-                                        </div>
-                                    )}
-
-                                    <div className="flex justify-end gap-3 pt-2 select-none">
-                                        <button
-                                            type="button"
-                                            onClick={() => { setIsAdding(false); setNewTitle(''); setNewNotes(''); setErrorMsg(null); }}
-                                            className="px-4 py-2 rounded-xl text-[10px] uppercase font-mono tracking-wider text-white/40 hover:text-white/60 hover:bg-white/5 transition-colors"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            disabled={!newTitle.trim() || isSubmitting}
-                                            className="px-4 py-2 rounded-xl text-[10px] uppercase font-mono tracking-wider bg-white text-black font-bold hover:bg-zinc-200 disabled:opacity-20 transition-all shadow-[0_0_10px_rgba(255,255,255,0.2)]"
-                                        >
-                                            {isSubmitting ? 'Forging...' : 'Forge'}
-                                        </button>
-                                    </div>
-                                </form>
-                            </motion.div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
 
                 {/* Flat Checklist List (Pending & Completed combined) */}
                 <motion.div 
@@ -530,7 +409,7 @@ export default function BucketListPage() {
                                             {item.title}
                                         </div>
                                         {notes && (
-                                            <div className="text-[10px] text-zinc-650 font-serif italic mt-0.5 pl-0 line-through">
+                                            <div className="text-[10px] text-zinc-500/50 font-serif italic mt-0.5 pl-0 line-through">
                                                 {notes}
                                             </div>
                                         )}
@@ -560,16 +439,130 @@ export default function BucketListPage() {
                         );
                     })}
                 </motion.div>
-
-                {/* Footer Quote */}
-                <div className="mt-8 md:mt-12 text-center select-none">
-                    <p className="font-serif italic text-xs text-zinc-500 tracking-wide">
-                        {activeTab === 'BUCKET_LIFE'
-                            ? '"remember, the purpose of life is to live it."'
-                            : `"make ${currentYear} the year you didn't just exist — you lived."`}
-                    </p>
-                </div>
             </div>
+
+            {/* Floating Modal Window for Adding Item (Rendered at page level) */}
+            <AnimatePresence>
+                {isAdding && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => { setIsAdding(false); setNewTitle(''); setNewNotes(''); setErrorMsg(null); }}
+                        className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[100] p-4"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, y: 10, opacity: 0 }}
+                            animate={{ scale: 1, y: 0, opacity: 1 }}
+                            exit={{ scale: 0.95, y: 10, opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-[#0c0c0c] border border-white/10 rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.8)] max-w-md w-full relative overflow-hidden"
+                        >
+                            {/* Glowing top line */}
+                            <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-white/0 via-white/20 to-white/0" />
+
+                            <div className="flex justify-between items-center mb-5 select-none">
+                                <h3 className="text-xs font-mono uppercase tracking-[0.2em] text-white/50 flex items-center gap-2">
+                                    <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
+                                    Forge Aspiration
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={() => { setIsAdding(false); setNewTitle(''); setNewNotes(''); setErrorMsg(null); }}
+                                    className="text-white/20 hover:text-white/60 transition-colors p-1"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleAdd} className="space-y-4">
+                                <div className="space-y-3.5">
+                                    <div>
+                                        <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1">Title</label>
+                                        <input
+                                            type="text"
+                                            value={newTitle}
+                                            onChange={(e) => setNewTitle(e.target.value)}
+                                            placeholder={
+                                                activeTab === 'BUCKET_LIFE'
+                                                    ? 'e.g. Kyoto in Autumn, Learn skydiving...'
+                                                    : `e.g. Complete a marathon, Publish a web app...`
+                                            }
+                                            className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/40 transition-colors"
+                                            autoFocus
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1">Target Date</label>
+                                            <input
+                                                type="date"
+                                                value={newDate}
+                                                onChange={(e) => setNewDate(e.target.value)}
+                                                className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="flex flex-col justify-end">
+                                            <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1">Horizon</label>
+                                            <div className="flex gap-2 items-center text-xs text-white/40 h-[40px] px-1 font-mono text-[9px] tracking-wider uppercase select-none">
+                                                {activeTab === 'BUCKET_LIFE' ? (
+                                                    <>
+                                                        <Infinity className="w-3.5 h-3.5 text-white/20" />
+                                                        <span>Lifetime</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <CalendarClock className="w-3.5 h-3.5 text-white/20" />
+                                                        <span>{currentYear} Year</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1">Motivation Notes</label>
+                                        <textarea
+                                            value={newNotes}
+                                            onChange={(e) => setNewNotes(e.target.value)}
+                                            placeholder="Detail what this achievement will look like..."
+                                            rows={3}
+                                            className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-white/25 focus:outline-none focus:border-white/40 transition-colors resize-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                {errorMsg && (
+                                    <div className="text-[10px] text-red-400 font-mono bg-red-950/15 border border-red-500/10 px-3 py-2 rounded-lg">
+                                        {errorMsg}
+                                    </div>
+                                )}
+
+                                <div className="flex justify-end gap-3 pt-2 select-none">
+                                    <button
+                                        type="button"
+                                        onClick={() => { setIsAdding(false); setNewTitle(''); setNewNotes(''); setErrorMsg(null); }}
+                                        className="px-4 py-2 rounded-xl text-[10px] uppercase font-mono tracking-wider text-white/40 hover:text-white/60 hover:bg-white/5 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={!newTitle.trim() || isSubmitting}
+                                        className="px-4 py-2 rounded-xl text-[10px] uppercase font-mono tracking-wider bg-white text-black font-bold hover:bg-zinc-200 disabled:opacity-20 transition-all shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                                    >
+                                        {isSubmitting ? 'Forging...' : 'Forge'}
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
