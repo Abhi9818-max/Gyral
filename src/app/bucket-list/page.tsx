@@ -152,83 +152,96 @@ export default function BucketListPage() {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white pb-24">
-            {/* Header */}
-            <div className="max-w-xl mx-auto px-4 pt-10 pb-6">
-                <div className="flex items-center justify-between mb-8 select-none">
-                    <div className="flex items-center gap-3">
-                        <Link href="/" className="text-white/30 hover:text-white transition-colors p-1 rounded-lg">
-                            <ArrowLeft className="w-4 h-4" />
-                        </Link>
-                        <h1 className="text-lg font-serif italic text-white/90">Aspirations</h1>
-                    </div>
-                    
-                    {/* Minimalist Tab Toggle */}
-                    <div className="flex gap-4 text-[10px] font-mono uppercase tracking-widest">
-                        <button
-                            onClick={() => {
-                                setActiveTab('BUCKET_LIFE');
-                                setExpandedId(null);
-                            }}
-                            className={`relative py-1 transition-colors ${
-                                activeTab === 'BUCKET_LIFE' ? 'text-emerald-400 font-semibold' : 'text-white/20 hover:text-white/40'
-                            }`}
-                        >
-                            Horizon
-                            {activeTab === 'BUCKET_LIFE' && (
-                                <motion.div
-                                    layoutId="tabLine"
-                                    className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-emerald-400"
-                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                                />
-                            )}
-                        </button>
-                        <button
-                            onClick={() => {
-                                setActiveTab('BUCKET_YEAR');
-                                setExpandedId(null);
-                            }}
-                            className={`relative py-1 transition-colors ${
-                                activeTab === 'BUCKET_YEAR' ? 'text-emerald-400 font-semibold' : 'text-white/20 hover:text-white/40'
-                            }`}
-                        >
-                            {currentYear}
-                            {activeTab === 'BUCKET_YEAR' && (
-                                <motion.div
-                                    layoutId="tabLine"
-                                    className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-emerald-400"
-                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                                />
-                            )}
-                        </button>
-                    </div>
+        <div className="min-h-screen bg-black text-white py-10 px-4 md:px-8 flex items-center justify-center">
+            
+            {/* Checklist-styled Card Container */}
+            <div className="bg-black/60 backdrop-blur-xl text-zinc-200 p-6 md:p-10 rounded-2xl border border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-w-3xl w-full">
+                
+                {/* Header */}
+                <div className="text-center mb-8 relative select-none">
+                    <Link href="/" className="absolute left-0 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors p-1 rounded-lg">
+                        <ArrowLeft className="w-5 h-5" />
+                    </Link>
+                    <h2 className="text-3xl md:text-5xl font-serif italic mb-2 tracking-tight text-white/90">
+                        Bucket List
+                    </h2>
+                    <p className="text-[10px] md:text-sm font-sans tracking-[0.2em] uppercase opacity-50">
+                        {activeTab === 'BUCKET_LIFE' ? 'Before time runs out' : `Yearly Ascent — ${currentYear}`}
+                    </p>
                 </div>
 
-                {/* Minimalist Linear Progress */}
+                {/* Tab Switcher */}
+                <div className="relative flex p-1 bg-white/[0.03] border border-white/5 rounded-xl backdrop-blur-md max-w-xs mx-auto mb-8 select-none">
+                    <button
+                        onClick={() => {
+                            setActiveTab('BUCKET_LIFE');
+                            setExpandedId(null);
+                        }}
+                        className={`relative flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all z-10 ${
+                            activeTab === 'BUCKET_LIFE' ? 'text-black' : 'text-white/40 hover:text-white/60'
+                        }`}
+                    >
+                        {activeTab === 'BUCKET_LIFE' && (
+                            <motion.div
+                                layoutId="activeTabGlow"
+                                className="absolute inset-0 bg-white rounded-lg shadow-[0_0_10px_rgba(255,255,255,0.3)]"
+                                transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                            />
+                        )}
+                        <span className="relative z-20">Lifetime</span>
+                    </button>
+                    <button
+                        onClick={() => {
+                            setActiveTab('BUCKET_YEAR');
+                            setExpandedId(null);
+                        }}
+                        className={`relative flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all z-10 ${
+                            activeTab === 'BUCKET_YEAR' ? 'text-black' : 'text-white/40 hover:text-white/60'
+                        }`}
+                    >
+                        {activeTab === 'BUCKET_YEAR' && (
+                            <motion.div
+                                layoutId="activeTabGlow"
+                                className="absolute inset-0 bg-white rounded-lg shadow-[0_0_10px_rgba(255,255,255,0.3)]"
+                                transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                            />
+                        )}
+                        <span className="relative z-20">{currentYear}</span>
+                    </button>
+                </div>
+
+                {/* Progress bar */}
                 {allItems.length > 0 && (
-                    <div className="mb-10 space-y-1.5 select-none">
-                        <div className="flex justify-between items-center text-[9px] font-mono tracking-[0.25em] text-white/25 uppercase">
-                            <span>Conquered</span>
+                    <div className="mb-8 space-y-1.5 select-none">
+                        <div className="flex justify-between items-center text-[9px] font-mono tracking-[0.25em] text-white/20 uppercase">
+                            <span>Achieved</span>
                             <span>{completedItems.length} of {allItems.length} ({progress}%)</span>
                         </div>
-                        <div className="h-[1.5px] bg-white/[0.04] w-full rounded-full overflow-hidden">
+                        <div className="h-[2px] bg-white/[0.04] w-full rounded-full overflow-hidden">
                             <motion.div
-                                className="h-full bg-emerald-400"
+                                className="h-full bg-white"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${progress}%` }}
                                 transition={{ duration: 0.6, ease: 'easeOut' }}
+                                style={{ boxShadow: '0 0 8px rgba(255,255,255,0.5)' }}
                             />
                         </div>
                     </div>
                 )}
 
-                {/* Main Content Area */}
-                <div className="space-y-6">
+                {/* Main Content List */}
+                <div className="w-full flex flex-col font-sans gap-2">
+                    
+                    {/* Header Columns */}
+                    <div className="flex items-center px-2 pb-2 border-b border-white/10 select-none">
+                        <div className="flex-1 font-medium tracking-[0.2em] text-[10px] uppercase text-zinc-500">Aspiration</div>
+                        <div className="font-medium tracking-[0.2em] text-[10px] uppercase text-zinc-500 text-right pr-4">Status</div>
+                    </div>
 
                     {/* Empty State */}
                     {allItems.length === 0 && !isAdding && (
-                        <div className="py-20 text-center select-none">
-                            <p className="text-white/50 font-serif italic text-base mb-1">
+                        <div className="py-16 text-center select-none">
+                            <p className="text-white/40 font-serif italic text-base mb-1">
                                 {activeTab === 'BUCKET_LIFE'
                                     ? 'What do you wish to see before the end?'
                                     : `What milestones will define your ${currentYear}?`}
@@ -240,7 +253,7 @@ export default function BucketListPage() {
                     )}
 
                     {/* Add Form / Trigger */}
-                    <div>
+                    <div className="mb-2">
                         <AnimatePresence mode="popLayout">
                             {isAdding ? (
                                 <motion.form
@@ -249,7 +262,7 @@ export default function BucketListPage() {
                                     exit={{ opacity: 0, y: -8 }}
                                     transition={{ duration: 0.18 }}
                                     onSubmit={handleAdd}
-                                    className="space-y-4 py-2 border-b border-white/5"
+                                    className="p-4 rounded-md bg-white/[0.01] border border-white/5 space-y-4"
                                 >
                                     <div className="space-y-3">
                                         <input
@@ -261,7 +274,7 @@ export default function BucketListPage() {
                                                     ? 'Title of Aspiration (e.g. Kyoto in Autumn)'
                                                     : `Aspiration for ${currentYear}`
                                             }
-                                            className="w-full bg-transparent border-b border-white/10 py-1 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                                            className="w-full bg-transparent border-b border-white/10 py-1 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/40 transition-colors"
                                             autoFocus
                                             required
                                         />
@@ -273,7 +286,7 @@ export default function BucketListPage() {
                                                     type="date"
                                                     value={newDate}
                                                     onChange={(e) => setNewDate(e.target.value)}
-                                                    className="w-full bg-transparent border-b border-white/10 py-1 text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                                                    className="w-full bg-transparent border-b border-white/10 py-1 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
                                                     required
                                                 />
                                             </div>
@@ -291,7 +304,7 @@ export default function BucketListPage() {
                                                 onChange={(e) => setNewNotes(e.target.value)}
                                                 placeholder="Add brief details or motivation notes..."
                                                 rows={2}
-                                                className="w-full bg-transparent border-b border-white/10 py-1 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-emerald-500/50 transition-colors resize-none"
+                                                className="w-full bg-transparent border-b border-white/10 py-1 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-white/40 transition-colors resize-none"
                                             />
                                         </div>
                                     </div>
@@ -313,7 +326,7 @@ export default function BucketListPage() {
                                         <button
                                             type="submit"
                                             disabled={!newTitle.trim() || isSubmitting}
-                                            className="text-[9px] uppercase font-mono tracking-wider text-emerald-400 font-semibold hover:text-emerald-300 disabled:opacity-20 transition-colors py-1"
+                                            className="text-[9px] uppercase font-mono tracking-wider text-white font-semibold hover:text-zinc-300 disabled:opacity-20 transition-colors py-1"
                                         >
                                             {isSubmitting ? 'Forging...' : 'Forge'}
                                         </button>
@@ -324,107 +337,94 @@ export default function BucketListPage() {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     onClick={() => setIsAdding(true)}
-                                    className="w-full flex items-center justify-between py-3 border-b border-dashed border-white/5 text-white/30 hover:text-emerald-400/80 transition-colors group cursor-pointer select-none"
+                                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md border border-dashed border-white/10 hover:border-white/20 hover:bg-white/[0.01] transition-all text-zinc-400 hover:text-white text-xs font-mono uppercase tracking-wider cursor-pointer select-none"
                                 >
-                                    <span className="text-xs font-mono uppercase tracking-wider">Forge new aspiration...</span>
-                                    <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-300" />
+                                    <Plus className="w-3.5 h-3.5" />
+                                    Add New Aspiration
                                 </motion.button>
                             )}
                         </AnimatePresence>
                     </div>
 
-                    {/* Pending Items List */}
+                    {/* Pending list */}
                     <motion.div 
                         variants={listVariants}
                         initial="hidden"
                         animate="show"
-                        className="divide-y divide-white/[0.03]"
+                        className="flex flex-col gap-2"
                     >
                         <AnimatePresence mode="popLayout">
-                            {pendingItems.map((item) => {
+                            {pendingItems.map((item, index) => {
                                 const { isCompleted, notes } = parseItem(item);
                                 const isExpanded = expandedId === item.id;
-                                
+
                                 return (
                                     <motion.div
                                         key={item.id}
                                         layout
                                         variants={itemVariants}
                                         exit={{ opacity: 0, y: -10 }}
-                                        className="py-3.5 transition-all duration-300"
+                                        className="flex flex-col py-1.5 px-2 bg-white/[0.02] rounded-md hover:bg-white/[0.04] transition-colors border border-white/5 group"
                                     >
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3.5 min-w-0">
-                                                {/* Mini Square Checkbox */}
-                                                <div
-                                                    role="button"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleDone(item.id, item.description);
-                                                    }}
-                                                    className={`rounded-[3px] border flex-shrink-0 flex items-center justify-center cursor-pointer transition-all ${
-                                                        isCompleted 
-                                                            ? 'bg-emerald-400 border-emerald-400 text-black shadow-[0_0_8px_rgba(52,211,153,0.25)]' 
-                                                            : 'border-white/20 hover:border-emerald-400/50'
-                                                    }`}
-                                                    style={{
-                                                        width: '13px',
-                                                        height: '13px',
-                                                        minWidth: '13px',
-                                                        minHeight: '13px',
-                                                        maxWidth: '13px',
-                                                        maxHeight: '13px',
-                                                    }}
-                                                >
-                                                    {isCompleted && <Check className="w-2.5 h-2.5 stroke-[4.0] text-black" />}
+                                        <div className="flex items-center">
+                                            {/* Title & Index */}
+                                            <div 
+                                                onClick={() => startEditing(item)}
+                                                className="flex-1 font-normal text-zinc-300 pr-4 cursor-pointer"
+                                            >
+                                                <div className="line-clamp-2 text-[11px] md:text-[14px] tracking-wide leading-snug">
+                                                    {index + 1}. {item.title}
                                                 </div>
-
-                                                <span 
-                                                    onClick={() => startEditing(item)}
-                                                    className={`text-sm cursor-pointer transition-colors leading-relaxed select-none ${
-                                                        isCompleted ? 'text-white/30 line-through' : 'text-white/80 hover:text-white'
-                                                    }`}
-                                                >
-                                                    {item.title}
-                                                </span>
                                             </div>
 
-                                            {/* Date, edit and delete buttons */}
-                                            <div className="flex items-center gap-4 flex-shrink-0 ml-4 select-none">
+                                            {/* Status Button (MARK/DONE) */}
+                                            <div className="flex items-center gap-3 flex-shrink-0 select-none">
                                                 {item.event_date && !isExpanded && (
-                                                    <span className="text-[9px] font-mono text-white/20 uppercase tracking-wider">
+                                                    <span className="text-[9px] font-mono text-zinc-500 uppercase">
                                                         {formatDateStr(item.event_date)}
                                                     </span>
                                                 )}
-                                                <div className="flex items-center gap-1.5 opacity-0 hover:opacity-100 group-hover:opacity-100 transition-opacity">
+                                                
+                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button
                                                         type="button"
                                                         onClick={() => startEditing(item)}
-                                                        className="text-white/10 hover:text-white/40 transition-colors p-1"
-                                                        title="Edit details"
+                                                        className="text-white/20 hover:text-white/50 transition-colors p-1"
                                                     >
                                                         <Edit3 className="w-3 h-3" />
                                                     </button>
                                                     <button
                                                         type="button"
                                                         onClick={() => handleDelete(item.id)}
-                                                        className="text-white/10 hover:text-red-400 transition-colors p-1"
-                                                        title="Delete Aspiration"
+                                                        className="text-white/20 hover:text-red-400 transition-colors p-1"
                                                     >
                                                         <Trash2 className="w-3 h-3" />
                                                     </button>
                                                 </div>
+
+                                                <button
+                                                    onClick={() => toggleDone(item.id, item.description)}
+                                                    style={{ width: 64, paddingTop: 3, paddingBottom: 3 }}
+                                                    className={`text-[8px] md:text-[10px] rounded-[4px] flex items-center justify-center gap-1 transition-all duration-300 active:scale-95 border-[1px] ${
+                                                        isCompleted 
+                                                            ? 'bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' 
+                                                            : 'bg-transparent text-zinc-400 border-white/30 hover:border-white/60'
+                                                    }`}
+                                                >
+                                                    {isCompleted && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
+                                                    {isCompleted ? 'DONE' : 'MARK'}
+                                                </button>
                                             </div>
                                         </div>
 
-                                        {/* Notes preview (if not expanded and exists) */}
+                                        {/* Notes snippet below title */}
                                         {!isExpanded && notes && (
-                                            <p className="text-xs text-white/35 pl-[27px] mt-1 select-none font-serif italic">
+                                            <div className="text-[10px] text-zinc-500 font-serif italic mt-0.5 pl-4 select-none">
                                                 {notes}
-                                            </p>
+                                            </div>
                                         )}
 
-                                        {/* Expandable Form details */}
+                                        {/* Expandable Editor form */}
                                         <AnimatePresence>
                                             {isExpanded && (
                                                 <motion.div
@@ -432,7 +432,7 @@ export default function BucketListPage() {
                                                     animate={{ height: 'auto', opacity: 1 }}
                                                     exit={{ height: 0, opacity: 0 }}
                                                     transition={{ duration: 0.18, ease: 'easeOut' }}
-                                                    className="overflow-hidden pl-[27px] pr-2 mt-3 space-y-3.5"
+                                                    className="overflow-hidden pl-4 pr-1 mt-3 space-y-3.5 border-t border-white/5 pt-3"
                                                 >
                                                     <div>
                                                         <label className="text-[8px] font-mono uppercase tracking-wider text-white/30 block mb-0.5">Aspiration Title</label>
@@ -440,7 +440,7 @@ export default function BucketListPage() {
                                                             type="text"
                                                             value={editTitle}
                                                             onChange={(e) => setEditTitle(e.target.value)}
-                                                            className="w-full bg-transparent border-b border-white/10 py-1 text-xs text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
+                                                            className="w-full bg-transparent border-b border-white/10 py-1 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
                                                         />
                                                     </div>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -450,7 +450,7 @@ export default function BucketListPage() {
                                                                 type="date"
                                                                 value={editDate}
                                                                 onChange={(e) => setEditDate(e.target.value)}
-                                                                className="w-full bg-transparent border-b border-white/10 py-1 text-xs text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
+                                                                className="w-full bg-transparent border-b border-white/10 py-1 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
                                                             />
                                                         </div>
                                                         <div className="flex flex-col justify-end">
@@ -467,7 +467,7 @@ export default function BucketListPage() {
                                                             onChange={(e) => setEditNotes(e.target.value)}
                                                             placeholder="Motivation notes..."
                                                             rows={2}
-                                                            className="w-full bg-transparent border-b border-white/10 py-1 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-emerald-500/40 transition-colors resize-none"
+                                                            className="w-full bg-transparent border-b border-white/10 py-1 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-white/40 transition-colors resize-none"
                                                         />
                                                     </div>
                                                     <div className="flex justify-end gap-3 pt-1 select-none">
@@ -484,7 +484,7 @@ export default function BucketListPage() {
                                                                 handleUpdateItem(item.id, editTitle, editNotes, editDate, isCompleted);
                                                                 setExpandedId(null);
                                                             }}
-                                                            className="text-[9px] uppercase font-mono tracking-wider text-emerald-400 font-semibold hover:text-emerald-300 transition-colors py-1"
+                                                            className="text-[9px] uppercase font-mono tracking-wider text-white font-semibold hover:text-zinc-300 transition-colors py-1"
                                                         >
                                                             Save
                                                         </button>
@@ -498,9 +498,9 @@ export default function BucketListPage() {
                         </AnimatePresence>
                     </motion.div>
 
-                    {/* Completed / Conquered Section */}
+                    {/* Completed Section */}
                     {completedItems.length > 0 && (
-                        <div className="pt-6 border-t border-white/[0.04]">
+                        <div className="pt-6 border-t border-white/10">
                             <button
                                 onClick={() => setShowCompleted(!showCompleted)}
                                 className="flex items-center gap-2 text-white/20 hover:text-white/40 transition-colors mb-4 group cursor-pointer select-none"
@@ -518,7 +518,7 @@ export default function BucketListPage() {
                                         animate={{ opacity: 1, height: 'auto' }}
                                         exit={{ opacity: 0, height: 0 }}
                                         transition={{ duration: 0.2, ease: 'easeInOut' }}
-                                        className="divide-y divide-white/[0.02] overflow-hidden"
+                                        className="flex flex-col gap-2 overflow-hidden"
                                     >
                                         {completedItems.map((item) => {
                                             const { notes } = parseItem(item);
@@ -528,50 +528,41 @@ export default function BucketListPage() {
                                                     layout
                                                     initial={{ opacity: 0 }}
                                                     animate={{ opacity: 1 }}
-                                                    className="py-3 flex items-center justify-between"
+                                                    className="flex items-center py-1.5 px-2 bg-white/[0.01] rounded-md hover:bg-white/[0.02] transition-colors border border-white/5 group"
                                                 >
-                                                    <div className="flex items-center gap-3.5 min-w-0">
-                                                        {/* Mini Square Checked */}
-                                                        <div
-                                                            role="button"
-                                                            onClick={() => toggleDone(item.id, item.description)}
-                                                            className="rounded-[3px] bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center cursor-pointer transition-all hover:bg-emerald-500/20"
-                                                            style={{
-                                                                width: '13px',
-                                                                height: '13px',
-                                                                minWidth: '13px',
-                                                                minHeight: '13px',
-                                                                maxWidth: '13px',
-                                                                maxHeight: '13px',
-                                                            }}
-                                                        >
-                                                            <Check className="w-2 h-2 text-emerald-400 stroke-[4.0]" />
+                                                    {/* Content */}
+                                                    <div className="flex-1 font-normal text-zinc-500 pr-4">
+                                                        <div className="line-clamp-2 text-[11px] md:text-[14px] tracking-wide leading-snug line-through">
+                                                            {item.title}
                                                         </div>
-
-                                                        <div className="min-w-0">
-                                                            <h4 className="text-sm font-light text-white/30 line-through leading-relaxed truncate">
-                                                                {item.title}
-                                                            </h4>
-                                                            {notes && (
-                                                                <p className="text-xs text-white/20 italic pl-0 line-through font-serif truncate">
-                                                                    {notes}
-                                                                </p>
-                                                            )}
-                                                        </div>
+                                                        {notes && (
+                                                            <div className="text-[10px] text-zinc-600 font-serif italic mt-0.5 pl-4 line-through">
+                                                                {notes}
+                                                            </div>
+                                                        )}
                                                     </div>
 
-                                                    <div className="flex items-center gap-4 flex-shrink-0 ml-4 select-none">
+                                                    {/* Checked Status */}
+                                                    <div className="flex items-center gap-3 flex-shrink-0 select-none">
                                                         {item.event_date && (
-                                                            <span className="text-[9px] font-mono text-emerald-500/30 uppercase tracking-wider">
+                                                            <span className="text-[9px] font-mono text-emerald-500/30 uppercase">
                                                                 {formatDateStr(item.event_date)}
                                                             </span>
                                                         )}
                                                         <button
                                                             onClick={() => handleDelete(item.id)}
-                                                            className="text-white/10 hover:text-red-400 transition-colors p-1"
+                                                            className="text-white/25 hover:text-red-400 transition-colors p-1"
                                                             title="Delete Aspiration"
                                                         >
-                                                            <Trash2 className="w-3 h-3" />
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => toggleDone(item.id, item.description)}
+                                                            style={{ width: 64, paddingTop: 3, paddingBottom: 3 }}
+                                                            className="text-[8px] md:text-[10px] rounded-[4px] flex items-center justify-center gap-1 transition-all duration-300 active:scale-95 border-[1px] bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]"
+                                                        >
+                                                            <Check className="w-2.5 h-2.5" strokeWidth={3} />
+                                                            DONE
                                                         </button>
                                                     </div>
                                                 </motion.div>
@@ -582,6 +573,15 @@ export default function BucketListPage() {
                             </AnimatePresence>
                         </div>
                     )}
+                </div>
+
+                {/* Footer Quote */}
+                <div className="mt-8 md:mt-16 text-center select-none">
+                    <p className="font-serif italic text-sm md:text-xl text-zinc-400 tracking-wide">
+                        {activeTab === 'BUCKET_LIFE'
+                            ? 'remember, the purpose of life is to live it.'
+                            : `make ${currentYear} the year you didn't just exist — you lived.`}
+                    </p>
                 </div>
             </div>
         </div>
