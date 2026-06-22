@@ -109,7 +109,7 @@ export type Vow = {
 };
 
 
-export type NavItemKey = 'world' | 'ritual' | 'bank' | 'watch' | 'arena' | 'notes' | 'messages' | 'pacts' | 'memento' | 'citadel' | 'goals' | 'achievements' | 'bucket-add';
+export type NavItemKey = 'world' | 'ritual' | 'bank' | 'watch' | 'arena' | 'notes' | 'messages' | 'pacts' | 'memento' | 'citadel' | 'goals' | 'achievements' | 'bucket';
 
 export const ALL_NAV_ITEMS: { key: NavItemKey, label: string, icon: string, href?: string }[] = [
     { key: 'world', label: 'World', icon: 'Globe', href: '/world' },
@@ -124,7 +124,7 @@ export const ALL_NAV_ITEMS: { key: NavItemKey, label: string, icon: string, href
     { key: 'pacts', label: 'Pacts Modal', icon: 'ScrollText' },
     { key: 'memento', label: 'Memento Page', icon: 'Skull', href: '/memento' },
     { key: 'citadel', label: 'Pacts Page', icon: 'ScrollText', href: '/citadel' },
-    { key: 'bucket-add', label: 'Add Bucket', icon: 'PlusCircle' },
+    { key: 'bucket', label: 'Bucket List', icon: 'Infinity', href: '/bucket-list' },
 ];
 
 export type Faction = {

@@ -6,7 +6,7 @@ import {
     Download, Shield, Cloud, RefreshCw, Skull, Calendar,
     User, Lock, Bell, Globe, Moon, ChevronRight, Eye, EyeOff, Trash2,
     Home, Flame, Coins, Sword, ClipboardList, MessageCircle, ScrollText,
-    TestTube, Volume2, VolumeX, PlusCircle
+    TestTube, Volume2, VolumeX, Infinity
 } from 'lucide-react';
 import { useUserData, ALL_NAV_ITEMS, NavItemKey } from '@/context/user-data-context';
 import { sfx } from '@/utils/sfx';
@@ -16,7 +16,7 @@ import { getUserAvatar } from '@/utils/avatar-helpers';
 
 const ICON_MAP = {
     Home, Globe, Flame, Coins, Shield, Sword,
-    ClipboardList, MessageCircle, ScrollText, Skull, User, PlusCircle
+    ClipboardList, MessageCircle, ScrollText, Skull, User, Infinity
 };
 
 interface SettingsViewProps {
