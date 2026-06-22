@@ -18,14 +18,14 @@ export default function BucketListPage() {
     const [isAdding, setIsAdding] = useState(false);
     const [newTitle, setNewTitle] = useState('');
     const [newNotes, setNewNotes] = useState('');
-    const [newDate, setNewDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+    const [newType, setNewType] = useState<BucketTab>('BUCKET_LIFE');
     const [showCompleted, setShowCompleted] = useState(false);
     
     // Expanded card tracking
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [editTitle, setEditTitle] = useState('');
     const [editNotes, setEditNotes] = useState('');
-    const [editDate, setEditDate] = useState('');
+    const [editType, setEditType] = useState<BucketTab>('BUCKET_LIFE');
 
     // Error & Submitting state
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -69,13 +69,12 @@ export default function BucketListPage() {
             await addLifeEvent({
                 title: newTitle.trim(),
                 description: newNotes.trim(),
-                event_date: newDate,
-                type: activeTab,
+                event_date: format(new Date(), 'yyyy-MM-dd'),
+                type: newType,
             });
 
             setNewTitle('');
             setNewNotes('');
-            setNewDate(format(new Date(), 'yyyy-MM-dd'));
             setIsAdding(false);
         } catch (err: any) {
             console.error("Failed to add bucket list item:", err);
@@ -94,12 +93,12 @@ export default function BucketListPage() {
         await updateLifeEvent(id, { description: newDesc });
     };
 
-    const handleUpdateItem = async (id: string, title: string, notes: string, date: string, isCompleted: boolean) => {
+    const handleUpdateItem = async (id: string, title: string, notes: string, type: BucketTab, isCompleted: boolean) => {
         const newDesc = isCompleted ? `${notes.trim()} [DONE]`.trim() : notes.trim();
         await updateLifeEvent(id, {
             title: title.trim(),
             description: newDesc,
-            event_date: date
+            type: type
         });
     };
 
@@ -116,16 +115,8 @@ export default function BucketListPage() {
         const { notes } = parseItem(item);
         setEditTitle(item.title);
         setEditNotes(notes);
-        setEditDate(item.event_date ? item.event_date.split('T')[0] : format(new Date(), 'yyyy-MM-dd'));
+        setEditType(item.type);
         setExpandedId(item.id === expandedId ? null : item.id);
-    };
-
-    const formatDateStr = (dateStr: string) => {
-        try {
-            return format(parseISO(dateStr), 'MMM d, yyyy');
-        } catch (e) {
-            return dateStr;
-        }
     };
 
     const currentYear = new Date().getFullYear();
@@ -185,6 +176,7 @@ export default function BucketListPage() {
                         <button
                             onClick={() => {
                                 setIsAdding(true);
+                                setNewType(activeTab);
                                 setErrorMsg(null);
                             }}
                             className="p-1.5 rounded-lg bg-white/[0.03] border border-white/5 text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer flex items-center justify-center"
@@ -258,12 +250,6 @@ export default function BucketListPage() {
 
                                     {/* Action items and check button */}
                                     <div className="flex items-center gap-3 flex-shrink-0 select-none" onClick={(e) => e.stopPropagation()}>
-                                        {item.event_date && !isExpanded && (
-                                            <span className="text-[9px] font-mono text-zinc-500 uppercase">
-                                                {formatDateStr(item.event_date)}
-                                            </span>
-                                        )}
-                                        
                                         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button
                                                 type="button"
@@ -312,21 +298,33 @@ export default function BucketListPage() {
                                                     className="w-full bg-transparent border-b border-white/10 py-1 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
                                                 />
                                             </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                <div>
-                                                    <label className="text-[8px] font-mono uppercase tracking-wider text-white/30 block mb-0.5">Target Date</label>
-                                                    <input 
-                                                        type="date"
-                                                        value={editDate}
-                                                        onChange={(e) => setEditDate(e.target.value)}
-                                                        className="w-full bg-transparent border-b border-white/10 py-1 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
-                                                    />
-                                                </div>
-                                                <div className="flex flex-col justify-end">
-                                                    <label className="text-[8px] font-mono uppercase tracking-wider text-white/30 block mb-0.5">Horizon</label>
-                                                    <span className="text-[9px] font-mono text-white/40 py-1 tracking-wide uppercase select-none">
-                                                        {activeTab === 'BUCKET_LIFE' ? 'Lifetime' : `${currentYear}`}
-                                                    </span>
+                                            <div>
+                                                <label className="text-[8px] font-mono uppercase tracking-wider text-white/30 block mb-1">Horizon</label>
+                                                <div className="grid grid-cols-2 gap-2 bg-white/[0.01] border border-white/5 p-0.5 rounded-lg max-w-[240px]">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setEditType('BUCKET_LIFE')}
+                                                        className={`py-1 rounded text-[8px] font-mono uppercase tracking-wider transition-all flex items-center justify-center gap-1 ${
+                                                            editType === 'BUCKET_LIFE'
+                                                                ? 'bg-white text-black font-semibold'
+                                                                : 'text-white/40 hover:text-white/70 hover:bg-white/[0.01]'
+                                                        }`}
+                                                    >
+                                                        <Infinity className="w-3 h-3" />
+                                                        Lifetime
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setEditType('BUCKET_YEAR')}
+                                                        className={`py-1 rounded text-[8px] font-mono uppercase tracking-wider transition-all flex items-center justify-center gap-1 ${
+                                                            editType === 'BUCKET_YEAR'
+                                                                ? 'bg-white text-black font-semibold'
+                                                                : 'text-white/40 hover:text-white/70 hover:bg-white/[0.01]'
+                                                        }`}
+                                                    >
+                                                        <CalendarClock className="w-3 h-3" />
+                                                        {currentYear} Year
+                                                    </button>
                                                 </div>
                                             </div>
                                             <div>
@@ -350,7 +348,7 @@ export default function BucketListPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => {
-                                                        handleUpdateItem(item.id, editTitle, editNotes, editDate, isCompleted);
+                                                        handleUpdateItem(item.id, editTitle, editNotes, editType, isCompleted);
                                                         setExpandedId(null);
                                                     }}
                                                     className="text-[9px] uppercase font-mono tracking-wider text-white font-semibold hover:text-zinc-300 transition-colors py-1"
@@ -418,12 +416,6 @@ export default function BucketListPage() {
 
                                 {/* Checked Status and Actions */}
                                 <div className="flex items-center gap-3 flex-shrink-0 select-none" onClick={(e) => e.stopPropagation()}>
-                                    {item.event_date && (
-                                        <span className="text-[9px] font-mono text-zinc-600 uppercase">
-                                            {formatDateStr(item.event_date)}
-                                        </span>
-                                    )}
-                                    
                                     <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
                                             type="button"
@@ -495,32 +487,33 @@ export default function BucketListPage() {
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1">Target Date</label>
-                                            <input
-                                                type="date"
-                                                value={newDate}
-                                                onChange={(e) => setNewDate(e.target.value)}
-                                                className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
-                                                required
-                                            />
-                                        </div>
-                                        <div className="flex flex-col justify-end">
-                                            <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1">Horizon</label>
-                                            <div className="flex gap-2 items-center text-xs text-white/40 h-[40px] px-1 font-mono text-[9px] tracking-wider uppercase select-none">
-                                                {activeTab === 'BUCKET_LIFE' ? (
-                                                    <>
-                                                        <Infinity className="w-3.5 h-3.5 text-white/20" />
-                                                        <span>Lifetime</span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <CalendarClock className="w-3.5 h-3.5 text-white/20" />
-                                                        <span>{currentYear} Year</span>
-                                                    </>
-                                                )}
-                                            </div>
+                                    <div>
+                                        <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1.5">Horizon</label>
+                                        <div className="grid grid-cols-2 gap-2 bg-white/[0.02] border border-white/5 p-1 rounded-xl">
+                                            <button
+                                                type="button"
+                                                onClick={() => setNewType('BUCKET_LIFE')}
+                                                className={`py-2.5 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                                                    newType === 'BUCKET_LIFE'
+                                                        ? 'bg-white text-black font-semibold shadow-[0_4px_12px_rgba(255,255,255,0.15)]'
+                                                        : 'text-white/40 hover:text-white/70 hover:bg-white/[0.01]'
+                                                }`}
+                                            >
+                                                <Infinity className="w-3.5 h-3.5" />
+                                                Lifetime
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setNewType('BUCKET_YEAR')}
+                                                className={`py-2.5 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                                                    newType === 'BUCKET_YEAR'
+                                                        ? 'bg-white text-black font-semibold shadow-[0_4px_12px_rgba(255,255,255,0.15)]'
+                                                        : 'text-white/40 hover:text-white/70 hover:bg-white/[0.01]'
+                                                }`}
+                                            >
+                                                <CalendarClock className="w-3.5 h-3.5" />
+                                                {currentYear} Year
+                                            </button>
                                         </div>
                                     </div>
 
