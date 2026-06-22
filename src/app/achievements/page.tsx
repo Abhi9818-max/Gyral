@@ -60,7 +60,7 @@ export default function AchievementsPage() {
                     transition={{ delay: 0.2 }}
                     className="text-5xl md:text-7xl font-black tracking-tight mb-4"
                 >
-                    Hall of <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">Legends</span>
+                    Achievements
                 </motion.h1>
                 
                 <motion.p 
@@ -69,7 +69,7 @@ export default function AchievementsPage() {
                     transition={{ delay: 0.3 }}
                     className={`text-lg md:text-xl font-medium max-w-2xl mx-auto ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}
                 >
-                    Your triumphs carved in digital stone. Every card here represents a promise kept to yourself.
+                    A showcase of your completed bucket list goals.
                 </motion.p>
             </div>
 
@@ -80,7 +80,7 @@ export default function AchievementsPage() {
                     transition={{ delay: 0.4 }}
                     className={`px-8 py-4 rounded-3xl ${isLight ? 'bg-white shadow-xl shadow-amber-100 border border-amber-100' : 'bg-zinc-900/40 border border-amber-500/20 shadow-[0_0_30px_rgba(251,191,36,0.1)]'} flex flex-col items-center backdrop-blur-md`}
                 >
-                    <span className={`text-sm font-bold uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>Total Conquered</span>
+                    <span className={`text-sm font-bold uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>Total Completed</span>
                     <span className="text-4xl font-black text-amber-500">{achievements.length}</span>
                 </motion.div>
 
@@ -91,16 +91,16 @@ export default function AchievementsPage() {
                         transition={{ delay: 0.5 }}
                         onClick={async () => {
                             setIsDownloading(true);
-                            await downloadAestheticCard(achievements, 'achievements', 'gyral-hall-of-legends');
+                            await downloadAestheticCard(achievements, 'achievements', 'gyral-completed-goals');
                             setIsDownloading(false);
                         }}
                         disabled={isDownloading}
                         className={`px-8 py-4 rounded-3xl flex flex-col items-center justify-center transition-all ${isLight ? 'bg-amber-100 text-amber-700 hover:bg-amber-200 shadow-xl border border-amber-200' : 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/30'} ${isDownloading ? 'opacity-50 cursor-wait' : ''}`}
                     >
-                        <span className="text-sm font-bold uppercase tracking-widest opacity-80">Forge Legacy</span>
+                        <span className="text-sm font-bold uppercase tracking-widest opacity-80">Download Card</span>
                         <div className="flex items-center gap-2 mt-1">
                             <Download className={`w-6 h-6 ${isDownloading ? 'animate-bounce' : ''}`} />
-                            <span className="font-black text-xl">{isDownloading ? 'Forging...' : 'Download Card'}</span>
+                            <span className="font-black text-xl">{isDownloading ? 'Downloading...' : 'Download Card'}</span>
                         </div>
                     </motion.button>
                 )}
@@ -114,8 +114,8 @@ export default function AchievementsPage() {
                     className={`max-w-2xl mx-auto p-12 text-center rounded-[3rem] border border-dashed ${isLight ? 'border-zinc-300 text-zinc-500 bg-white/50' : 'border-zinc-800 text-zinc-500 bg-zinc-900/20'} backdrop-blur-sm`}
                 >
                     <Medal className="w-16 h-16 mx-auto mb-6 opacity-30" />
-                    <h3 className="text-2xl font-bold mb-2">The Hall is Empty</h3>
-                    <p className="text-lg">Your legacy is yet to be written. Complete a bucket list item to forge your first legend.</p>
+                    <h3 className="text-2xl font-bold mb-2">No Achievements Yet</h3>
+                    <p className="text-lg">Complete a bucket list item to add it to your accomplishments.</p>
                 </motion.div>
             ) : (
                 <motion.div 

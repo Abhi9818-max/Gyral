@@ -2,9 +2,9 @@
 
 import React, { useMemo } from 'react';
 import { useUserData } from '@/context/user-data-context';
-import { Flag, Target, Trophy, Sparkles, Infinity, CalendarClock, ArrowLeft, Download, CheckCircle2, Circle } from 'lucide-react';
+import { Flag, Target, Trophy, Infinity, CalendarClock, ArrowLeft, Download, CheckCircle2, Circle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import Link from 'next/link';
 import { downloadAestheticCard } from '@/utils/download-card';
 
@@ -60,10 +60,10 @@ export default function GoalsPage() {
                             <ArrowLeft className="w-8 h-8" />
                         </Link>
                         <Target className="w-10 h-10 text-blue-500" />
-                        Aspiration Analytics
+                        Goals
                     </h1>
                     <p className={`mt-2 ${isLight ? 'text-zinc-500' : 'text-zinc-400'} font-medium`}>
-                        Read-only detailed analysis and review of your Lifetime and Yearly bucket lists.
+                        A detailed view and analysis of your Lifetime and Yearly bucket lists.
                     </p>
                 </div>
 
@@ -71,14 +71,14 @@ export default function GoalsPage() {
                     <button
                         onClick={async () => {
                             setIsDownloading(true);
-                            await downloadAestheticCard(pendingAll, 'goals', 'gyral-active-aspirations');
+                            await downloadAestheticCard(pendingAll, 'goals', 'gyral-active-goals');
                             setIsDownloading(false);
                         }}
                         disabled={isDownloading}
                         className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all border ${isLight ? 'bg-white border-zinc-200 hover:bg-zinc-50 text-black shadow-lg' : 'bg-zinc-900/50 border-white/10 hover:bg-white/5 text-white'} ${isDownloading ? 'opacity-50 cursor-wait' : ''}`}
                     >
                         <Download className={`w-4 h-4 ${isDownloading ? 'animate-bounce text-blue-500' : ''}`} />
-                        {isDownloading ? 'Forging card...' : 'Download Aspirations'}
+                        {isDownloading ? 'Downloading...' : 'Download Goals'}
                     </button>
                 )}
             </div>
@@ -93,7 +93,7 @@ export default function GoalsPage() {
                         <Flag className="w-7 h-7" />
                     </div>
                     <div>
-                        <p className={`text-sm font-bold ${isLight ? 'text-zinc-500' : 'text-zinc-400'} uppercase tracking-wider`}>Total Intentions</p>
+                        <p className={`text-sm font-bold ${isLight ? 'text-zinc-500' : 'text-zinc-400'} uppercase tracking-wider`}>Total Goals</p>
                         <p className="text-3xl font-black">{bucketItems.length}</p>
                         <p className="text-[10px] font-mono text-zinc-500 uppercase mt-0.5">
                             {lifeItems.length} Life • {yearItems.length} Year
@@ -101,7 +101,7 @@ export default function GoalsPage() {
                     </div>
                 </div>
                 
-                {/* Conquered Link Card */}
+                {/* Completed Link Card */}
                 <Link href="/achievements" className={`p-6 rounded-3xl ${isLight ? 'bg-white shadow-xl shadow-zinc-200 hover:shadow-emerald-200' : 'bg-zinc-900/50 border border-white/5 hover:border-emerald-500/30 hover:bg-zinc-900/80'} flex items-center justify-between relative overflow-hidden group transition-all duration-300`}>
                     <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-colors" />
                     <div className="flex items-center gap-4 relative z-10">
@@ -109,10 +109,10 @@ export default function GoalsPage() {
                             <Trophy className="w-7 h-7" />
                         </div>
                         <div>
-                            <p className={`text-sm font-bold ${isLight ? 'text-zinc-500' : 'text-zinc-400'} uppercase tracking-wider`}>Conquered</p>
+                            <p className={`text-sm font-bold ${isLight ? 'text-zinc-500' : 'text-zinc-400'} uppercase tracking-wider`}>Completed</p>
                             <p className="text-3xl font-black">{completedAll.length}</p>
                             <p className="text-[10px] font-mono text-zinc-500 uppercase mt-0.5">
-                                View Legends Gallery
+                                View Completed Goals
                             </p>
                         </div>
                     </div>
@@ -123,7 +123,7 @@ export default function GoalsPage() {
                 <div className={`p-6 rounded-3xl ${isLight ? 'bg-white shadow-xl shadow-zinc-200' : 'bg-zinc-900/50 border border-white/5'} flex flex-col justify-center relative overflow-hidden group`}>
                     <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl group-hover:bg-indigo-500/20 transition-colors" />
                     <div className="flex justify-between items-end mb-2">
-                        <p className={`text-sm font-bold ${isLight ? 'text-zinc-500' : 'text-zinc-400'} uppercase tracking-wider`}>Overall Progress</p>
+                        <p className={`text-sm font-bold ${isLight ? 'text-zinc-500' : 'text-zinc-400'} uppercase tracking-wider`}>Progress</p>
                         <p className="text-2xl font-black text-indigo-500">{overallProgress}%</p>
                     </div>
                     <div className="w-full h-3 bg-zinc-800/50 rounded-full overflow-hidden border border-white/5">
@@ -140,16 +140,16 @@ export default function GoalsPage() {
             {/* Split Horizons Detail Analysis */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
                 
-                {/* 1. LIFETIME HORIZONS */}
+                {/* 1. LIFETIME GOALS */}
                 <div className="space-y-6">
                     <div className={`p-6 rounded-3xl ${isLight ? 'bg-white shadow-lg' : 'bg-zinc-900/40 border border-white/5'} relative overflow-hidden`}>
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold flex items-center gap-2">
                                 <Infinity className="w-5 h-5 text-indigo-400" />
-                                Lifetime Horizons
+                                Lifetime Goals
                             </h2>
                             <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-indigo-500/10 text-indigo-400">
-                                {completedLife.length}/{lifeItems.length} Conquered ({lifeProgress}%)
+                                {completedLife.length}/{lifeItems.length} Completed ({lifeProgress}%)
                             </span>
                         </div>
                         <div className="w-full h-2 bg-zinc-800/50 rounded-full overflow-hidden">
@@ -161,7 +161,7 @@ export default function GoalsPage() {
                         {lifeItems.length === 0 ? (
                             <div className={`p-8 text-center rounded-3xl border border-dashed ${isLight ? 'border-zinc-300 text-zinc-500' : 'border-zinc-800 text-zinc-500'}`}>
                                 <Infinity className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                                <p className="text-xs font-mono uppercase tracking-wider">No lifetime aspirations logged</p>
+                                <p className="text-xs font-mono uppercase tracking-wider">No lifetime goals logged</p>
                             </div>
                         ) : (
                             lifeItems.map(item => (
@@ -171,16 +171,16 @@ export default function GoalsPage() {
                     </div>
                 </div>
 
-                {/* 2. YEARLY HORIZONS */}
+                {/* 2. YEARLY GOALS */}
                 <div className="space-y-6">
                     <div className={`p-6 rounded-3xl ${isLight ? 'bg-white shadow-lg' : 'bg-zinc-900/40 border border-white/5'} relative overflow-hidden`}>
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold flex items-center gap-2">
                                 <CalendarClock className="w-5 h-5 text-emerald-400" />
-                                Yearly Horizons
+                                Yearly Goals
                             </h2>
                             <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400">
-                                {completedYear.length}/{yearItems.length} Conquered ({yearProgress}%)
+                                {completedYear.length}/{yearItems.length} Completed ({yearProgress}%)
                             </span>
                         </div>
                         <div className="w-full h-2 bg-zinc-800/50 rounded-full overflow-hidden">
@@ -192,7 +192,7 @@ export default function GoalsPage() {
                         {yearItems.length === 0 ? (
                             <div className={`p-8 text-center rounded-3xl border border-dashed ${isLight ? 'border-zinc-300 text-zinc-500' : 'border-zinc-800 text-zinc-500'}`}>
                                 <CalendarClock className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                                <p className="text-xs font-mono uppercase tracking-wider">No yearly aspirations logged</p>
+                                <p className="text-xs font-mono uppercase tracking-wider">No yearly goals logged</p>
                             </div>
                         ) : (
                             yearItems.map(item => (
@@ -247,7 +247,7 @@ function ReadOnlyEventCard({ item, parseItem, isLight, isLife }: { item: any, pa
                         </span>
                         
                         <span className={`inline-flex items-center gap-1 text-[9px] font-mono px-2 py-0.5 rounded bg-white/5 text-zinc-500`}>
-                            {isCompleted ? 'Conquered' : 'Active Pursuit'}
+                            {isCompleted ? 'Completed' : 'Active'}
                         </span>
                     </div>
                 </div>
