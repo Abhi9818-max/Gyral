@@ -853,7 +853,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
     const addLifeEvent = async (event: Omit<LifeEvent, 'id' | 'user_id' | 'created_at'>) => {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) throw new Error("User session not found.");
 
         const { error } = await supabase.from('life_events').insert({
             user_id: user.id,
@@ -864,6 +864,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             await fetchLifeEvents();
         } else {
             console.error("Error adding life event:", error);
+            throw error;
         }
     };
 

@@ -28,6 +28,10 @@ export default function BucketListPage() {
     const [editNotes, setEditNotes] = useState('');
     const [editDate, setEditDate] = useState('');
 
+    // Error & Submitting state
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     // Parse description to extract completion and actual notes text
     const parseItem = (item: any) => {
         const desc = item.description || '';
@@ -59,22 +63,31 @@ export default function BucketListPage() {
         if (allItems.length === 0) return 0;
         return Math.round((completedItems.length / allItems.length) * 100);
     }, [allItems.length, completedItems.length]);
-
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newTitle.trim()) return;
+        if (!newTitle.trim() || isSubmitting) return;
 
-        await addLifeEvent({
-            title: newTitle.trim(),
-            description: newNotes.trim(),
-            event_date: newDate,
-            type: activeTab,
-        });
+        setIsSubmitting(true);
+        setErrorMsg(null);
 
-        setNewTitle('');
-        setNewNotes('');
-        setNewDate(format(new Date(), 'yyyy-MM-dd'));
-        setIsAdding(false);
+        try {
+            await addLifeEvent({
+                title: newTitle.trim(),
+                description: newNotes.trim(),
+                event_date: newDate,
+                type: activeTab,
+            });
+
+            setNewTitle('');
+            setNewNotes('');
+            setNewDate(format(new Date(), 'yyyy-MM-dd'));
+            setIsAdding(false);
+        } catch (err: any) {
+            console.error("Failed to add bucket list item:", err);
+            setErrorMsg(err.message || "Failed to forge aspiration.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const toggleDone = async (id: string, currentDesc: string = '') => {
@@ -372,20 +385,26 @@ export default function BucketListPage() {
                                     </div>
                                 </div>
 
+                                {errorMsg && (
+                                     <div className="text-xs text-red-400 font-mono bg-red-950/25 border border-red-500/10 px-3.5 py-2.5 rounded-xl shadow-[0_0_15px_rgba(239,68,68,0.05)]">
+                                         {errorMsg}
+                                     </div>
+                                 )}
+
                                 <div className="flex justify-end gap-2 pt-1">
                                     <button
                                         type="button"
-                                        onClick={() => { setIsAdding(false); setNewTitle(''); setNewNotes(''); }}
+                                        onClick={() => { setIsAdding(false); setNewTitle(''); setNewNotes(''); setErrorMsg(null); }}
                                         className="px-4 py-2 rounded-xl text-[10px] uppercase font-mono tracking-wider text-white/40 hover:text-white/60 hover:bg-white/5 transition-colors"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
-                                        disabled={!newTitle.trim()}
+                                        disabled={!newTitle.trim() || isSubmitting}
                                         className="px-4 py-2 rounded-xl text-[10px] uppercase font-mono tracking-wider bg-emerald-500 text-black font-bold hover:bg-emerald-400 disabled:opacity-20 disabled:hover:bg-emerald-500 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(52,211,153,0.2)] hover:shadow-[0_0_20px_rgba(52,211,153,0.4)]"
                                     >
-                                        Forge Aspiration
+                                        {isSubmitting ? 'Forging...' : 'Forge Aspiration'}
                                     </button>
                                 </div>
                             </motion.form>
