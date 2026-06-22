@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useUserData } from '@/context/user-data-context';
 import { 
-    Plus, Check, Trash2, ArrowLeft, Edit3, X
+    Plus, Check, Trash2, ArrowLeft, Edit3, X, Infinity, CalendarClock, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
@@ -19,6 +19,7 @@ export default function BucketListPage() {
     const [newTitle, setNewTitle] = useState('');
     const [newNotes, setNewNotes] = useState('');
     const [newDate, setNewDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+    const [showCompleted, setShowCompleted] = useState(false);
     
     // Expanded card tracking
     const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -161,47 +162,35 @@ export default function BucketListPage() {
                         </h2>
                     </div>
 
-                    {/* Controls: Toggle and Add button next to each other */}
-                    <div className="flex items-center gap-3">
+                    {/* Controls: Switcher Toggle Icon & Add Button + Icon */}
+                    <div className="flex items-center gap-2">
                         
-                        {/* Horizon Switcher */}
-                        <div className="flex bg-white/[0.03] border border-white/5 rounded-lg p-0.5 text-[9px] font-mono uppercase tracking-wider">
-                            <button
-                                onClick={() => {
-                                    setActiveTab('BUCKET_LIFE');
-                                    setExpandedId(null);
-                                }}
-                                className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
-                                    activeTab === 'BUCKET_LIFE' ? 'bg-white text-black font-semibold' : 'text-zinc-500 hover:text-zinc-300'
-                                }`}
-                            >
-                                Lifetime
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('BUCKET_YEAR');
-                                    setExpandedId(null);
-                                }}
-                                className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
-                                    activeTab === 'BUCKET_YEAR' ? 'bg-white text-black font-semibold' : 'text-zinc-500 hover:text-zinc-300'
-                                }`}
-                            >
-                                {currentYear}
-                            </button>
-                        </div>
-
-                        {/* Add Aspiration Button */}
+                        {/* Toggle switch: Infinity (Life) vs CalendarClock (Year) */}
                         <button
                             onClick={() => {
-                                setIsAdding(!isAdding);
+                                setActiveTab(activeTab === 'BUCKET_LIFE' ? 'BUCKET_YEAR' : 'BUCKET_LIFE');
+                                setExpandedId(null);
+                            }}
+                            className="p-1.5 rounded-lg bg-white/[0.03] border border-white/5 text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer flex items-center justify-center"
+                            title={activeTab === 'BUCKET_LIFE' ? "Switch to Yearly list" : "Switch to Lifetime list"}
+                        >
+                            {activeTab === 'BUCKET_LIFE' ? (
+                                <Infinity className="w-4 h-4" />
+                            ) : (
+                                <CalendarClock className="w-4 h-4" />
+                            )}
+                        </button>
+
+                        {/* Add Button */}
+                        <button
+                            onClick={() => {
+                                setIsAdding(true);
                                 setErrorMsg(null);
                             }}
-                            className={`p-1.5 rounded-lg bg-white/[0.03] border border-white/5 text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer ${
-                                isAdding ? 'border-zinc-500 text-white' : ''
-                            }`}
-                            title={isAdding ? "Close form" : "Forge Aspiration"}
+                            className="p-1.5 rounded-lg bg-white/[0.03] border border-white/5 text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer flex items-center justify-center"
+                            title="Add aspiration"
                         >
-                            {isAdding ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                            <Plus className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
@@ -220,89 +209,126 @@ export default function BucketListPage() {
                     </div>
                 )}
 
-                {/* Add Form Panel */}
-                <div className="mb-2">
-                    <AnimatePresence mode="popLayout">
-                        {isAdding && (
-                            <motion.form
-                                initial={{ opacity: 0, y: -8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -8 }}
-                                transition={{ duration: 0.18 }}
-                                onSubmit={handleAdd}
-                                className="p-4 rounded-md bg-white/[0.01] border border-white/5 space-y-4 mb-4"
+                {/* Floating Modal Window for Adding Item */}
+                <AnimatePresence>
+                    {isAdding && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+                        >
+                            <motion.div
+                                initial={{ scale: 0.95, y: 10, opacity: 0 }}
+                                animate={{ scale: 1, y: 0, opacity: 1 }}
+                                exit={{ scale: 0.95, y: 10, opacity: 0 }}
+                                transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                                className="bg-[#0c0c0c] border border-white/10 rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.8)] max-w-md w-full relative overflow-hidden"
                             >
-                                <div className="space-y-3">
-                                    <input
-                                        type="text"
-                                        value={newTitle}
-                                        onChange={(e) => setNewTitle(e.target.value)}
-                                        placeholder={
-                                            activeTab === 'BUCKET_LIFE'
-                                                ? 'Title of Aspiration (e.g. Kyoto in Autumn)'
-                                                : `Aspiration for ${currentYear}`
-                                        }
-                                        className="w-full bg-transparent border-b border-white/10 py-1 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/40 transition-colors"
-                                        autoFocus
-                                        required
-                                    />
+                                {/* Glowing top line */}
+                                <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-white/0 via-white/20 to-white/0" />
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                                        <div>
-                                            <label className="text-[8px] font-mono uppercase tracking-wider text-white/30 block mb-0.5">Target Date</label>
-                                            <input
-                                                type="date"
-                                                value={newDate}
-                                                onChange={(e) => setNewDate(e.target.value)}
-                                                className="w-full bg-transparent border-b border-white/10 py-1 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
-                                                required
-                                            />
-                                        </div>
-                                        <div className="flex flex-col justify-end">
-                                            <label className="text-[8px] font-mono uppercase tracking-wider text-white/30 block mb-0.5">Category</label>
-                                            <span className="text-[10px] font-mono text-white/40 py-1 tracking-wide uppercase select-none">
-                                                {activeTab === 'BUCKET_LIFE' ? 'Lifetime Horizon' : `${currentYear} Ascent`}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <textarea
-                                            value={newNotes}
-                                            onChange={(e) => setNewNotes(e.target.value)}
-                                            placeholder="Add brief details or motivation notes..."
-                                            rows={2}
-                                            className="w-full bg-transparent border-b border-white/10 py-1 text-xs text-white placeholder:text-white/25 focus:outline-none focus:border-white/40 transition-colors resize-none"
-                                        />
-                                    </div>
-                                </div>
-
-                                {errorMsg && (
-                                    <div className="text-[10px] text-red-400 font-mono bg-red-950/15 border border-red-500/10 px-3 py-2 rounded-lg">
-                                        {errorMsg}
-                                    </div>
-                                )}
-
-                                <div className="flex justify-end gap-3 pt-1 select-none">
+                                <div className="flex justify-between items-center mb-5 select-none">
+                                    <h3 className="text-xs font-mono uppercase tracking-[0.2em] text-white/50 flex items-center gap-2">
+                                        <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
+                                        Forge Aspiration
+                                    </h3>
                                     <button
                                         type="button"
                                         onClick={() => { setIsAdding(false); setNewTitle(''); setNewNotes(''); setErrorMsg(null); }}
-                                        className="text-[9px] uppercase font-mono tracking-wider text-white/30 hover:text-white/50 transition-colors py-1"
+                                        className="text-white/20 hover:text-white/60 transition-colors p-1"
                                     >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={!newTitle.trim() || isSubmitting}
-                                        className="text-[9px] uppercase font-mono tracking-wider text-white font-semibold hover:text-zinc-300 disabled:opacity-20 transition-colors py-1"
-                                    >
-                                        {isSubmitting ? 'Forging...' : 'Forge'}
+                                        <X className="w-4 h-4" />
                                     </button>
                                 </div>
-                            </motion.form>
-                        )}
-                    </AnimatePresence>
-                </div>
+
+                                <form onSubmit={handleAdd} className="space-y-4">
+                                    <div className="space-y-3.5">
+                                        <div>
+                                            <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1">Title</label>
+                                            <input
+                                                type="text"
+                                                value={newTitle}
+                                                onChange={(e) => setNewTitle(e.target.value)}
+                                                placeholder={
+                                                    activeTab === 'BUCKET_LIFE'
+                                                        ? 'e.g. Kyoto in Autumn, Learn skydiving...'
+                                                        : `e.g. Complete a marathon, Publish a web app...`
+                                                }
+                                                className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/40 transition-colors"
+                                                autoFocus
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1">Target Date</label>
+                                                <input
+                                                    type="date"
+                                                    value={newDate}
+                                                    onChange={(e) => setNewDate(e.target.value)}
+                                                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="flex flex-col justify-end">
+                                                <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1">Horizon</label>
+                                                <div className="flex gap-2 items-center text-xs text-white/40 h-[40px] px-1 font-mono text-[9px] tracking-wider uppercase select-none">
+                                                    {activeTab === 'BUCKET_LIFE' ? (
+                                                        <>
+                                                            <Infinity className="w-3.5 h-3.5 text-white/20" />
+                                                            <span>Lifetime</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <CalendarClock className="w-3.5 h-3.5 text-white/20" />
+                                                            <span>{currentYear} Year</span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-white/30 block mb-1">Motivation Notes</label>
+                                            <textarea
+                                                value={newNotes}
+                                                onChange={(e) => setNewNotes(e.target.value)}
+                                                placeholder="Detail what this achievement will look like..."
+                                                rows={3}
+                                                className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-white/25 focus:outline-none focus:border-white/40 transition-colors resize-none"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {errorMsg && (
+                                        <div className="text-[10px] text-red-400 font-mono bg-red-950/15 border border-red-500/10 px-3 py-2 rounded-lg">
+                                            {errorMsg}
+                                        </div>
+                                    )}
+
+                                    <div className="flex justify-end gap-3 pt-2 select-none">
+                                        <button
+                                            type="button"
+                                            onClick={() => { setIsAdding(false); setNewTitle(''); setNewNotes(''); setErrorMsg(null); }}
+                                            className="px-4 py-2 rounded-xl text-[10px] uppercase font-mono tracking-wider text-white/40 hover:text-white/60 hover:bg-white/5 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={!newTitle.trim() || isSubmitting}
+                                            className="px-4 py-2 rounded-xl text-[10px] uppercase font-mono tracking-wider bg-white text-black font-bold hover:bg-zinc-200 disabled:opacity-20 transition-all shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                                        >
+                                            {isSubmitting ? 'Forging...' : 'Forge'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Flat Checklist List (Pending & Completed combined) */}
                 <motion.div 
@@ -489,9 +515,8 @@ export default function BucketListPage() {
                                     
                                     <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
-                                            type="button"
                                             onClick={() => handleDelete(item.id)}
-                                            className="text-white/20 hover:text-red-400 transition-colors p-1"
+                                            className="text-white/25 hover:text-red-400 transition-colors p-1"
                                             title="Delete item"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
