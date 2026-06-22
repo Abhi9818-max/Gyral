@@ -12,11 +12,11 @@ export default function AchievementsPage() {
     const isLight = theme === 'light';
     const [isDownloading, setIsDownloading] = React.useState(false);
 
-    // Filter goals that are marked as [DONE]
+    // Filter bucket list items that are marked as [DONE]
     const achievements = useMemo(() => {
         return lifeEvents
-            .filter(e => e.type === 'GOAL' && e.description?.includes('[DONE]'))
-            .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
+            .filter(e => (e.type === 'BUCKET_LIFE' || e.type === 'BUCKET_YEAR') && e.description?.includes('[DONE]'))
+            .sort((a, b) => new Date(b.created_at || b.event_date || 0).getTime() - new Date(a.created_at || a.event_date || 0).getTime());
     }, [lifeEvents]);
 
     const containerVariants: Variants = {
@@ -43,7 +43,7 @@ export default function AchievementsPage() {
             {/* Background glowing orbs */}
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] pointer-events-none" />
-
+ 
             <div className="relative z-10 text-center mb-16">
                 <motion.div 
                     initial={{ scale: 0, opacity: 0 }}
@@ -115,7 +115,7 @@ export default function AchievementsPage() {
                 >
                     <Medal className="w-16 h-16 mx-auto mb-6 opacity-30" />
                     <h3 className="text-2xl font-bold mb-2">The Hall is Empty</h3>
-                    <p className="text-lg">Your legacy is yet to be written. Complete a goal to forge your first legend.</p>
+                    <p className="text-lg">Your legacy is yet to be written. Complete a bucket list item to forge your first legend.</p>
                 </motion.div>
             ) : (
                 <motion.div 
@@ -151,9 +151,18 @@ export default function AchievementsPage() {
                                         <div className={`p-3 rounded-2xl ${isLight ? 'bg-amber-100 text-amber-600' : 'bg-amber-500/10 text-amber-400'}`}>
                                             {isElite ? <Star className="w-6 h-6 fill-amber-500" /> : <Award className="w-6 h-6" />}
                                         </div>
-                                        <div className={`text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 ${isLight ? 'bg-zinc-100 text-zinc-500' : 'bg-white/5 text-zinc-400'}`}>
-                                            <Calendar className="w-3.5 h-3.5" />
-                                            {format(parseISO(achievement.event_date), 'MMM d, yyyy')}
+                                        <div className="flex flex-col items-end gap-1.5">
+                                            <div className={`text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 ${isLight ? 'bg-zinc-100 text-zinc-500' : 'bg-white/5 text-zinc-400'}`}>
+                                                <Calendar className="w-3 h-3" />
+                                                {format(parseISO(achievement.event_date), 'MMM d, yyyy')}
+                                            </div>
+                                            <span className={`text-[9px] font-mono font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                                                achievement.type === 'BUCKET_LIFE'
+                                                    ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                                                    : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                            }`}>
+                                                {achievement.type === 'BUCKET_LIFE' ? 'Lifetime' : 'Yearly'}
+                                            </span>
                                         </div>
                                     </div>
 

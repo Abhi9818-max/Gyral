@@ -1,103 +1,107 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useUserData } from '@/context/user-data-context';
-import { Flag, Plus, CheckCircle2, Circle, Target, Trophy, Sparkles, Calendar, Trash2, ArrowRight, Download } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Flag, Target, Trophy, Sparkles, Infinity, CalendarClock, ArrowLeft, Download, CheckCircle2, Circle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
 import { downloadAestheticCard } from '@/utils/download-card';
 
+type BucketTab = 'BUCKET_LIFE' | 'BUCKET_YEAR';
+
 export default function GoalsPage() {
-    const { lifeEvents, addLifeEvent, updateLifeEvent, deleteLifeEvent, theme } = useUserData();
+    const { lifeEvents, theme } = useUserData();
+    const [isDownloading, setIsDownloading] = React.useState(false);
 
-    const [isAddingGoal, setIsAddingGoal] = useState(false);
-    const [isDownloading, setIsDownloading] = useState(false);
-    const [newTitle, setNewTitle] = useState('');
-    const [newDescription, setNewDescription] = useState('');
-    const [newDate, setNewDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-
-    const goals = useMemo(() => {
-        return lifeEvents.filter(e => e.type === 'GOAL').sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
+    // Filter bucket list items
+    const bucketItems = useMemo(() => {
+        return lifeEvents.filter(e => e.type === 'BUCKET_LIFE' || e.type === 'BUCKET_YEAR');
     }, [lifeEvents]);
 
-    const completedGoals = goals.filter(g => g.description?.includes('[DONE]'));
-    const pendingGoals = goals.filter(g => !g.description?.includes('[DONE]'));
+    const lifeItems = useMemo(() => {
+        return bucketItems.filter(e => e.type === 'BUCKET_LIFE');
+    }, [bucketItems]);
 
-    const progress = goals.length === 0 ? 0 : Math.round((completedGoals.length / goals.length) * 100);
+    const yearItems = useMemo(() => {
+        return bucketItems.filter(e => e.type === 'BUCKET_YEAR');
+    }, [bucketItems]);
 
-    const handleAddGoal = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newTitle.trim()) return;
-
-        await addLifeEvent({
-            title: newTitle,
-            description: newDescription,
-            event_date: newDate,
-            type: 'GOAL'
-        });
-
-        setNewTitle('');
-        setNewDescription('');
-        setIsAddingGoal(false);
+    const parseItem = (item: any) => {
+        const desc = item.description || '';
+        const isCompleted = desc.includes('[DONE]');
+        const notes = desc.replace('[DONE]', '').trim();
+        return { isCompleted, notes };
     };
 
-    const toggleGoalStatus = async (id: string, currentDescription: string = '') => {
-        const isDone = currentDescription.includes('[DONE]');
-        const newDesc = isDone 
-            ? currentDescription.replace('[DONE]', '').trim() 
-            : `${currentDescription} [DONE]`.trim();
-        
-        await updateLifeEvent(id, { description: newDesc });
-    };
+    const completedLife = lifeItems.filter(item => parseItem(item).isCompleted);
+    const completedYear = yearItems.filter(item => parseItem(item).isCompleted);
+    const completedAll = bucketItems.filter(item => parseItem(item).isCompleted);
 
-    const handleDeleteGoal = async (id: string) => {
-        if (confirm("Are you sure you want to abandon this goal?")) {
-            await deleteLifeEvent(id);
-        }
-    };
+    const lifeProgress = lifeItems.length === 0 ? 0 : Math.round((completedLife.length / lifeItems.length) * 100);
+    const yearProgress = yearItems.length === 0 ? 0 : Math.round((completedYear.length / yearItems.length) * 100);
+    const overallProgress = bucketItems.length === 0 ? 0 : Math.round((completedAll.length / bucketItems.length) * 100);
+
+    const pendingAll = useMemo(() => {
+        return bucketItems.filter(item => !parseItem(item).isCompleted);
+    }, [bucketItems]);
 
     const isLight = theme === 'light';
 
     return (
-        <div className={`min-h-screen pt-24 pb-20 px-4 md:px-8 max-w-7xl mx-auto transition-colors duration-500 ${isLight ? 'text-zinc-900' : 'text-white'}`}>
+        <div className={`min-h-screen pt-24 pb-20 px-4 md:px-8 max-w-7xl mx-auto transition-colors duration-500 ${isLight ? 'text-zinc-900 bg-zinc-50' : 'text-white bg-black'}`}>
             
             {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6 relative z-10">
                 <div className="relative">
                     <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg blur opacity-20" />
                     <h1 className="text-4xl md:text-5xl font-black tracking-tight flex items-center gap-4 relative">
+                        <Link href="/bucket-list" className="text-zinc-500 hover:text-white transition-colors p-1 rounded-lg">
+                            <ArrowLeft className="w-8 h-8" />
+                        </Link>
                         <Target className="w-10 h-10 text-blue-500" />
-                        Grand Ambitions
+                        Aspiration Analytics
                     </h1>
                     <p className={`mt-2 ${isLight ? 'text-zinc-500' : 'text-zinc-400'} font-medium`}>
-                        Define your targets. Execute. Conquer.
+                        Read-only detailed analysis and review of your Lifetime and Yearly bucket lists.
                     </p>
                 </div>
 
-                <button
-                    onClick={() => setIsAddingGoal(true)}
-                    className="group relative flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] overflow-hidden"
-                >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                    <Plus className="w-5 h-5 relative z-10" />
-                    <span className="relative z-10">Forge New Goal</span>
-                </button>
+                {pendingAll.length > 0 && (
+                    <button
+                        onClick={async () => {
+                            setIsDownloading(true);
+                            await downloadAestheticCard(pendingAll, 'goals', 'gyral-active-aspirations');
+                            setIsDownloading(false);
+                        }}
+                        disabled={isDownloading}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all border ${isLight ? 'bg-white border-zinc-200 hover:bg-zinc-50 text-black shadow-lg' : 'bg-zinc-900/50 border-white/10 hover:bg-white/5 text-white'} ${isDownloading ? 'opacity-50 cursor-wait' : ''}`}
+                    >
+                        <Download className={`w-4 h-4 ${isDownloading ? 'animate-bounce text-blue-500' : ''}`} />
+                        {isDownloading ? 'Forging card...' : 'Download Aspirations'}
+                    </button>
+                )}
             </div>
 
             {/* Dashboard Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                
+                {/* Overall Stats Card */}
                 <div className={`p-6 rounded-3xl ${isLight ? 'bg-white shadow-xl shadow-zinc-200' : 'bg-zinc-900/50 border border-white/5'} flex items-center gap-4 relative overflow-hidden group`}>
                     <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition-colors" />
                     <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 text-blue-500">
                         <Flag className="w-7 h-7" />
                     </div>
                     <div>
-                        <p className={`text-sm font-bold ${isLight ? 'text-zinc-500' : 'text-zinc-400'} uppercase tracking-wider`}>Total Goals</p>
-                        <p className="text-3xl font-black">{goals.length}</p>
+                        <p className={`text-sm font-bold ${isLight ? 'text-zinc-500' : 'text-zinc-400'} uppercase tracking-wider`}>Total Intentions</p>
+                        <p className="text-3xl font-black">{bucketItems.length}</p>
+                        <p className="text-[10px] font-mono text-zinc-500 uppercase mt-0.5">
+                            {lifeItems.length} Life • {yearItems.length} Year
+                        </p>
                     </div>
                 </div>
                 
+                {/* Conquered Link Card */}
                 <Link href="/achievements" className={`p-6 rounded-3xl ${isLight ? 'bg-white shadow-xl shadow-zinc-200 hover:shadow-emerald-200' : 'bg-zinc-900/50 border border-white/5 hover:border-emerald-500/30 hover:bg-zinc-900/80'} flex items-center justify-between relative overflow-hidden group transition-all duration-300`}>
                     <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-colors" />
                     <div className="flex items-center gap-4 relative z-10">
@@ -106,22 +110,26 @@ export default function GoalsPage() {
                         </div>
                         <div>
                             <p className={`text-sm font-bold ${isLight ? 'text-zinc-500' : 'text-zinc-400'} uppercase tracking-wider`}>Conquered</p>
-                            <p className="text-3xl font-black">{completedGoals.length}</p>
+                            <p className="text-3xl font-black">{completedAll.length}</p>
+                            <p className="text-[10px] font-mono text-zinc-500 uppercase mt-0.5">
+                                View Legends Gallery
+                            </p>
                         </div>
                     </div>
-                    <ArrowRight className="w-6 h-6 text-emerald-500 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all relative z-10" />
+                    <ArrowLeft className="w-6 h-6 text-emerald-500 rotate-180 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all relative z-10" />
                 </Link>
 
+                {/* Overall Progress Rate */}
                 <div className={`p-6 rounded-3xl ${isLight ? 'bg-white shadow-xl shadow-zinc-200' : 'bg-zinc-900/50 border border-white/5'} flex flex-col justify-center relative overflow-hidden group`}>
                     <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl group-hover:bg-indigo-500/20 transition-colors" />
                     <div className="flex justify-between items-end mb-2">
-                        <p className={`text-sm font-bold ${isLight ? 'text-zinc-500' : 'text-zinc-400'} uppercase tracking-wider`}>Completion Rate</p>
-                        <p className="text-2xl font-black text-indigo-500">{progress}%</p>
+                        <p className={`text-sm font-bold ${isLight ? 'text-zinc-500' : 'text-zinc-400'} uppercase tracking-wider`}>Overall Progress</p>
+                        <p className="text-2xl font-black text-indigo-500">{overallProgress}%</p>
                     </div>
                     <div className="w-full h-3 bg-zinc-800/50 rounded-full overflow-hidden border border-white/5">
                         <motion.div 
                             initial={{ width: 0 }}
-                            animate={{ width: `${progress}%` }}
+                            animate={{ width: `${overallProgress}%` }}
                             transition={{ duration: 1, ease: "easeOut" }}
                             className="h-full bg-gradient-to-r from-blue-500 to-indigo-500"
                         />
@@ -129,195 +137,121 @@ export default function GoalsPage() {
                 </div>
             </div>
 
-            {/* Goals Grid */}
-            <div className="max-w-3xl mx-auto relative z-10">
-                {/* Active Goals */}
+            {/* Split Horizons Detail Analysis */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
+                
+                {/* 1. LIFETIME HORIZONS */}
                 <div className="space-y-6">
-                    <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-2 h-8 bg-blue-500 rounded-full" />
-                            <h2 className="text-2xl font-bold">Active Pursuits</h2>
-                            <span className="px-3 py-1 bg-blue-500/10 text-blue-400 text-sm font-bold rounded-full">{pendingGoals.length}</span>
+                    <div className={`p-6 rounded-3xl ${isLight ? 'bg-white shadow-lg' : 'bg-zinc-900/40 border border-white/5'} relative overflow-hidden`}>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold flex items-center gap-2">
+                                <Infinity className="w-5 h-5 text-indigo-400" />
+                                Lifetime Horizons
+                            </h2>
+                            <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-indigo-500/10 text-indigo-400">
+                                {completedLife.length}/{lifeItems.length} Conquered ({lifeProgress}%)
+                            </span>
                         </div>
-                        {pendingGoals.length > 0 && (
-                            <button
-                                onClick={async () => {
-                                    setIsDownloading(true);
-                                    await downloadAestheticCard(pendingGoals, 'goals', 'gyral-active-goals');
-                                    setIsDownloading(false);
-                                }}
-                                disabled={isDownloading}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${isLight ? 'bg-white border-zinc-200 hover:bg-zinc-50' : 'bg-zinc-900/50 border-white/10 hover:bg-white/5'} ${isDownloading ? 'opacity-50 cursor-wait' : ''}`}
-                            >
-                                <Download className={`w-4 h-4 ${isDownloading ? 'animate-bounce text-blue-500' : ''}`} />
-                                {isDownloading ? 'Forging...' : 'Download Goals'}
-                            </button>
-                        )}
+                        <div className="w-full h-2 bg-zinc-800/50 rounded-full overflow-hidden">
+                            <div className="h-full bg-indigo-500" style={{ width: `${lifeProgress}%` }} />
+                        </div>
                     </div>
-                    
-                    <AnimatePresence>
-                        {pendingGoals.length === 0 ? (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`p-8 text-center rounded-3xl border border-dashed ${isLight ? 'border-zinc-300 text-zinc-500' : 'border-zinc-800 text-zinc-500'}`}>
-                                <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                                <p className="font-medium">No active goals. Time to aim higher.</p>
-                            </motion.div>
+
+                    <div className="space-y-3.5">
+                        {lifeItems.length === 0 ? (
+                            <div className={`p-8 text-center rounded-3xl border border-dashed ${isLight ? 'border-zinc-300 text-zinc-500' : 'border-zinc-800 text-zinc-500'}`}>
+                                <Infinity className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                                <p className="text-xs font-mono uppercase tracking-wider">No lifetime aspirations logged</p>
+                            </div>
                         ) : (
-                            pendingGoals.map(goal => (
-                                <GoalCard 
-                                    key={goal.id} 
-                                    goal={goal} 
-                                    onToggle={() => toggleGoalStatus(goal.id, goal.description)} 
-                                    onDelete={() => handleDeleteGoal(goal.id)}
-                                    isLight={isLight}
-                                />
+                            lifeItems.map(item => (
+                                <ReadOnlyEventCard key={item.id} item={item} parseItem={parseItem} isLight={isLight} isLife={true} />
                             ))
                         )}
-                    </AnimatePresence>
+                    </div>
+                </div>
+
+                {/* 2. YEARLY HORIZONS */}
+                <div className="space-y-6">
+                    <div className={`p-6 rounded-3xl ${isLight ? 'bg-white shadow-lg' : 'bg-zinc-900/40 border border-white/5'} relative overflow-hidden`}>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold flex items-center gap-2">
+                                <CalendarClock className="w-5 h-5 text-emerald-400" />
+                                Yearly Horizons
+                            </h2>
+                            <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400">
+                                {completedYear.length}/{yearItems.length} Conquered ({yearProgress}%)
+                            </span>
+                        </div>
+                        <div className="w-full h-2 bg-zinc-800/50 rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-500" style={{ width: `${yearProgress}%` }} />
+                        </div>
+                    </div>
+
+                    <div className="space-y-3.5">
+                        {yearItems.length === 0 ? (
+                            <div className={`p-8 text-center rounded-3xl border border-dashed ${isLight ? 'border-zinc-300 text-zinc-500' : 'border-zinc-800 text-zinc-500'}`}>
+                                <CalendarClock className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                                <p className="text-xs font-mono uppercase tracking-wider">No yearly aspirations logged</p>
+                            </div>
+                        ) : (
+                            yearItems.map(item => (
+                                <ReadOnlyEventCard key={item.id} item={item} parseItem={parseItem} isLight={isLight} isLife={false} />
+                            ))
+                        )}
+                    </div>
                 </div>
             </div>
-
-            {/* Add Goal Modal */}
-            <AnimatePresence>
-                {isAddingGoal && (
-                    <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
-                    >
-                        <motion.div 
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className={`w-full max-w-lg ${isLight ? 'bg-white' : 'bg-zinc-950 border border-white/10'} rounded-[2rem] p-8 shadow-2xl relative overflow-hidden`}
-                        >
-                            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-500" />
-                            
-                            <h2 className="text-3xl font-black mb-6 flex items-center gap-3">
-                                <Sparkles className="text-indigo-500" /> 
-                                New Goal
-                            </h2>
-
-                            <form onSubmit={handleAddGoal} className="space-y-5">
-                                <div>
-                                    <label className={`block text-sm font-bold mb-2 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>Target Objective</label>
-                                    <input 
-                                        type="text" 
-                                        value={newTitle}
-                                        onChange={e => setNewTitle(e.target.value)}
-                                        className={`w-full px-4 py-3 rounded-xl border ${isLight ? 'bg-zinc-50 border-zinc-200 text-black' : 'bg-zinc-900 border-white/10 text-white'} focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-all`}
-                                        placeholder="e.g., Read 50 Books, Run a Marathon"
-                                        required
-                                        autoFocus
-                                    />
-                                </div>
-                                
-                                <div>
-                                    <label className={`block text-sm font-bold mb-2 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>Description & Motivation (Optional)</label>
-                                    <textarea 
-                                        value={newDescription}
-                                        onChange={e => setNewDescription(e.target.value)}
-                                        className={`w-full px-4 py-3 rounded-xl border ${isLight ? 'bg-zinc-50 border-zinc-200 text-black' : 'bg-zinc-900 border-white/10 text-white'} focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-all min-h-[100px] resize-none`}
-                                        placeholder="Why does this matter?"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className={`block text-sm font-bold mb-2 ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>Target Date</label>
-                                    <input 
-                                        type="date" 
-                                        value={newDate}
-                                        onChange={e => setNewDate(e.target.value)}
-                                        className={`w-full px-4 py-3 rounded-xl border ${isLight ? 'bg-zinc-50 border-zinc-200 text-black' : 'bg-zinc-900 border-white/10 text-white'} focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-all`}
-                                        required
-                                    />
-                                </div>
-
-                                <div className="flex gap-4 pt-4">
-                                    <button 
-                                        type="button"
-                                        onClick={() => setIsAddingGoal(false)}
-                                        className={`flex-1 py-3 rounded-xl font-bold transition-colors ${isLight ? 'bg-zinc-200 text-zinc-700 hover:bg-zinc-300' : 'bg-white/5 text-white hover:bg-white/10'}`}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button 
-                                        type="submit"
-                                        className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-blue-500/25"
-                                    >
-                                        Forge Goal
-                                    </button>
-                                </div>
-                            </form>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </div>
     );
 }
 
-function GoalCard({ goal, onToggle, onDelete, isLight }: { goal: any, onToggle: () => void, onDelete: () => void, isLight: boolean }) {
-    const isCompleted = goal.description?.includes('[DONE]');
-    const cleanDescription = goal.description?.replace('[DONE]', '').trim();
+function ReadOnlyEventCard({ item, parseItem, isLight, isLife }: { item: any, parseItem: any, isLight: boolean, isLife: boolean }) {
+    const { isCompleted, notes } = parseItem(item);
 
     return (
-        <motion.div 
-            layout
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, x: 200, transition: { duration: 0.4 } }}
-            className={`p-6 rounded-3xl border transition-all duration-300 group ${
+        <div 
+            className={`p-5 rounded-2xl border transition-all duration-300 relative group overflow-hidden ${
                 isCompleted 
-                    ? isLight ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-950/20 border-emerald-500/20' 
-                    : isLight ? 'bg-white border-zinc-200 hover:shadow-lg' : 'bg-zinc-900/40 border-white/5 hover:bg-zinc-900/80 hover:border-white/10'
+                    ? isLight ? 'bg-emerald-50/50 border-emerald-100' : 'bg-emerald-950/5 border-emerald-500/10' 
+                    : isLight ? 'bg-white border-zinc-200 shadow-sm' : 'bg-zinc-900/30 border-white/5'
             }`}
         >
             <div className="flex items-start gap-4">
-                <button 
-                    onClick={onToggle}
-                    className="mt-1 flex-shrink-0 transition-transform active:scale-90"
-                >
+                <div className="mt-0.5 flex-shrink-0">
                     {isCompleted ? (
-                        <CheckCircle2 className={`w-7 h-7 ${isLight ? 'text-emerald-600' : 'text-emerald-500'}`} />
+                        <CheckCircle2 className={`w-5 h-5 ${isLight ? 'text-emerald-600' : 'text-emerald-500'}`} />
                     ) : (
-                        <Circle className={`w-7 h-7 ${isLight ? 'text-zinc-300 hover:text-blue-500' : 'text-zinc-600 hover:text-blue-400'} transition-colors`} />
+                        <Circle className={`w-5 h-5 ${isLight ? 'text-zinc-300' : 'text-zinc-700'}`} />
                     )}
-                </button>
+                </div>
                 
                 <div className="flex-1 min-w-0">
-                    <h3 className={`text-xl font-bold mb-1 transition-all ${isCompleted ? (isLight ? 'text-emerald-800 line-through opacity-70' : 'text-emerald-400 line-through opacity-70') : ''}`}>
-                        {goal.title}
+                    <h3 className={`text-base font-bold transition-all ${isCompleted ? 'text-zinc-500 line-through opacity-75' : ''}`}>
+                        {item.title}
                     </h3>
                     
-                    {cleanDescription && (
-                        <p className={`text-sm mb-3 line-clamp-2 ${isLight ? 'text-zinc-600' : 'text-zinc-400'} ${isCompleted ? 'opacity-50' : ''}`}>
-                            {cleanDescription}
+                    {notes && (
+                        <p className={`text-xs mt-1.5 font-serif italic ${isLight ? 'text-zinc-600' : 'text-zinc-400'} ${isCompleted ? 'opacity-50' : ''}`}>
+                            {notes}
                         </p>
                     )}
                     
-                    <div className="flex items-center gap-4 mt-2">
-                        <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-md ${
-                            isCompleted 
-                                ? isLight ? 'bg-emerald-100 text-emerald-700' : 'bg-emerald-500/10 text-emerald-400'
-                                : isLight ? 'bg-zinc-100 text-zinc-600' : 'bg-white/5 text-zinc-400'
+                    <div className="flex items-center gap-2 mt-3 select-none">
+                        <span className={`inline-flex items-center gap-1 text-[9px] font-mono font-bold px-2 py-0.5 rounded ${
+                            isLife 
+                                ? 'bg-indigo-500/10 text-indigo-400'
+                                : 'bg-emerald-500/10 text-emerald-400'
                         }`}>
-                            <Calendar className="w-3.5 h-3.5" />
-                            {format(parseISO(goal.event_date), 'MMM d, yyyy')}
+                            {isLife ? 'Lifetime' : 'Yearly'}
+                        </span>
+                        
+                        <span className={`inline-flex items-center gap-1 text-[9px] font-mono px-2 py-0.5 rounded bg-white/5 text-zinc-500`}>
+                            {isCompleted ? 'Conquered' : 'Active Pursuit'}
                         </span>
                     </div>
                 </div>
-
-                <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                        className={`p-2 rounded-xl transition-colors ${isLight ? 'hover:bg-red-100 text-red-500' : 'hover:bg-red-500/10 text-red-400'}`}
-                        title="Delete Goal"
-                    >
-                        <Trash2 className="w-5 h-5" />
-                    </button>
-                </div>
             </div>
-        </motion.div>
+        </div>
     );
 }
