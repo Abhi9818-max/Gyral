@@ -39,7 +39,7 @@ export function Header() {
   const [isFactionModalOpen, setIsFactionModalOpen] = useState(false);
   const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { consistencyScore, currentStreak, streakStatus, streakTier, streakStrength, activeFilterTaskId, tasks, currentFaction, user, profile } = useUserData();
+  const { consistencyScore, currentStreak, streakStatus, streakTier, streakStrength, activeFilterTaskId, tasks, currentFaction, user, profile, noxBalance } = useUserData();
   const { unreadCount, friendRequestCount } = useMessageNotifications();
   const router = useRouter();
 
@@ -199,6 +199,18 @@ export function Header() {
             <div className="absolute top-full right-0 mt-2 bg-black border border-white/20 text-xs text-white px-3 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-xl">
               {getTooltipText()}
             </div>
+          </div>
+
+          {/* Nox Balance Indicator - Always Visible */}
+          <div 
+            onClick={() => setIsBankModalOpen(true)}
+            className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/35 transition-colors cursor-pointer group select-none"
+            title="Nox Balance (Iron Bank)"
+          >
+            <Coins className="w-3.5 h-3.5 text-amber-500 animate-[pulse_2s_infinite]" />
+            <span className="text-xs md:text-sm font-bold font-mono text-amber-400">
+              {noxBalance} Nox
+            </span>
           </div>
 
           {/* Desktop Add Record Button */}

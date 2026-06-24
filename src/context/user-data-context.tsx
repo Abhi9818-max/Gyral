@@ -365,6 +365,8 @@ interface UserDataContextType {
     calculateAverageStreak: () => number;
     isLoaded: boolean;
     hasAchievementToday: boolean;
+    noxBalance: number;
+    updateNoxBalance: (amount: number) => void;
 }
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
@@ -429,6 +431,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const [navPreferences, setNavPreferences] = useState<NavItemKey[]>(['world', 'ritual', 'bank']);
     const [investments, setInvestments] = useState<Investment[]>([]);
     const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+    const [noxBalance, setNoxBalance] = useState<number>(0);
 
     const supabase = createClient();
 
@@ -630,6 +633,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                     const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
                     if (profileData) {
                         setProfile(profileData);
+                        setNoxBalance(profileData.nox_balance || 0);
 
                         // Set onboarding status - explicitly check for true
                         const isOnboardingComplete = profileData.onboarding_completed === true;
@@ -716,7 +720,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                                         missed.push({
                                             user_id: user.id,
                                             description: `Missed ${task.name} on ${dateStr}`,
-                                            amount: 'Penalty Session',
+                                            amount: '3 Nox',
                                             status: 'OWED',
                                             created_at: new Date().toISOString()
                                         });
@@ -777,6 +781,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                 if (savedProfileStreakMode) {
                     setProfileStreakModeState(savedProfileStreakMode as 'pinned' | 'combined');
                 }
+                const savedNox = localStorage.getItem('diogenes-nox-balance');
+                if (savedNox) setNoxBalance(parseInt(savedNox) || 0);
             }
             setIsLoaded(true);
         };
@@ -827,8 +833,9 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('diogenes-theme', theme);
             localStorage.setItem('diogenes-lang', language);
             localStorage.setItem('diogenes-nav-prefs', JSON.stringify(navPreferences));
+            localStorage.setItem('diogenes-nox-balance', noxBalance.toString());
         }
-    }, [tasks, records, pacts, notes, birthDate, isLoaded, user, showStatsCard, theme, language, navPreferences]);
+    }, [tasks, records, pacts, notes, birthDate, isLoaded, user, showStatsCard, theme, language, navPreferences, noxBalance]);
 
     // --- THEME APPLICATION ---
     useEffect(() => {
@@ -872,6 +879,14 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteLifeEvent = async (id: string) => {
+        const currentItem = lifeEvents.find(e => e.id === id);
+        if (currentItem) {
+            const isCompleted = currentItem.description?.includes('[DONE]') || false;
+            const isYearlyOrLifetime = currentItem.type === 'BUCKET_YEAR' || currentItem.type === 'BUCKET_LIFE';
+            if (isCompleted && isYearlyOrLifetime) {
+                updateNoxBalance(-50);
+            }
+        }
         const { error } = await supabase.from('life_events').delete().match({ id });
         if (!error) {
             setLifeEvents(prev => prev.filter(e => e.id !== id));
@@ -879,6 +894,17 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const updateLifeEvent = async (id: string, updates: Partial<LifeEvent>) => {
+        const currentItem = lifeEvents.find(e => e.id === id);
+        if (currentItem && updates.description !== undefined) {
+            const wasCompleted = currentItem.description?.includes('[DONE]') || false;
+            const isCompleted = updates.description.includes('[DONE]');
+            if (wasCompleted !== isCompleted) {
+                const isYearlyOrLifetime = currentItem.type === 'BUCKET_YEAR' || currentItem.type === 'BUCKET_LIFE';
+                if (isYearlyOrLifetime) {
+                    updateNoxBalance(isCompleted ? 50 : -50);
+                }
+            }
+        }
         const { error } = await supabase.from('life_events').update(updates).match({ id });
         if (!error) {
             setLifeEvents(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
@@ -917,6 +943,32 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         if (!error) {
             setDebts(prev => prev.filter(d => d.id !== id));
         }
+    };
+
+    const updateNoxBalanceInDb = async (newBalance: number) => {
+        if (!user) {
+            localStorage.setItem('diogenes-nox-balance', newBalance.toString());
+            return;
+        }
+
+        try {
+            const { error } = await supabase.from('profiles').update({ nox_balance: newBalance }).eq('id', user.id);
+            if (error) {
+                console.warn("Failed to save Nox balance to database (likely column not added yet). Saving to local storage.", error.message);
+                localStorage.setItem('diogenes-nox-balance', newBalance.toString());
+            }
+        } catch (e) {
+            console.error("Error updating nox balance in database:", e);
+            localStorage.setItem('diogenes-nox-balance', newBalance.toString());
+        }
+    };
+
+    const updateNoxBalance = (amount: number) => {
+        setNoxBalance(prev => {
+            const newBal = Math.max(0, prev + amount);
+            updateNoxBalanceInDb(newBal);
+            return newBal;
+        });
     };
 
     // --- HELPERS (Streak Calc) ---
@@ -1290,6 +1342,11 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }
         // --------------------------------------
 
+        const existingRecord = records[date]?.find(r => r.taskId === taskId);
+        if (!existingRecord && !silent) {
+            updateNoxBalance(3);
+        }
+
         setRecords((prev) => {
             const dayRecords = prev[date] || [];
             if (!silent) setLastCompletion({ date, taskId });
@@ -1317,6 +1374,11 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteRecord = async (date: string, taskId: string) => {
+        const existingRecord = records[date]?.find(r => r.taskId === taskId);
+        if (existingRecord) {
+            updateNoxBalance(-3);
+        }
+
         setRecords((prev) => {
             const dayRecords = prev[date] || [];
             const filteredRecords = dayRecords.filter(r => r.taskId !== taskId);
@@ -1365,9 +1427,14 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             return { ...prev, [date]: updated };
         });
         if (user) await supabase.from('pacts').update({ is_completed: newState }).eq('id', id);
+        updateNoxBalance(newState ? 2 : -2);
     };
 
     const deletePact = async (id: string, date: string) => {
+        const pactToDelete = pacts[date]?.find(p => p.id === id);
+        if (pactToDelete?.isCompleted) {
+            updateNoxBalance(-2);
+        }
         setPacts(prev => {
             const dayPacts = prev[date] || [];
             return { ...prev, [date]: dayPacts.filter(p => p.id !== id) };
@@ -1962,7 +2029,9 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             newlyUnlockedArtifacts, clearNewlyUnlocked,
             profileStreakMode, setProfileStreakMode, calculateAverageStreak,
             isLoaded,
-            hasAchievementToday
+            hasAchievementToday,
+            noxBalance,
+            updateNoxBalance
         }}>
             {children}
         </UserDataContext.Provider>

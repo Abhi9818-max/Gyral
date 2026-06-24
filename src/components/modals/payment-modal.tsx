@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Smartphone, CreditCard, Sparkles, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { X, ShieldCheck, Smartphone, CreditCard, Sparkles, AlertCircle, CheckCircle2, Loader2, Coins } from 'lucide-react';
+import { useUserData } from '@/context/user-data-context';
 import confetti from 'canvas-confetti';
 
 interface PaymentModalProps {
@@ -37,8 +38,15 @@ const cleanAmountValue = (amountStr: string): number => {
     return isNaN(num) ? 500 : num; // fallback to 500 INR/Paise
 };
 
+const getNoxCostForDebt = (amountStr: string): number => {
+    const num = parseFloat(amountStr.replace(/[^0-9.]/g, ''));
+    const baseAmount = isNaN(num) ? 3 : num;
+    return baseAmount * 2;
+};
+
 export function PaymentModal({ isOpen, onClose, amount, description, onSuccess }: PaymentModalProps) {
-    const [activeTab, setActiveTab] = useState<PaymentTab>('upi');
+    const { noxBalance, updateNoxBalance } = useUserData();
+    const [activeTab, setActiveTab] = useState<PaymentTab>('nox');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successPaymentId, setSuccessPaymentId] = useState<string | null>(null);
@@ -50,7 +58,7 @@ export function PaymentModal({ isOpen, onClose, amount, description, onSuccess }
         if (!isOpen) {
             setSuccessPaymentId(null);
             setError(null);
-            setActiveTab('upi');
+            setActiveTab('nox');
         }
     }, [isOpen]);
 
@@ -133,6 +141,19 @@ export function PaymentModal({ isOpen, onClose, amount, description, onSuccess }
             onSuccess();
             onClose();
         }, 2200);
+    };
+
+    const noxCost = getNoxCostForDebt(amount);
+
+    const handleNoxPayment = () => {
+        if (noxBalance < noxCost) return;
+        setIsLoading(true);
+        setError(null);
+        setTimeout(() => {
+            setIsLoading(false);
+            updateNoxBalance(-noxCost);
+            handlePaymentSuccess(`nox_tx_${Date.now()}`);
+        }, 1200);
     };
 
     // Razorpay Integration
@@ -240,10 +261,19 @@ export function PaymentModal({ isOpen, onClose, amount, description, onSuccess }
                         </div>
 
                         {/* Tabs Navigation */}
-                        <div className="flex px-4 pt-3 gap-2 bg-black/40">
+                        <div className="flex px-4 pt-3 gap-2 bg-black/40 overflow-x-auto scrollbar-none shrink-0">
+                            <button
+                                onClick={() => { setActiveTab('nox'); setError(null); }}
+                                className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shrink-0 ${
+                                    activeTab === 'nox' ? 'bg-white/10 text-white border border-white/10' : 'text-zinc-500 hover:text-zinc-300'
+                                }`}
+                            >
+                                <Coins className="w-3.5 h-3.5 text-yellow-500 animate-[pulse_2s_infinite]" />
+                                Nox Pay
+                            </button>
                             <button
                                 onClick={() => { setActiveTab('upi'); setError(null); }}
-                                className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                                className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shrink-0 ${
                                     activeTab === 'upi' ? 'bg-white/10 text-white border border-white/10' : 'text-zinc-500 hover:text-zinc-300'
                                 }`}
                             >
@@ -252,7 +282,7 @@ export function PaymentModal({ isOpen, onClose, amount, description, onSuccess }
                             </button>
                             <button
                                 onClick={() => { setActiveTab('paypal'); setError(null); }}
-                                className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                                className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shrink-0 ${
                                     activeTab === 'paypal' ? 'bg-white/10 text-white border border-white/10' : 'text-zinc-500 hover:text-zinc-300'
                                 }`}
                             >
@@ -261,7 +291,7 @@ export function PaymentModal({ isOpen, onClose, amount, description, onSuccess }
                             </button>
                             <button
                                 onClick={() => { setActiveTab('demo'); setError(null); }}
-                                className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                                className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shrink-0 ${
                                     activeTab === 'demo' ? 'bg-white/10 text-white border border-white/10' : 'text-zinc-500 hover:text-zinc-300'
                                 }`}
                             >
@@ -287,6 +317,44 @@ export function PaymentModal({ isOpen, onClose, amount, description, onSuccess }
                                 </div>
                             ) : (
                                 <div className="animate-in fade-in duration-300">
+                                    {activeTab === 'nox' && (
+                                        <div className="space-y-4 text-center">
+                                            <p className="text-xs text-zinc-500 leading-relaxed px-4">
+                                                Settle this debt by paying double its amount in Nox.
+                                            </p>
+                                            <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl space-y-2 max-w-xs mx-auto text-left font-mono">
+                                                <div className="flex justify-between text-xs text-zinc-400">
+                                                    <span>Your Balance:</span>
+                                                    <span className="text-white font-bold">{noxBalance} Nox</span>
+                                                </div>
+                                                <div className="flex justify-between text-xs text-zinc-400 border-t border-zinc-800 pt-2">
+                                                    <span>Cost to Settle:</span>
+                                                    <span className="text-yellow-500 font-bold">{noxCost} Nox</span>
+                                                </div>
+                                            </div>
+                                            {noxBalance >= noxCost ? (
+                                                <button
+                                                    onClick={handleNoxPayment}
+                                                    className="w-full py-3.5 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-xl transition-all flex items-center justify-center gap-2 hover:scale-[1.01]"
+                                                >
+                                                    Pay {noxCost} Nox & Settle
+                                                </button>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    <button
+                                                        disabled
+                                                        className="w-full py-3.5 bg-zinc-900 border border-zinc-800 text-zinc-600 font-bold rounded-xl cursor-not-allowed flex items-center justify-center gap-2"
+                                                    >
+                                                        Insufficient Nox Balance
+                                                    </button>
+                                                    <p className="text-[10px] text-zinc-500 leading-normal">
+                                                        You need {noxCost - noxBalance} more Nox. Complete tasks/pacts to earn more, or use alternate checkout below.
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
                                     {activeTab === 'upi' && (
                                         <div className="space-y-4 text-center">
                                             <p className="text-xs text-zinc-500 leading-relaxed px-4">
