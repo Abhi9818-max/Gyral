@@ -6,8 +6,8 @@ import { MobileNav } from './mobile-nav';
 export function MobileNavWrapper() {
     const pathname = usePathname();
 
-    // Hide navigation on login/signup pages
-    if (pathname?.startsWith('/login') || pathname?.startsWith('/signup')) {
+    // Hide navigation on landing page (/) and login/signup pages
+    if (pathname === '/' || pathname?.startsWith('/login') || pathname?.startsWith('/signup')) {
         return null;
     }
 
