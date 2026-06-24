@@ -275,17 +275,17 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
             onClick={(e) => onClick?.(e)}
             className={`flex items-center justify-between p-4 cursor-pointer hover:bg-white/10 transition-colors ${!isLast ? 'border-b border-white/5' : ''} ${customHeight ? 'py-5' : ''}`}
         >
-            <div className="flex items-center gap-4">
-                <div className={`p-2 rounded-xl ${danger ? 'bg-red-500/10 text-red-500' : 'bg-zinc-800 text-zinc-400'}`}>
+            <div className="flex items-center gap-4 min-w-0">
+                <div className={`p-2 rounded-xl shrink-0 ${danger ? 'bg-red-500/10 text-red-500' : 'bg-zinc-800 text-zinc-400'}`}>
                     <Icon className="w-5 h-5" />
                 </div>
-                <div className="flex flex-col">
-                    <span className={`font-medium ${danger ? 'text-red-400' : 'text-zinc-200'}`}>{label}</span>
+                <div className="flex flex-col min-w-0">
+                    <span className={`font-medium text-sm sm:text-base ${danger ? 'text-red-400' : 'text-zinc-200'} truncate`}>{label}</span>
                 </div>
             </div>
-            <div className="flex items-center gap-3">
-                {value && <span className="text-sm text-zinc-500">{value}</span>}
-                {action ? action : <ChevronRight className="w-4 h-4 text-zinc-600" />}
+            <div className="flex items-center gap-3 shrink-0 min-w-0">
+                {value && <span className="text-sm text-zinc-500 shrink-0">{value}</span>}
+                {action ? <div className="flex items-center justify-end min-w-0">{action}</div> : <ChevronRight className="w-4 h-4 text-zinc-600 shrink-0" />}
             </div>
         </div>
     );
@@ -583,7 +583,7 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                                         localStorage.setItem('diogenes-razorpay-key-id', val);
                                     }}
                                     placeholder="rzp_test_..."
-                                    className="bg-transparent text-sm text-zinc-400 focus:outline-none text-right cursor-pointer max-w-[200px]"
+                                    className="bg-transparent text-sm text-zinc-400 focus:outline-none text-right cursor-pointer w-28 xs:w-36 sm:w-48 md:w-64 min-w-0"
                                 />
                             }
                         />
@@ -601,7 +601,7 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                                         localStorage.setItem('diogenes-paypal-client-id', val);
                                     }}
                                     placeholder="sb / Client ID"
-                                    className="bg-transparent text-sm text-zinc-400 focus:outline-none text-right cursor-pointer max-w-[200px]"
+                                    className="bg-transparent text-sm text-zinc-400 focus:outline-none text-right cursor-pointer w-28 xs:w-36 sm:w-48 md:w-64 min-w-0"
                                 />
                             }
                         />

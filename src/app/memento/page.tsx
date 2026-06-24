@@ -120,7 +120,7 @@ export default function MementoPage() {
         <main className="min-h-screen bg-black text-white p-4 md:p-6 lg:p-12 font-sans selection:bg-white/20 pb-20 md:pb-12">
             {/* Header / Nav */}
             <div className="max-w-7xl mx-auto flex items-center justify-between mb-8 md:mb-12 animate-[fadeIn_0.5s_ease-out]">
-                <Link href="/" className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors group">
+                <Link href="/dashboard" className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors group">
                     <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                     <span className="font-bold tracking-wide">RETURN</span>
                 </Link>

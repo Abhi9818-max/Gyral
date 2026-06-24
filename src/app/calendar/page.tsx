@@ -60,7 +60,7 @@ export default function CalendarPage() {
             <main className="flex-1 p-4 md:p-8 pt-24 md:pt-28 max-w-7xl mx-auto w-full pb-20">
                 <div className="flex items-center gap-4 mb-8">
                     <Link
-                        href="/"
+                        href="/dashboard"
                         className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"
                     >
                         <ChevronLeft className="w-5 h-5" />
@@ -71,8 +71,8 @@ export default function CalendarPage() {
                     </div>
                 </div>
 
-                {/* Calendar Grid: 2 cols on mobile, 3 on md, 4 on lg */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+                {/* Calendar Grid: 1 col on mobile, 2 on sm, 3 on md, 4 on lg */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
                     {months.map((month, mIdx) => (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}

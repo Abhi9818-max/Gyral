@@ -173,7 +173,7 @@ export default function BucketListPage() {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white py-12 px-4 md:px-8 flex items-start justify-center relative">
+        <div className="min-h-screen bg-black text-white py-12 pb-24 md:pb-12 px-4 md:px-8 flex items-start justify-center relative">
             
             {/* Checklist Container Card */}
             <div className="bg-black/60 backdrop-blur-xl text-zinc-200 p-5 md:p-8 rounded-2xl border border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-w-2xl w-full">
@@ -181,7 +181,7 @@ export default function BucketListPage() {
                 {/* Header Control Bar */}
                 <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6 select-none">
                     <div className="flex items-center gap-3">
-                        <Link href="/" className="text-zinc-500 hover:text-white transition-colors p-1 rounded-lg">
+                        <Link href="/dashboard" className="text-zinc-500 hover:text-white transition-colors p-1 rounded-lg">
                             <ArrowLeft className="w-4 h-4" />
                         </Link>
                         <h2 className="text-xl font-serif italic text-white/95 tracking-tight">

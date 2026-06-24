@@ -2,7 +2,7 @@
 
 import { useUserData } from '@/context/user-data-context';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Dumbbell, BookOpen, Droplet, Carrot, Circle, Check, Zap, Brain, Moon, Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Dumbbell, BookOpen, Droplet, Carrot, Circle, Check, Zap, Brain, Moon, Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useToday } from '@/hooks/use-today';
 
@@ -245,10 +245,8 @@ export function PactWidget() {
                         }
 
                         return (
-                            <button
+                            <div
                                 key={pact.id}
-                                onClick={() => togglePact(pact.id, selectedDate)}
-                                onDoubleClick={() => setDeleteCandidateId(pact.id)}
                                 className={`
                                     relative flex items-center justify-between p-4 rounded-2xl transition-all duration-500 group/item text-left select-none
                                     ${pact.isCompleted
@@ -256,7 +254,10 @@ export function PactWidget() {
                                         : 'bg-zinc-800/40 text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200 border border-transparent hover:border-white/5'}
                                 `}
                             >
-                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <button
+                                    onClick={() => togglePact(pact.id, selectedDate)}
+                                    className="flex items-center gap-3 flex-1 min-w-0 text-left focus:outline-none"
+                                >
                                     <div className={`p-2 rounded-full shrink-0 ${pact.isCompleted ? 'bg-black text-white' : 'bg-white/5 text-current'}`}>
                                         {getIcon(pact.text)}
                                     </div>
@@ -268,17 +269,37 @@ export function PactWidget() {
                                             </span>
                                         )}
                                     </span>
-                                </div>
+                                </button>
 
-                                <div className={`
-                                    w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 shrink-0
-                                    ${pact.isCompleted
-                                        ? 'border-black bg-black text-white'
-                                        : 'border-zinc-600 group-hover/item:border-zinc-400'}
-                                `}>
-                                    {pact.isCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                                <div className="flex items-center gap-3 shrink-0 ml-2">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setDeleteCandidateId(pact.id);
+                                        }}
+                                        className={`p-1.5 rounded-lg transition-colors duration-300 ${
+                                            pact.isCompleted
+                                                ? 'text-black/40 hover:text-black/70 hover:bg-black/5'
+                                                : 'text-zinc-500 hover:text-white hover:bg-white/5'
+                                        }`}
+                                        title="Pact Options"
+                                    >
+                                        <MoreVertical className="w-4 h-4" />
+                                    </button>
+
+                                    <button
+                                        onClick={() => togglePact(pact.id, selectedDate)}
+                                        className={`
+                                            w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300
+                                            ${pact.isCompleted
+                                                ? 'border-black bg-black text-white'
+                                                : 'border-zinc-600 hover:border-zinc-400'}
+                                        `}
+                                    >
+                                        {pact.isCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                                    </button>
                                 </div>
-                            </button>
+                            </div>
                         );
                     })}
 
