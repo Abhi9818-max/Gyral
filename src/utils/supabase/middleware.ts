@@ -52,7 +52,7 @@ export async function updateSession(request: NextRequest) {
         pathname === '/' ||
         pathname.startsWith('/login') ||
         pathname.startsWith('/auth') ||
-        pathname.startsWith('/compliance')
+        pathname.startsWith('/legal')
 
     // If authenticated user visits the landing page, redirect to dashboard
     if ((user || isGuest) && pathname === '/') {
