@@ -109,14 +109,12 @@ export type Vow = {
 };
 
 
-export type NavItemKey = 'world' | 'ritual' | 'bank' | 'watch' | 'arena' | 'notes' | 'messages' | 'pacts' | 'memento' | 'citadel' | 'goals' | 'achievements' | 'bucket';
+export type NavItemKey = 'world' | 'bank' | 'watch' | 'notes' | 'messages' | 'pacts' | 'memento' | 'citadel' | 'goals' | 'achievements' | 'bucket';
 
 export const ALL_NAV_ITEMS: { key: NavItemKey, label: string, icon: string, href?: string }[] = [
     { key: 'world', label: 'World', icon: 'Globe', href: '/world' },
-    { key: 'ritual', label: 'Ritual', icon: 'Flame' },
     { key: 'bank', label: 'Bank', icon: 'Coins' },
     { key: 'watch', label: 'The Watch', icon: 'Shield' },
-    { key: 'arena', label: 'Arena', icon: 'Sword' },
     { key: 'goals', label: 'Goals', icon: 'Flag', href: '/goals' },
     { key: 'achievements', label: 'Achievements', icon: 'Trophy', href: '/achievements' },
     { key: 'notes', label: 'Notes', icon: 'ClipboardList', href: '/notes' },
@@ -429,7 +427,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const [exiledUntil, setExiledUntil] = useState<string | null>(null);
     const [factions, setFactions] = useState<Faction[]>([]);
     const [currentFaction, setCurrentFaction] = useState<Faction | null>(null);
-    const [navPreferences, setNavPreferences] = useState<NavItemKey[]>(['world', 'ritual', 'bank']);
+    const [navPreferences, setNavPreferences] = useState<NavItemKey[]>(['world', 'bank', 'watch']);
     const [investments, setInvestments] = useState<Investment[]>([]);
     const [onboardingCompleted, setOnboardingCompleted] = useState(false);
     const [noxBalance, setNoxBalance] = useState<number>(0);

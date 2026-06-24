@@ -12,8 +12,6 @@ import { createClient } from '@/utils/supabase/client';
 import { Sigil } from './sigil';
 import { AddTaskModal } from './modals/add-task-modal';
 import { PactsModal } from './modals/pacts-modal';
-import { ShareModal } from './modals/share-modal';
-import { RitualModal } from './modals/ritual-modal';
 import { BankModal } from './modals/bank-modal';
 import { NightsWatchModal } from './modals/nights-watch-modal';
 import { SearchModal } from './modals/search-modal';
@@ -29,8 +27,6 @@ import { InvestmentModal } from './modals/investment-modal';
 export function Header() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isPactsModalOpen, setIsPactsModalOpen] = useState(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [isRitualModalOpen, setIsRitualModalOpen] = useState(false);
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [isWatchModalOpen, setIsWatchModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
@@ -288,10 +284,6 @@ export function Header() {
                        <span class="text-white">🚩</span>
                        <span class="text-white font-medium">House</span>
                     </button>
-                    <button id="ritual-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span class="text-orange-500">🔥</span>
-                      <span class="text-white font-medium">Ritual</span>
-                    </button>
                     <button id="bank-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span class="text-yellow-500">💰</span>
                       <span class="text-white font-medium">Bank</span>
@@ -299,10 +291,6 @@ export function Header() {
                     <button id="watch-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span class="text-slate-400">🛡️</span>
                       <span class="text-white font-medium">The Watch</span>
-                    </button>
-                    <button id="arena-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span class="text-accent">⚔️</span>
-                      <span class="text-white font-medium">Arena</span>
                     </button>
                     <button id="negotiate-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span class="text-emerald-500">💎</span>
@@ -365,10 +353,6 @@ export function Header() {
                 closeMenu();
                 setIsFactionModalOpen(true);
               });
-              document.getElementById('ritual-btn')?.addEventListener('click', () => {
-                closeMenu();
-                setIsRitualModalOpen(true);
-              });
               document.getElementById('bank-btn')?.addEventListener('click', () => {
                 closeMenu();
                 setIsBankModalOpen(true);
@@ -376,10 +360,6 @@ export function Header() {
               document.getElementById('watch-btn')?.addEventListener('click', () => {
                 closeMenu();
                 setIsWatchModalOpen(true);
-              });
-              document.getElementById('arena-btn')?.addEventListener('click', () => {
-                closeMenu();
-                setIsShareModalOpen(true);
               });
               document.getElementById('negotiate-btn')?.addEventListener('click', () => {
                 closeMenu();
@@ -454,10 +434,6 @@ export function Header() {
                        <span class="text-white">🚩</span>
                        <span class="text-white font-medium">House</span>
                     </button>
-                    <button id="ritual-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span class="text-orange-500">🔥</span>
-                      <span class="text-white font-medium">Ritual</span>
-                    </button>
                     <button id="bank-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span class="text-yellow-500">💰</span>
                       <span class="text-white font-medium">Bank</span>
@@ -465,10 +441,6 @@ export function Header() {
                     <button id="watch-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span class="text-slate-400">🛡️</span>
                       <span class="text-white font-medium">The Watch</span>
-                    </button>
-                    <button id="arena-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span class="text-accent">⚔️</span>
-                      <span class="text-white font-medium">Arena</span>
                     </button>
                     <button id="mobile-goals-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>🎯</span>
@@ -528,10 +500,6 @@ export function Header() {
                 closeMenu();
                 setIsFactionModalOpen(true);
               });
-              document.getElementById('ritual-btn')?.addEventListener('click', () => {
-                closeMenu();
-                setIsRitualModalOpen(true);
-              });
               document.getElementById('bank-btn')?.addEventListener('click', () => {
                 closeMenu();
                 setIsBankModalOpen(true);
@@ -539,10 +507,6 @@ export function Header() {
               document.getElementById('watch-btn')?.addEventListener('click', () => {
                 closeMenu();
                 setIsWatchModalOpen(true);
-              });
-              document.getElementById('arena-btn')?.addEventListener('click', () => {
-                closeMenu();
-                setIsShareModalOpen(true);
               });
               document.getElementById('habits-btn')?.addEventListener('click', () => {
                 closeMenu();
@@ -614,8 +578,6 @@ export function Header() {
 
       <AddTaskModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
       <PactsModal isOpen={isPactsModalOpen} onClose={() => setIsPactsModalOpen(false)} />
-      <ShareModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} />
-      <RitualModal isOpen={isRitualModalOpen} onClose={() => setIsRitualModalOpen(false)} />
       <BankModal isOpen={isBankModalOpen} onClose={() => setIsBankModalOpen(false)} />
       <NightsWatchModal isOpen={isWatchModalOpen} onClose={() => setIsWatchModalOpen(false)} />
       <SearchModal isOpen={isSearchModalOpen} onClose={() => setIsSearchModalOpen(false)} />

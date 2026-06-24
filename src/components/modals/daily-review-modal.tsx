@@ -144,7 +144,7 @@ export function DailyReviewModal({ isOpen, onClose }: DailyReviewModalProps) {
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h2 className="text-2xl font-black text-white flex items-center gap-2 tracking-tight">
-                                <Sparkles className="w-5 h-5 text-yellow-500 animate-pulse" /> Ritual Review
+                                <Sparkles className="w-5 h-5 text-yellow-500 animate-pulse" /> Daily Review
                             </h2>
                             <p className="text-zinc-500 text-sm font-medium">{dateStr}</p>
                         </div>
@@ -171,7 +171,7 @@ export function DailyReviewModal({ isOpen, onClose }: DailyReviewModalProps) {
                     {activeTasks.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-zinc-500 gap-4">
                             <Moon className="w-12 h-12 opacity-20" />
-                            <p>No rituals to review.</p>
+                            <p>No tasks to review.</p>
                         </div>
                     ) : (
                         activeTasks.map(task => {

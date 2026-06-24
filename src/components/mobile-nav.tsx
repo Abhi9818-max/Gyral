@@ -10,10 +10,8 @@ import {
 import { useUserData, ALL_NAV_ITEMS, NavItemKey } from '@/context/user-data-context';
 import { useToday } from '@/hooks/use-today';
 import { getUserAvatar } from '@/utils/avatar-helpers';
-import { RitualModal } from './modals/ritual-modal';
 import { BankModal } from './modals/bank-modal';
 import { NightsWatchModal } from './modals/nights-watch-modal';
-import { ShareModal } from './modals/share-modal';
 import { PactsModal } from './modals/pacts-modal';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
@@ -26,10 +24,8 @@ export function MobileNav() {
     const { navPreferences, profile, user, pacts, isLoaded } = useUserData();
     const todayStr = useToday();
 
-    const [isRitualModalOpen, setIsRitualModalOpen] = useState(false);
     const [isBankModalOpen, setIsBankModalOpen] = useState(false);
     const [isWatchModalOpen, setIsWatchModalOpen] = useState(false);
-    const [isArenaModalOpen, setIsArenaModalOpen] = useState(false);
     const [isPactsModalOpen, setIsPactsModalOpen] = useState(false);
 
     // Get the actual nav items based on preferences
@@ -38,10 +34,8 @@ export function MobileNav() {
         .filter(Boolean) as typeof ALL_NAV_ITEMS;
 
     const handleAction = (key: NavItemKey) => {
-        if (key === 'ritual') setIsRitualModalOpen(true);
         if (key === 'bank') setIsBankModalOpen(true);
         if (key === 'watch') setIsWatchModalOpen(true);
-        if (key === 'arena') setIsArenaModalOpen(true);
         if (key === 'pacts') setIsPactsModalOpen(true);
     };
 
@@ -155,10 +149,8 @@ export function MobileNav() {
                 </div>
             </nav>
 
-            <RitualModal isOpen={isRitualModalOpen} onClose={() => setIsRitualModalOpen(false)} />
             <BankModal isOpen={isBankModalOpen} onClose={() => setIsBankModalOpen(false)} />
             <NightsWatchModal isOpen={isWatchModalOpen} onClose={() => setIsWatchModalOpen(false)} />
-            <ShareModal isOpen={isArenaModalOpen} onClose={() => setIsArenaModalOpen(false)} />
             <PactsModal isOpen={isPactsModalOpen} onClose={() => setIsPactsModalOpen(false)} />
         </>
     );
