@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useUserData } from '@/context/user-data-context';
 import { 
     Plus, Check, Trash2, ArrowLeft, Edit3, X, Infinity, CalendarClock, Sparkles
@@ -15,6 +15,23 @@ export default function BucketListPage() {
     const { lifeEvents, addLifeEvent, updateLifeEvent, deleteLifeEvent } = useUserData();
 
     const [activeTab, setActiveTab] = useState<BucketTab>('BUCKET_LIFE');
+
+    useEffect(() => {
+        const defaultPref = localStorage.getItem('diogenes-bucket-default-preference') || 'last_opened';
+        if (defaultPref === 'last_opened') {
+            const lastTab = localStorage.getItem('diogenes-bucket-last-tab') as BucketTab;
+            if (lastTab === 'BUCKET_LIFE' || lastTab === 'BUCKET_YEAR') {
+                setActiveTab(lastTab);
+            }
+        } else if (defaultPref === 'BUCKET_LIFE' || defaultPref === 'BUCKET_YEAR') {
+            setActiveTab(defaultPref as BucketTab);
+        }
+    }, []);
+
+    const handleSetActiveTab = (tab: BucketTab) => {
+        setActiveTab(tab);
+        localStorage.setItem('diogenes-bucket-last-tab', tab);
+    };
     const [isAdding, setIsAdding] = useState(false);
     const [newTitle, setNewTitle] = useState('');
     const [newNotes, setNewNotes] = useState('');
@@ -76,6 +93,9 @@ export default function BucketListPage() {
             setNewTitle('');
             setNewNotes('');
             setIsAdding(false);
+
+            // Switch active tab to the type that was just created
+            handleSetActiveTab(newType);
         } catch (err: any) {
             console.error("Failed to add bucket list item:", err);
             setErrorMsg(err.message || "Failed to forge aspiration.");
@@ -159,7 +179,7 @@ export default function BucketListPage() {
                         {/* Toggle switch: Infinity (Life) vs CalendarClock (Year) */}
                         <button
                             onClick={() => {
-                                setActiveTab(activeTab === 'BUCKET_LIFE' ? 'BUCKET_YEAR' : 'BUCKET_LIFE');
+                                handleSetActiveTab(activeTab === 'BUCKET_LIFE' ? 'BUCKET_YEAR' : 'BUCKET_LIFE');
                                 setExpandedId(null);
                             }}
                             className="p-1.5 rounded-lg bg-white/[0.03] border border-white/5 text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer flex items-center justify-center"

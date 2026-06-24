@@ -51,9 +51,14 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
     const [month, setMonth] = useState('');
     const [year, setYear] = useState('');
     const [soundEnabled, setSoundEnabled] = useState(true);
+    const [bucketDefaultPref, setBucketDefaultPref] = useState('last_opened');
 
     useEffect(() => {
         setSoundEnabled(sfx.isEnabled());
+        const savedPref = localStorage.getItem('diogenes-bucket-default-preference');
+        if (savedPref) {
+            setBucketDefaultPref(savedPref);
+        }
     }, []);
 
     const handleSoundToggle = () => {
@@ -536,6 +541,26 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                             label="Profile Streak Display"
                             onClick={() => setProfileStreakMode(profileStreakMode === 'pinned' ? 'combined' : 'pinned')}
                             value={profileStreakMode === 'pinned' ? 'Pinned Task' : 'Combined Average'}
+                            isLast={false}
+                        />
+                        <SettingsItem
+                            icon={Infinity}
+                            label="Bucket List View"
+                            action={
+                                <select
+                                    value={bucketDefaultPref}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setBucketDefaultPref(val);
+                                        localStorage.setItem('diogenes-bucket-default-preference', val);
+                                    }}
+                                    className="bg-transparent text-sm text-zinc-400 focus:outline-none text-right cursor-pointer"
+                                >
+                                    <option value="last_opened">Last Opened</option>
+                                    <option value="BUCKET_LIFE">Lifetime List</option>
+                                    <option value="BUCKET_YEAR">Yearly List</option>
+                                </select>
+                            }
                             isLast
                         />
                     </SettingsGroup>
