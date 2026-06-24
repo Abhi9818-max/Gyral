@@ -133,14 +133,15 @@ export function getQuoteOfTheDay(): Quote {
     return philosophicalQuotes[index];
 }
 
-export const simpleQuotes = [
-    "You vs You"
-];
+export const simpleQuote: Quote = {
+    text: "You vs You",
+    author: "Creator"
+};
 
 /**
  * Gets a simple quote of the day.
  */
-export function getSimpleQuoteOfTheDay(): string {
-    return "You vs You";
+export function getSimpleQuoteOfTheDay(): Quote {
+    return simpleQuote;
 }
 
