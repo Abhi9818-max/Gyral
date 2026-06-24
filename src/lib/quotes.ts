@@ -132,3 +132,19 @@ export function getQuoteOfTheDay(): Quote {
 
     return philosophicalQuotes[index];
 }
+
+export const simpleQuotes = [
+    "You vs Your better self",
+    "You vs You"
+];
+
+/**
+ * Gets a simple quote of the day based on the current date.
+ */
+export function getSimpleQuoteOfTheDay(): string {
+    const today = new Date();
+    // Deterministic selection based on the day of month
+    const day = today.getDate();
+    return simpleQuotes[day % simpleQuotes.length];
+}
+

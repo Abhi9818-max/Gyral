@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
 import { useToday } from '@/hooks/use-today';
 import { createClient } from '@/utils/supabase/client';
 
@@ -364,6 +364,7 @@ interface UserDataContextType {
     setProfileStreakMode: (mode: 'pinned' | 'combined') => Promise<void>;
     calculateAverageStreak: () => number;
     isLoaded: boolean;
+    hasAchievementToday: boolean;
 }
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
@@ -395,6 +396,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
     // Artifacts State
     const [unlockedArtifacts, setUnlockedArtifacts] = useState<string[]>([]);
+    const [unlockedArtifactsWithDates, setUnlockedArtifactsWithDates] = useState<{ id: string; unlocked_at: string }[]>([]);
     const [displayedArtifactId, setDisplayedArtifactId] = useState<string | null>(null);
 
     const [isLoaded, setIsLoaded] = useState(false);
@@ -1830,6 +1832,10 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
         if (newUnlocks.length > 0) {
             setUnlockedArtifacts(prev => [...prev, ...newUnlocks]);
+            setUnlockedArtifactsWithDates(prev => [
+                ...prev,
+                ...newUnlocks.map(id => ({ id, unlocked_at: new Date().toISOString() }))
+            ]);
             setNewlyUnlockedArtifacts(prev => [...prev, ...newUnlocks]);
             console.log("Unlocked Artifacts:", newUnlocks);
         }
@@ -1847,8 +1853,14 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!user) return;
         const loadArtifacts = async () => {
-            const { data } = await supabase.from('user_artifacts').select('artifact_id');
-            if (data) setUnlockedArtifacts(data.map(d => d.artifact_id));
+            const { data } = await supabase.from('user_artifacts').select('artifact_id, unlocked_at');
+            if (data) {
+                setUnlockedArtifacts(data.map(d => d.artifact_id));
+                setUnlockedArtifactsWithDates(data.map(d => ({
+                    id: d.artifact_id,
+                    unlocked_at: d.unlocked_at
+                })));
+            }
 
             const { data: profile } = await supabase.from('profiles').select('displayed_artifact_id').eq('id', user.id).single();
             if (profile) setDisplayedArtifactId(profile.displayed_artifact_id);
@@ -1908,6 +1920,34 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const hasAchievementToday = useMemo(() => {
+        const todayStr = format(new Date(), 'yyyy-MM-dd');
+        
+        // 1. Check if any artifact was unlocked today
+        const hasArtifactToday = unlockedArtifactsWithDates.some(art => {
+            if (!art.unlocked_at) return false;
+            try {
+                const dateLocal = format(new Date(art.unlocked_at), 'yyyy-MM-dd');
+                return dateLocal === todayStr;
+            } catch (e) {
+                console.error("Error parsing unlocked_at date:", e);
+                return false;
+            }
+        });
+
+        if (hasArtifactToday) return true;
+
+        // 2. Check if any bucket list item was completed today
+        const hasCompletedBucketToday = lifeEvents.some(event => {
+            if (event.type !== 'BUCKET_LIFE' && event.type !== 'BUCKET_YEAR') return false;
+            const desc = event.description || '';
+            const match = desc.match(/\[DONE:(\d{4}-\d{2}-\d{2})\]/);
+            return match ? match[1] === todayStr : false;
+        });
+
+        return hasCompletedBucketToday;
+    }, [unlockedArtifactsWithDates, lifeEvents]);
+
     return (
         <UserDataContext.Provider value={{
             tasks, records, addTask, updateTask, deleteTask, toggleTaskArchive, addRecord, deleteRecord, getRecordsForDate, activeFilterTaskId, setActiveFilterTaskId,
@@ -1921,7 +1961,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             defaultFilterTaskId, setDefaultFilterTask,
             newlyUnlockedArtifacts, clearNewlyUnlocked,
             profileStreakMode, setProfileStreakMode, calculateAverageStreak,
-            isLoaded
+            isLoaded,
+            hasAchievementToday
         }}>
             {children}
         </UserDataContext.Provider>

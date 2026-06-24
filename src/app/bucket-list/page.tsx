@@ -52,8 +52,17 @@ export default function BucketListPage() {
     const parseItem = (item: any) => {
         const desc = item.description || '';
         const isCompleted = desc.includes('[DONE]');
-        const notes = desc.replace('[DONE]', '').trim();
-        return { isCompleted, notes };
+        
+        let completedDate: string | null = null;
+        const doneMatch = desc.match(/\[DONE:(\d{4}-\d{2}-\d{2})\]/);
+        if (doneMatch) {
+            completedDate = doneMatch[1];
+        } else if (isCompleted) {
+            completedDate = item.event_date || null;
+        }
+
+        const notes = desc.replace(/\[DONE(:[^\]]*)?\]/g, '').trim();
+        return { isCompleted, notes, completedDate };
     };
 
     // Filter and sort items safely by tab
@@ -106,15 +115,22 @@ export default function BucketListPage() {
 
     const toggleDone = async (id: string, currentDesc: string = '') => {
         const isCompleted = currentDesc.includes('[DONE]');
-        const cleanNotes = currentDesc.replace('[DONE]', '').trim();
+        const cleanNotes = currentDesc.replace(/\[DONE(:[^\]]*)?\]/g, '').trim();
         const newDesc = isCompleted
             ? cleanNotes
-            : `${cleanNotes} [DONE]`.trim();
+            : `${cleanNotes} [DONE:${format(new Date(), 'yyyy-MM-dd')}]`.trim();
         await updateLifeEvent(id, { description: newDesc });
     };
 
     const handleUpdateItem = async (id: string, title: string, notes: string, type: BucketTab, isCompleted: boolean) => {
-        const newDesc = isCompleted ? `${notes.trim()} [DONE]`.trim() : notes.trim();
+        const currentItem = lifeEvents.find(e => e.id === id);
+        const currentParsed = currentItem ? parseItem(currentItem) : { isCompleted: false, completedDate: null };
+        
+        let newDesc = notes.trim();
+        if (isCompleted) {
+            const completionDate = currentParsed.completedDate || format(new Date(), 'yyyy-MM-dd');
+            newDesc = `${notes.trim()} [DONE:${completionDate}]`.trim();
+        }
         await updateLifeEvent(id, {
             title: title.trim(),
             description: newDesc,

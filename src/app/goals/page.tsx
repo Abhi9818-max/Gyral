@@ -30,7 +30,7 @@ export default function GoalsPage() {
     const parseItem = (item: any) => {
         const desc = item.description || '';
         const isCompleted = desc.includes('[DONE]');
-        const notes = desc.replace('[DONE]', '').trim();
+        const notes = desc.replace(/\[DONE(:[^\]]*)?\]/, '').trim();
         return { isCompleted, notes };
     };
 

@@ -126,7 +126,7 @@ export default function AchievementsPage() {
                 >
                     <AnimatePresence>
                         {achievements.map((achievement, idx) => {
-                            const cleanDescription = achievement.description?.replace('[DONE]', '').trim();
+                            const cleanDescription = achievement.description?.replace(/\[DONE(:[^\]]*)?\]/, '').trim();
                             const isElite = idx < 3; // First 3 are highlighted
                             
                             return (
