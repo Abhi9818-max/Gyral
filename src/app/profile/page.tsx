@@ -421,6 +421,7 @@ export default function ProfilePage() {
                 isOpen={isEditProfileOpen}
                 onClose={() => setIsEditProfileOpen(false)}
                 user={user}
+                profile={profile}
                 onUpdate={getUser}
             />
 

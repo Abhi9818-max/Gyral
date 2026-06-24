@@ -6,15 +6,17 @@ import { useState, useRef, useEffect } from 'react';
 import { X, Upload, Loader2, Camera, Trash2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
+import { getUserAvatar } from '@/utils/avatar-helpers';
 
 interface EditProfileModalProps {
     isOpen: boolean;
     onClose: () => void;
     user: User | null;
+    profile?: any;
     onUpdate: () => void;
 }
 
-export function EditProfileModal({ isOpen, onClose, user, onUpdate }: EditProfileModalProps) {
+export function EditProfileModal({ isOpen, onClose, user, profile, onUpdate }: EditProfileModalProps) {
     const [fullName, setFullName] = useState('');
     const [bio, setBio] = useState('');
     const [avatarUrl, setAvatarUrl] = useState('');
@@ -24,11 +26,11 @@ export function EditProfileModal({ isOpen, onClose, user, onUpdate }: EditProfil
 
     useEffect(() => {
         if (user) {
-            setFullName(user.user_metadata?.full_name || '');
-            setBio(user.user_metadata?.bio || '');
-            setAvatarUrl(user.user_metadata?.avatar_url || '');
+            setFullName(profile?.full_name || user.user_metadata?.full_name || '');
+            setBio(profile?.bio || user.user_metadata?.bio || '');
+            setAvatarUrl(getUserAvatar(profile?.avatar_url || user.user_metadata?.avatar_url, profile?.gender, user.id));
         }
-    }, [user, isOpen]);
+    }, [user, profile, isOpen]);
 
     if (!isOpen) return null;
 
