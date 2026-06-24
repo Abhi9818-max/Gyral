@@ -476,7 +476,7 @@ export function FactionPickerModal({ isOpen, onClose }: FactionPickerModalProps)
                                 <div className="relative flex items-center gap-6 w-full">
                                     <div className="shrink-0 relative">
                                         <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center overflow-hidden shadow-2xl group-hover:border-white/20 transition-all p-1">
-                                            // eslint-disable-next-line @next/next/no-img-element
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img src={f.sigilUrl} alt={f.name} className="w-full h-full object-cover rounded-xl group-hover:scale-110 transition-transform duration-500" />
                                         </div>
                                         {isSelected && (
