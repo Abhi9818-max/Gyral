@@ -4,6 +4,7 @@ import { useState } from 'react';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { X, Coins, Plus, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
+import { PaymentModal } from './payment-modal';
 
 interface BankModalProps {
     isOpen: boolean;
@@ -15,6 +16,7 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [activePayDebt, setActivePayDebt] = useState<{ id: string; amount: string; description: string } | null>(null);
 
     if (!isOpen) return null;
 
@@ -29,8 +31,19 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
         setIsSubmitting(false);
     };
 
-    const handlePay = async (id: string) => {
-        await payDebt(id);
+    const handlePayClick = (debt: any) => {
+        setActivePayDebt({
+            id: debt.id,
+            amount: debt.amount,
+            description: `Penalty settlement: "${debt.description}"`
+        });
+    };
+
+    const handlePaymentSuccess = async () => {
+        if (activePayDebt) {
+            await payDebt(activePayDebt.id);
+            setActivePayDebt(null);
+        }
     };
 
     return (
@@ -120,7 +133,7 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
                                             <p className="text-sm text-yellow-600 font-mono mt-0.5">{debt.amount}</p>
                                         </div>
                                         <button
-                                            onClick={() => handlePay(debt.id)}
+                                            onClick={() => handlePayClick(debt)}
                                             className="px-3 py-1.5 text-xs font-bold bg-zinc-900 hover:bg-green-900/30 text-zinc-500 hover:text-green-500 border border-zinc-800 hover:border-green-800 rounded transition-all flex items-center gap-1 opacity-0 group-hover:opacity-100"
                                         >
                                             <Coins className="w-3 h-3" /> PAY DEBT
@@ -133,6 +146,14 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
 
                 </div>
             </div>
+
+            <PaymentModal
+                isOpen={activePayDebt !== null}
+                onClose={() => setActivePayDebt(null)}
+                amount={activePayDebt?.amount || '0'}
+                description={activePayDebt?.description || ''}
+                onSuccess={handlePaymentSuccess}
+            />
         </div>
     );
 }
