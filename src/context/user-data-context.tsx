@@ -367,6 +367,7 @@ interface UserDataContextType {
     hasAchievementToday: boolean;
     noxBalance: number;
     updateNoxBalance: (amount: number) => void;
+    payDebtAmount: (noxAmount: number) => Promise<void>;
 }
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
@@ -575,7 +576,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                     if (dbLifeEvents) setLifeEvents(dbLifeEvents as LifeEvent[]);
 
                     // 7. Debts
-                    const { data: dbDebts } = await supabase.from('debts').select('*').eq('status', 'OWED').order('created_at', { ascending: false });
+                    const { data: dbDebts } = await supabase.from('debts').select('*').order('created_at', { ascending: false });
                     if (dbDebts) setDebts(dbDebts as Debt[]);
 
                     // 9. Vows
@@ -783,6 +784,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                 }
                 const savedNox = localStorage.getItem('diogenes-nox-balance');
                 if (savedNox) setNoxBalance(parseInt(savedNox) || 0);
+                const savedDebts = localStorage.getItem('diogenes-debts');
+                if (savedDebts) try { setDebts(JSON.parse(savedDebts)); } catch (e) { console.error(e); }
             }
             setIsLoaded(true);
         };
@@ -834,8 +837,9 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('diogenes-lang', language);
             localStorage.setItem('diogenes-nav-prefs', JSON.stringify(navPreferences));
             localStorage.setItem('diogenes-nox-balance', noxBalance.toString());
+            localStorage.setItem('diogenes-debts', JSON.stringify(debts));
         }
-    }, [tasks, records, pacts, notes, birthDate, isLoaded, user, showStatsCard, theme, language, navPreferences, noxBalance]);
+    }, [tasks, records, pacts, notes, birthDate, isLoaded, user, showStatsCard, theme, language, navPreferences, noxBalance, debts]);
 
     // --- THEME APPLICATION ---
     useEffect(() => {
@@ -917,7 +921,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const fetchDebts = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
-        const { data } = await supabase.from('debts').select('*').eq('status', 'OWED').order('created_at', { ascending: false });
+        const { data } = await supabase.from('debts').select('*').order('created_at', { ascending: false });
         if (data) setDebts(data as Debt[]);
     };
 
@@ -939,9 +943,79 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const payDebt = async (id: string) => {
-        const { error } = await supabase.from('debts').update({ status: 'PAID' }).match({ id });
-        if (!error) {
-            setDebts(prev => prev.filter(d => d.id !== id));
+        if (user) {
+            const { error } = await supabase.from('debts').update({ status: 'PAID' }).match({ id });
+            if (!error) {
+                await fetchDebts();
+            }
+        } else {
+            setDebts(prev => prev.map(d => d.id === id ? { ...d, status: 'PAID' as const } : d));
+        }
+    };
+
+    const payDebtAmount = async (noxAmount: number) => {
+        if (noxAmount <= 0) return;
+
+        updateNoxBalance(-noxAmount);
+        const debtToClear = noxAmount / 2;
+        let remainingPayment = debtToClear;
+
+        const outstanding = debts
+            .filter(d => d.status === 'OWED')
+            .sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
+
+        if (user) {
+            for (const debt of outstanding) {
+                if (remainingPayment <= 0) break;
+
+                const debtAmt = parseFloat(debt.amount.replace(/[^0-9.]/g, ''));
+                const debtVal = isNaN(debtAmt) ? 3 : debtAmt;
+
+                if (remainingPayment >= debtVal) {
+                    await supabase.from('debts').update({ status: 'PAID' }).match({ id: debt.id });
+                    remainingPayment -= debtVal;
+                } else {
+                    const remainingDebtVal = debtVal - remainingPayment;
+                    await supabase.from('debts').update({ amount: `${remainingDebtVal} Nox` }).match({ id: debt.id });
+                    await supabase.from('debts').insert({
+                        user_id: user.id,
+                        description: `[Partial Pay] ${debt.description}`,
+                        amount: `${remainingPayment} Nox`,
+                        status: 'PAID'
+                    });
+                    remainingPayment = 0;
+                }
+            }
+            await fetchDebts();
+        } else {
+            // Guest mode
+            setDebts(prev => {
+                let updatedDebts = [...prev];
+                for (const debt of outstanding) {
+                    if (remainingPayment <= 0) break;
+
+                    const debtAmt = parseFloat(debt.amount.replace(/[^0-9.]/g, ''));
+                    const debtVal = isNaN(debtAmt) ? 3 : debtAmt;
+
+                    if (remainingPayment >= debtVal) {
+                        updatedDebts = updatedDebts.map(d => d.id === debt.id ? { ...d, status: 'PAID' as const } : d);
+                        remainingPayment -= debtVal;
+                    } else {
+                        const remainingDebtVal = debtVal - remainingPayment;
+                        updatedDebts = updatedDebts.map(d => d.id === debt.id ? { ...d, amount: `${remainingDebtVal} Nox` } : d);
+                        updatedDebts.push({
+                            id: crypto.randomUUID(),
+                            user_id: 'guest',
+                            description: `[Partial Pay] ${debt.description}`,
+                            amount: `${remainingPayment} Nox`,
+                            status: 'PAID',
+                            created_at: new Date().toISOString()
+                        });
+                        remainingPayment = 0;
+                    }
+                }
+                return updatedDebts;
+            });
         }
     };
 
@@ -2031,7 +2105,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             isLoaded,
             hasAchievementToday,
             noxBalance,
-            updateNoxBalance
+            updateNoxBalance,
+            payDebtAmount
         }}>
             {children}
         </UserDataContext.Provider>

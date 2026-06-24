@@ -11,12 +11,21 @@ interface BankModalProps {
     onClose: () => void;
 }
 
+const parseDebtAmount = (amountStr: string): number => {
+    const num = parseFloat(amountStr.replace(/[^0-9.]/g, ''));
+    return isNaN(num) ? 3 : num;
+};
+
 export function BankModal({ isOpen, onClose }: BankModalProps) {
-    const { debts, addDebt, payDebt, noxBalance } = useUserData();
+    const { debts, addDebt, payDebt, payDebtAmount, noxBalance } = useUserData();
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [activePayDebt, setActivePayDebt] = useState<{ id: string; amount: string; description: string } | null>(null);
+
+    const [payNoxAmount, setPayNoxAmount] = useState('');
+    const [isPaying, setIsPaying] = useState(false);
+    const [payError, setPayError] = useState<string | null>(null);
 
     if (!isOpen) return null;
 
@@ -45,6 +54,40 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
             setActivePayDebt(null);
         }
     };
+
+    const handlePayDebtWithNox = async () => {
+        setPayError(null);
+        const amountToPay = parseFloat(payNoxAmount);
+        if (isNaN(amountToPay) || amountToPay <= 0) {
+            setPayError('Please enter a valid amount.');
+            return;
+        }
+        if (amountToPay > noxBalance) {
+            setPayError(`Insufficient balance. You only have ${noxBalance} Nox.`);
+            return;
+        }
+
+        setIsPaying(true);
+        try {
+            await payDebtAmount(amountToPay);
+            setPayNoxAmount('');
+            const confetti = (await import('canvas-confetti')).default;
+            confetti({
+                particleCount: 50,
+                spread: 60,
+                origin: { y: 0.8 }
+            });
+        } catch (e) {
+            console.error(e);
+            setPayError('An error occurred during payment.');
+        } finally {
+            setIsPaying(false);
+        }
+    };
+
+    const totalDebt = debts.reduce((sum, d) => sum + parseDebtAmount(d.amount), 0);
+    const paidDebt = debts.filter(d => d.status === 'PAID').reduce((sum, d) => sum + parseDebtAmount(d.amount), 0);
+    const remainingDebt = debts.filter(d => d.status === 'OWED').reduce((sum, d) => sum + parseDebtAmount(d.amount), 0);
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -82,10 +125,60 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
                     </div>
                 </div>
 
-                <div className="p-6 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
+                <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+
+                    {/* STATS PANEL */}
+                    <div className="grid grid-cols-3 gap-3 shrink-0">
+                        <div className="bg-zinc-900/40 border border-zinc-800/80 p-3 rounded-xl text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+                            <span className="text-[9px] text-zinc-500 uppercase font-mono tracking-wider block">Total Debt</span>
+                            <span className="text-sm font-bold text-white font-mono mt-1 block">{totalDebt} Nox</span>
+                        </div>
+                        <div className="bg-emerald-950/10 border border-emerald-900/20 p-3 rounded-xl text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+                            <span className="text-[9px] text-emerald-500/70 uppercase font-mono tracking-wider block">Paid Debt</span>
+                            <span className="text-sm font-bold text-emerald-400 font-mono mt-1 block">{paidDebt} Nox</span>
+                        </div>
+                        <div className="bg-rose-950/10 border border-rose-900/20 p-3 rounded-xl text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+                            <span className="text-[9px] text-rose-500/70 uppercase font-mono tracking-wider block">Remaining</span>
+                            <span className="text-sm font-bold text-rose-400 font-mono mt-1 block">{remainingDebt} Nox</span>
+                        </div>
+                    </div>
+
+                    {/* CUSTOM NOX DEBT PAYMENT */}
+                    {remainingDebt > 0 && (
+                        <div className="bg-yellow-950/5 border border-yellow-900/20 p-4 rounded-xl space-y-3 shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.01)]">
+                            <h4 className="text-xs font-bold text-yellow-600 uppercase tracking-widest font-mono">Settle Outstanding Debt</h4>
+                            <div className="flex flex-col sm:flex-row gap-2">
+                                <div className="relative flex-1">
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max={noxBalance}
+                                        value={payNoxAmount}
+                                        onChange={(e) => setPayNoxAmount(e.target.value)}
+                                        placeholder="Enter Nox to pay..."
+                                        className="w-full bg-black/50 border border-zinc-800 rounded-lg pl-4 pr-12 py-2.5 text-white placeholder-zinc-600 focus:outline-none focus:border-yellow-700/50 text-sm font-mono"
+                                    />
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-zinc-500 font-mono select-none">Nox</span>
+                                </div>
+                                <button
+                                    onClick={handlePayDebtWithNox}
+                                    disabled={!payNoxAmount || parseFloat(payNoxAmount) <= 0 || parseFloat(payNoxAmount) > noxBalance || isPaying}
+                                    className="px-5 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-lg text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shrink-0"
+                                >
+                                    {isPaying ? 'Paying...' : 'Submit Payment'}
+                                </button>
+                            </div>
+                            {payError && (
+                                <p className="text-[10px] text-red-400 font-mono">{payError}</p>
+                            )}
+                            <p className="text-[9px] text-zinc-500 leading-normal font-mono select-none">
+                                * Settle debts chronologically. 1 unit of outstanding debt requires 2 Nox to clear.
+                            </p>
+                        </div>
+                    )}
 
                     {/* CONFESSION FORM */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 shrink-0">
                         <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                             <AlertTriangle className="w-4 h-4 text-orange-500" /> Confess Failure
                         </h3>
@@ -120,10 +213,10 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
                     {/* LEDGER */}
                     <div className="space-y-4">
                         <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-                            <Coins className="w-4 h-4 text-yellow-600" /> Outstanding Debts
+                            <Coins className="w-4 h-4 text-yellow-600" /> Account Ledger
                         </h3>
 
-                        <div className="max-h-[300px] overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                        <div className="max-h-[250px] overflow-y-auto pr-2 space-y-3 custom-scrollbar">
                             {debts.length === 0 ? (
                                 <div className="text-center py-8 border border-dashed border-zinc-800 rounded-lg">
                                     <div className="inline-flex p-3 bg-zinc-900 rounded-full mb-3">
@@ -133,17 +226,33 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
                                 </div>
                             ) : (
                                 debts.map((debt) => (
-                                    <div key={debt.id} className="group bg-black/30 border border-zinc-800 hover:border-red-900/50 p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors">
+                                    <div 
+                                        key={debt.id} 
+                                        className={`p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 border transition-colors ${
+                                            debt.status === 'PAID'
+                                                ? 'bg-emerald-950/5 border-emerald-900/10 hover:border-emerald-900/25'
+                                                : 'bg-black/30 border-zinc-800 hover:border-red-900/50'
+                                        }`}
+                                    >
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-medium text-white break-words">{debt.description}</p>
-                                            <p className="text-sm text-yellow-600 font-mono mt-0.5">{debt.amount}</p>
+                                            <p className={`font-medium ${debt.status === 'PAID' ? 'text-zinc-400 line-through' : 'text-white'} break-words`}>
+                                                {debt.description}
+                                            </p>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className="text-sm text-yellow-600 font-mono">{debt.amount}</span>
+                                                {debt.status === 'PAID' && (
+                                                    <span className="text-[9px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono uppercase tracking-wider">Settled</span>
+                                                )}
+                                            </div>
                                         </div>
-                                        <button
-                                            onClick={() => handlePayClick(debt)}
-                                            className="px-3 py-2 text-xs font-bold bg-zinc-900 hover:bg-green-900/30 text-zinc-500 hover:text-green-500 border border-zinc-800 hover:border-green-800 rounded transition-all flex items-center justify-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 self-end sm:self-auto shrink-0"
-                                        >
-                                            <Coins className="w-3.5 h-3.5" /> PAY DEBT
-                                        </button>
+                                        {debt.status !== 'PAID' && (
+                                            <button
+                                                onClick={() => handlePayClick(debt)}
+                                                className="px-3 py-2 text-xs font-bold bg-zinc-900 hover:bg-green-900/30 text-zinc-500 hover:text-green-500 border border-zinc-800 hover:border-green-800 rounded transition-all flex items-center justify-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 self-end sm:self-auto shrink-0"
+                                            >
+                                                <Coins className="w-3.5 h-3.5" /> PAY DEBT
+                                            </button>
+                                        )}
                                     </div>
                                 ))
                             )}

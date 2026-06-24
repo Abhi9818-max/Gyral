@@ -234,7 +234,7 @@ export function Header() {
           {/* Messages Button */}
           <Link
             href="/messages"
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-all duration-300 relative"
+            className="hidden md:flex w-10 h-10 items-center justify-center rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-all duration-300 relative"
             title="Messages"
           >
             <MessageCircle className="w-5 h-5" />
