@@ -22,8 +22,8 @@ const geistMono = Geist_Mono({
 import { PWAInit } from "@/components/pwa-init";
 
 export const metadata: Metadata = {
-  title: "Gyral",
-  description: "Advanced cognitive architecture and habit formation system.",
+  title: "Gyral — Forge Your Discipline",
+  description: "A cognitive architecture and habit formation system. Track habits, conquer goals, and hold yourself accountable with an AI mentor by your side.",
   manifest: "/manifest.json",
   icons: {
     icon: '/icons/icon-192.png',

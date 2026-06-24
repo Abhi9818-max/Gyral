@@ -45,7 +45,7 @@ export function Header() {
 
   // Smart Header Logic
   const pathname = usePathname();
-  const isHome = pathname === '/';
+  const isHome = pathname === '/dashboard';
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -112,7 +112,7 @@ export function Header() {
     <>
       <header className={`${isHome ? 'flex' : 'hidden md:flex'} items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-white/10 bg-black/90 backdrop-blur-3xl fixed top-0 w-full z-50 shadow-[0_4px_30px_rgba(0,0,0,0.8)] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] transform-gpu ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
         <div className="flex items-center relative group cursor-pointer">
-          <Link href="/" className="relative flex items-center">
+          <Link href="/dashboard" className="relative flex items-center">
             <span className="text-lg md:text-2xl font-light tracking-[0.4em] text-white/90 hover:text-white transition-all duration-500 uppercase">
               GYRAL
             </span>

@@ -46,7 +46,7 @@ export function MobileNav() {
     };
 
     const isActive = (href: string) => {
-        if (href === '/') return pathname === '/';
+        if (href === '/dashboard') return pathname === '/dashboard';
         return pathname.startsWith(href);
     };
 
@@ -77,12 +77,12 @@ export function MobileNav() {
                 <div className="flex items-center justify-around h-16 px-2">
                     {/* Home Button - Fixed */}
                     <Link
-                        href="/"
+                        href="/dashboard"
                         className="flex flex-col items-center justify-center flex-1 h-full relative"
                     >
                         <Home
-                            className={`w-6 h-6 transition-all ${isActive('/') ? 'text-white scale-110' : 'text-white/50'}`}
-                            strokeWidth={isActive('/') ? 2.5 : 2}
+                            className={`w-6 h-6 transition-all ${isActive('/dashboard') ? 'text-white scale-110' : 'text-white/50'}`}
+                            strokeWidth={isActive('/dashboard') ? 2.5 : 2}
                         />
                     </Link>
 

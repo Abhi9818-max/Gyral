@@ -45,13 +45,24 @@ export async function updateSession(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     const isGuest = request.cookies.get('gyral-guest-mode')?.value === 'true'
+    const pathname = request.nextUrl.pathname
 
-    if (
-        !user &&
-        !isGuest &&
-        !request.nextUrl.pathname.startsWith('/login') &&
-        !request.nextUrl.pathname.startsWith('/auth')
-    ) {
+    // Public routes that don't require authentication
+    const isPublicRoute =
+        pathname === '/' ||
+        pathname.startsWith('/login') ||
+        pathname.startsWith('/auth') ||
+        pathname.startsWith('/compliance')
+
+    // If authenticated user visits the landing page, redirect to dashboard
+    if ((user || isGuest) && pathname === '/') {
+        const url = request.nextUrl.clone()
+        url.pathname = '/dashboard'
+        return NextResponse.redirect(url)
+    }
+
+    // If unauthenticated user visits a protected route, redirect to login
+    if (!user && !isGuest && !isPublicRoute) {
         const url = request.nextUrl.clone()
         url.pathname = '/login'
         return NextResponse.redirect(url)

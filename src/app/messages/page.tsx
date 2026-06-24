@@ -74,7 +74,7 @@ function MessagesContent() {
         const getCurrentUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                router.push('/');
+                router.push('/login');
                 return;
             }
             setCurrentUser(user.id);

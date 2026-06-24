@@ -44,7 +44,7 @@ export default function NotesPage() {
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <button
-                            onClick={() => activeNote ? handleBackToList() : router.push('/')}
+                            onClick={() => activeNote ? handleBackToList() : router.push('/dashboard')}
                             className="w-9 h-9 rounded-full bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center transition-colors"
                         >
                             <ArrowLeft className="w-5 h-5" />
