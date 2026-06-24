@@ -450,11 +450,6 @@ export function Header() {
                       <span class="text-white font-medium">Friend Requests</span>
                       ${friendRequestCount > 0 ? `<span class="ml-auto w-5 h-5 bg-purple-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${friendRequestCount > 9 ? '9+' : friendRequestCount}</span>` : ''}
                     </button>
-                    <button id="mobile-messages-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left relative">
-                      <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                      <span class="text-white font-medium">Messages</span>
-                      ${unreadCount > 0 ? `<span class="ml-auto w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${unreadCount > 9 ? '9+' : unreadCount}</span>` : ''}
-                    </button>
                     <button id="faction-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                        <span class="text-white">🚩</span>
                        <span class="text-white font-medium">House</span>
@@ -511,7 +506,7 @@ export function Header() {
                 </div>
               `;
               document.body.appendChild(menuDiv);
-
+ 
               // Close menu handlers
               const closeMenu = () => {
                 if (document.body.contains(menuDiv)) {
@@ -522,12 +517,12 @@ export function Header() {
                 if (e.target === menuDiv) closeMenu();
               });
               document.getElementById('close-menu')?.addEventListener('click', closeMenu);
-
+ 
               document.getElementById('mobile-friend-requests-btn')?.addEventListener('click', () => {
                 closeMenu();
                 setIsFriendRequestsModalOpen(true);
               });
-
+ 
               // Feature button handlers
               document.getElementById('faction-btn')?.addEventListener('click', () => {
                 closeMenu();
@@ -564,10 +559,6 @@ export function Header() {
                 await supabase.auth.signOut();
                 router.push('/login');
               });
-              document.getElementById('mobile-messages-nav-btn')?.addEventListener('click', () => {
-                closeMenu();
-                router.push('/messages');
-              });
               document.getElementById('mobile-goals-nav-btn')?.addEventListener('click', () => {
                 closeMenu();
                 router.push('/goals');
@@ -598,7 +589,7 @@ export function Header() {
             ) : (
               <Menu className="w-5 h-5" />
             )}
-            {(friendRequestCount > 0 || unreadCount > 0) && (
+            {friendRequestCount > 0 && (
               <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-black animate-pulse"></span>
             )}
           </button>

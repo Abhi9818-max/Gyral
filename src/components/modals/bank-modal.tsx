@@ -26,6 +26,7 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
     const [payNoxAmount, setPayNoxAmount] = useState('');
     const [isPaying, setIsPaying] = useState(false);
     const [payError, setPayError] = useState<string | null>(null);
+    const [isPayInputVisible, setIsPayInputVisible] = useState(false);
 
     if (!isOpen) return null;
 
@@ -71,6 +72,7 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
         try {
             await payDebtAmount(amountToPay);
             setPayNoxAmount('');
+            setIsPayInputVisible(false);
             const confetti = (await import('canvas-confetti')).default;
             confetti({
                 particleCount: 50,
@@ -145,35 +147,57 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
 
                     {/* CUSTOM NOX DEBT PAYMENT */}
                     {remainingDebt > 0 && (
-                        <div className="bg-yellow-950/5 border border-yellow-900/20 p-4 rounded-xl space-y-3 shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.01)]">
-                            <h4 className="text-xs font-bold text-yellow-600 uppercase tracking-widest font-mono">Settle Outstanding Debt</h4>
-                            <div className="flex flex-col sm:flex-row gap-2">
-                                <div className="relative flex-1">
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        max={noxBalance}
-                                        value={payNoxAmount}
-                                        onChange={(e) => setPayNoxAmount(e.target.value)}
-                                        placeholder="Enter Nox to pay..."
-                                        className="w-full bg-black/50 border border-zinc-800 rounded-lg pl-4 pr-12 py-2.5 text-white placeholder-zinc-600 focus:outline-none focus:border-yellow-700/50 text-sm font-mono"
-                                    />
-                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-zinc-500 font-mono select-none">Nox</span>
-                                </div>
+                        <div className="shrink-0 space-y-3">
+                            {!isPayInputVisible ? (
                                 <button
-                                    onClick={handlePayDebtWithNox}
-                                    disabled={!payNoxAmount || parseFloat(payNoxAmount) <= 0 || parseFloat(payNoxAmount) > noxBalance || isPaying}
-                                    className="px-5 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-lg text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shrink-0"
+                                    onClick={() => setIsPayInputVisible(true)}
+                                    className="w-full py-3 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-xl transition-all flex items-center justify-center gap-2 hover:scale-[1.01] shadow-[0_0_15px_rgba(234,179,8,0.2)]"
                                 >
-                                    {isPaying ? 'Paying...' : 'Submit Payment'}
+                                    <Coins className="w-4 h-4 animate-pulse" /> Pay Debt
                                 </button>
-                            </div>
-                            {payError && (
-                                <p className="text-[10px] text-red-400 font-mono">{payError}</p>
+                            ) : (
+                                <div className="bg-yellow-950/5 border border-yellow-900/20 p-4 rounded-xl space-y-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] animate-in fade-in slide-in-from-top duration-200">
+                                    <div className="flex justify-between items-center">
+                                        <h4 className="text-xs font-bold text-yellow-600 uppercase tracking-widest font-mono">Settle Outstanding Debt</h4>
+                                        <button 
+                                            onClick={() => { setIsPayInputVisible(false); setPayNoxAmount(''); setPayError(null); }}
+                                            className="text-zinc-400 hover:text-white text-xs font-mono"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row gap-2">
+                                        <div className="relative flex-1">
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max={noxBalance}
+                                                value={payNoxAmount}
+                                                onChange={(e) => {
+                                                    setPayNoxAmount(e.target.value);
+                                                    setPayError(null);
+                                                }}
+                                                placeholder="Enter Nox to pay..."
+                                                className="w-full bg-black/50 border border-zinc-800 rounded-lg pl-4 pr-12 py-2.5 text-white placeholder-zinc-600 focus:outline-none focus:border-yellow-700/50 text-sm font-mono"
+                                            />
+                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-zinc-500 font-mono select-none">Nox</span>
+                                        </div>
+                                        <button
+                                            onClick={handlePayDebtWithNox}
+                                            disabled={!payNoxAmount || parseFloat(payNoxAmount) <= 0 || parseFloat(payNoxAmount) > noxBalance || isPaying}
+                                            className="px-5 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-lg text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shrink-0"
+                                        >
+                                            {isPaying ? 'Paying...' : 'Submit Payment'}
+                                        </button>
+                                    </div>
+                                    {payError && (
+                                        <p className="text-[10px] text-red-400 font-mono">{payError}</p>
+                                    )}
+                                    <p className="text-[9px] text-zinc-500 leading-normal font-mono select-none">
+                                        * Settle debts chronologically. 1 unit of outstanding debt requires 2 Nox to clear.
+                                    </p>
+                                </div>
                             )}
-                            <p className="text-[9px] text-zinc-500 leading-normal font-mono select-none">
-                                * Settle debts chronologically. 1 unit of outstanding debt requires 2 Nox to clear.
-                            </p>
                         </div>
                     )}
 
