@@ -53,7 +53,7 @@ function MessagesContent() {
     const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
     const [swipeOffset, setSwipeOffset] = useState<{ id: string; x: number } | null>(null);
     const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
-    const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+    const longPressTimer = useRef<any>(null);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isTyping, setIsTyping] = useState(false);
@@ -62,7 +62,7 @@ function MessagesContent() {
     const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
     const [isBlockReportOpen, setIsBlockReportOpen] = useState(false);
     const [isFriendRequestsOpen, setIsFriendRequestsOpen] = useState(false);
-    const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+    const [typingTimeout, setTypingTimeout] = useState<any>(null);
 
     const { friendRequestCount, setActiveChatPartner } = useMessageNotifications();
 

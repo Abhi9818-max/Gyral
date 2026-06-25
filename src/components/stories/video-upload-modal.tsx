@@ -21,7 +21,7 @@ export function VideoUploadModal({ isOpen, onClose, onVideoSelected }: VideoUplo
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const chunksRef = useRef<Blob[]>([]);
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const timerRef = useRef<any>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const MAX_DURATION = 30; // 30 seconds

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { generateLuciusReflection } from '@/lib/lucius-core';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { createClient } from '@/utils/supabase/server';
+import { sanitizeForPrompt } from '@/lib/validation';
 
 // Initialize Gemini conditionally
 const genAI = process.env.GEMINI_API_KEY
@@ -10,8 +12,22 @@ const genAI = process.env.GEMINI_API_KEY
 
 export async function POST(request: Request) {
     try {
-        // 0. RATE LIMIT CHECK: Prevent rapid requests
-        const rateLimitCheck = checkRateLimit();
+        // 🔒 AUTH CHECK: Reject unauthenticated requests
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // 🛡️ RATE LIMIT CHECK: Limit per authenticated user (10 requests per hour)
+        const rateLimitCheck = checkRateLimit(user.id, 'lucius-chat', {
+            cooldownMs: 60000,   // 60 seconds cooldown
+            maxRequests: 10,     // 10 requests max
+            windowMs: 3600000,    // 1 hour window
+            reason: "Lucius requires time between reflections."
+        });
+
         if (!rateLimitCheck.allowed) {
             return NextResponse.json(
                 {
@@ -23,7 +39,18 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { streak, consistency, logs, message } = body;
+        const { streak, consistency, logs } = body;
+        const rawMessage = body.message;
+
+        // 🛡️ INPUT VALIDATION & SANITIZATION: Prevent prompt injection and buffer abuse
+        const message = sanitizeForPrompt(rawMessage, 1000);
+
+        if (!message) {
+            return NextResponse.json(
+                { reply: "Speak clearly, or remain silent. (Empty message)" },
+                { status: 400 }
+            );
+        }
 
         // 1. SAFETY LOCK: Check Activation Conditions
         const reflection = generateLuciusReflection(streak, consistency, logs);
@@ -37,7 +64,7 @@ export async function POST(request: Request) {
 
         // 2. CHECK FOR API KEY
         if (!genAI) {
-            console.error("GEMINI_API_KEY is missing.");
+            console.error("GEMINI_API_KEY is missing from environment variables.");
             return NextResponse.json({
                 reply: "The connection to the void is severed. (Missing API Key)"
             });
@@ -73,7 +100,7 @@ export async function POST(request: Request) {
 
         // RETRY LOGIC for Rate Limits (429) - Extended for better handling
         let attempt = 0;
-        const maxRetries = 5; // Increased from 3 to 5
+        const maxRetries = 5;
 
         while (attempt < maxRetries) {
             try {
@@ -106,18 +133,10 @@ export async function POST(request: Request) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         console.error("=== LUCIUS GEMINI API ERROR ===");
-        console.error("Error message:", error.message);
-        console.error("Error name:", error.name);
-        console.error("Error stack:", error.stack);
-        console.error("Full error object:", JSON.stringify(error, null, 2));
-        if (error.cause) console.error("Cause:", error.cause);
-        if (error.response) console.error("Response:", error.response);
+        // Log errors server-side only to prevent information leakage
+        console.error("Error details:", error.message || error);
 
-        // Check key presence without revealing it
-        const key = process.env.GEMINI_API_KEY;
-        console.log(`Debug - API Key configured: ${!!key}, Length: ${key?.length}`);
-
-        // Return character-appropriate error messages based on error type
+        // Return character-appropriate generic error messages based on error type
         if (error.message?.includes('429') || error.message?.includes('RESOURCE_EXHAUSTED')) {
             return NextResponse.json({
                 reply: "The stars are misaligned. Lucius must rest before the mirror can reflect once more. (Rate Limit - try again in 60 seconds)"
@@ -131,7 +150,7 @@ export async function POST(request: Request) {
         }
 
         return NextResponse.json({
-            reply: "The void ripples... but no voice answers. (Unknown Error - check console)"
+            reply: "The void ripples... but no voice answers."
         });
     }
 }

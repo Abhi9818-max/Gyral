@@ -8,8 +8,7 @@ export function createAdminClient() {
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
     if (!serviceRoleKey) {
-        console.warn('SUPABASE_SERVICE_ROLE_KEY not found, falling back to anon key')
-        return supabaseCreateClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+        throw new Error('SUPABASE_SERVICE_ROLE_KEY is missing from environment variables');
     }
 
     return supabaseCreateClient(supabaseUrl, serviceRoleKey, {

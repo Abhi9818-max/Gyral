@@ -1,6 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 export async function GET(req: NextRequest) {
     const authHeader = req.headers.get('Authorization');
@@ -14,6 +15,21 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // 🛡️ RATE LIMIT CHECK: 30 requests per hour per API Key
+    const rateLimitCheck = checkRateLimit('diogenes-api', 'ai-context', {
+        cooldownMs: 0,
+        maxRequests: 30,
+        windowMs: 3600000,
+        reason: "Rate limit exceeded for AI context API."
+    });
+
+    if (!rateLimitCheck.allowed) {
+        return NextResponse.json(
+            { error: rateLimitCheck.reason, waitTime: rateLimitCheck.waitTime },
+            { status: 429 }
+        );
+    }
+
     // Use Service Role to bypass RLS since we are accessing on behalf of the user via API Key
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,31 +38,27 @@ export async function GET(req: NextRequest) {
 
     // We need to know which user to fetch for.
     // Ideally this is set in env, or passed as a query param if we supported multi-tenancy.
-    // For personal use, we'll try to find the user via ID in env, or fallback to the first profile found (dangerous but convenient for single user).
+    // For personal use, we'll try to find the user via ID in env, or query params.
 
     let userId = process.env.DIOGENES_USER_ID;
 
     if (!userId) {
-        // Fallback: Try to get the username from query params
+        // Fallback: Try to get the userId or username from query params
         const { searchParams } = new URL(req.url);
-        const username = searchParams.get('username');
-
-        if (username) {
-            const { data: profile } = await supabase.from('profiles').select('id').eq('username', username).single();
-            if (profile) userId = profile.id;
+        const paramUserId = searchParams.get('userId');
+        if (paramUserId) {
+            userId = paramUserId;
+        } else {
+            const username = searchParams.get('username');
+            if (username) {
+                const { data: profile } = await supabase.from('profiles').select('id').eq('username', username).single();
+                if (profile) userId = profile.id;
+            }
         }
     }
 
     if (!userId) {
-        // Last resort/Lazy mode: Just grab the first user in profiles (Assumes single-tenant/personal instance)
-        const { data: profiles } = await supabase.from('profiles').select('id').limit(1);
-        if (profiles && profiles.length > 0) {
-            userId = profiles[0].id;
-        }
-    }
-
-    if (!userId) {
-        return NextResponse.json({ error: 'User not specified and no default found. Set DIOGENES_USER_ID in env.' }, { status: 400 });
+        return NextResponse.json({ error: 'User target not specified and no default found. Provide userId or username in query parameters.' }, { status: 400 });
     }
 
     // Parallel fetch for speed

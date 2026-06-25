@@ -88,7 +88,8 @@ export async function continueAsGuest() {
     cookieStore.set('gyral-guest-mode', 'true', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24 * 365 * 10, // 10 years
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30, // 30 days
         path: '/',
     })
 

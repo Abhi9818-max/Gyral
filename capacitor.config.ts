@@ -8,7 +8,7 @@ const config: CapacitorConfig = {
     // URL to your deployed manufacturing build
     // CHANGE THIS TO YOUR PRODUCTION URL (e.g. gyral.vercel.app)
     url: 'https://gyral.vercel.app',
-    cleartext: true, // Allow http for development
+    cleartext: false, // Disallow cleartext HTTP traffic to enforce TLS/HTTPS
     androidScheme: 'https'
   },
   plugins: {

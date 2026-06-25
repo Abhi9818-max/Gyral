@@ -27,15 +27,13 @@ export async function GET(req: NextRequest) {
     return sendMorningNotifications();
 }
 
-// Also allow POST for manual testing (from the app itself)
+// Also allow POST for manual testing (protected by the same secret)
 export async function POST(req: NextRequest) {
-    // For manual triggers from the app, require a logged-in user OR cron secret
     const authHeader = req.headers.get('authorization');
     const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
 
     if (!isCron) {
-        // Allow if called from app (no strict auth needed for testing)
-        console.log('[Morning Cron] Manual trigger via POST');
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     return sendMorningNotifications();
@@ -46,52 +44,57 @@ async function sendMorningNotifications() {
         return NextResponse.json({ error: 'Firebase Admin SDK not initialized' }, { status: 500 });
     }
 
-    const adminClient = createAdminClient();
-    const { data: tokens, error } = await adminClient
-        .from('fcm_tokens')
-        .select('user_id, token');
+    try {
+        const adminClient = createAdminClient();
+        const { data: tokens, error } = await adminClient
+            .from('fcm_tokens')
+            .select('user_id, token');
 
-    if (error) {
-        console.error('[Morning Cron] Error fetching FCM tokens:', error);
-        return NextResponse.json({ error: 'Database error: ' + error.message }, { status: 500 });
-    }
+        if (error) {
+            console.error('[Morning Cron] Error fetching FCM tokens:', error);
+            return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        }
 
-    if (!tokens || tokens.length === 0) {
-        return NextResponse.json({ message: 'No registered devices' }, { status: 200 });
-    }
+        if (!tokens || tokens.length === 0) {
+            return NextResponse.json({ message: 'No registered devices' }, { status: 200 });
+        }
 
-    const randomQuote = STOIC_QUOTES[Math.floor(Math.random() * STOIC_QUOTES.length)];
+        const randomQuote = STOIC_QUOTES[Math.floor(Math.random() * STOIC_QUOTES.length)];
 
-    const results = await Promise.allSettled(tokens.map(device => {
-        const message = {
-            token: device.token,
-            notification: {
-                title: '☀️ Morning Briefing',
-                body: randomQuote,
-            },
-            data: { url: '/' },
-            android: {
+        const results = await Promise.allSettled(tokens.map(device => {
+            const message = {
+                token: device.token,
                 notification: {
-                    icon: 'ic_stat_ic_notification',
-                    color: '#6366f1',
+                    title: '☀️ Morning Briefing',
+                    body: randomQuote,
+                },
+                data: { url: '/' },
+                android: {
+                    notification: {
+                        icon: 'ic_stat_ic_notification',
+                        color: '#6366f1',
+                    }
+                },
+                apns: {
+                    payload: {
+                        aps: { badge: 1, sound: 'default' }
+                    }
                 }
-            },
-            apns: {
-                payload: {
-                    aps: { badge: 1, sound: 'default' }
-                }
-            }
-        };
-        return adminMessaging!.send(message);
-    }));
+            };
+            return adminMessaging!.send(message);
+        }));
 
-    const successCount = results.filter(r => r.status === 'fulfilled').length;
-    console.log(`[Morning Cron] Sent to ${successCount}/${tokens.length} devices`);
+        const successCount = results.filter(r => r.status === 'fulfilled').length;
+        console.log(`[Morning Cron] Sent to ${successCount}/${tokens.length} devices`);
 
-    return NextResponse.json({
-        success: true,
-        sent: successCount,
-        total: tokens.length,
-        quote: randomQuote
-    });
+        return NextResponse.json({
+            success: true,
+            sent: successCount,
+            total: tokens.length,
+            quote: randomQuote
+        });
+    } catch (e) {
+        console.error('[Morning Cron] Unexpected error during notification dispatch:', e);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 export async function POST(request: NextRequest) {
     try {
@@ -8,6 +9,21 @@ export async function POST(request: NextRequest) {
 
         if (authError || !user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // 🛡️ RATE LIMIT CHECK: 5 requests per minute per user
+        const rateLimitCheck = checkRateLimit(user.id, 'push-subscribe', {
+            cooldownMs: 0,
+            maxRequests: 5,
+            windowMs: 60000,
+            reason: "Too many subscription requests. Please wait a minute."
+        });
+
+        if (!rateLimitCheck.allowed) {
+            return NextResponse.json(
+                { error: rateLimitCheck.reason, waitTime: rateLimitCheck.waitTime },
+                { status: 429 }
+            );
         }
 
         const body = await request.json();
@@ -63,6 +79,21 @@ export async function DELETE(request: NextRequest) {
 
         if (authError || !user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // 🛡️ RATE LIMIT CHECK: 5 requests per minute per user
+        const rateLimitCheck = checkRateLimit(user.id, 'push-subscribe', {
+            cooldownMs: 0,
+            maxRequests: 5,
+            windowMs: 60000,
+            reason: "Too many requests. Please wait a minute."
+        });
+
+        if (!rateLimitCheck.allowed) {
+            return NextResponse.json(
+                { error: rateLimitCheck.reason, waitTime: rateLimitCheck.waitTime },
+                { status: 429 }
+            );
         }
 
         const body = await request.json();

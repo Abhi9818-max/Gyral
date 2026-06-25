@@ -10,7 +10,7 @@ export function usePresence() {
     useEffect(() => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         let presenceChannel: any;
-        let heartbeatInterval: NodeJS.Timeout;
+        let heartbeatInterval: any;
 
         const initPresence = async () => {
             const { data: { user } } = await supabase.auth.getUser();
