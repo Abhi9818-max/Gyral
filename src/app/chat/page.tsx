@@ -34,6 +34,9 @@ export default function ChatRoomsPage() {
     const inputRef = useRef<HTMLInputElement>(null);
     const profileRef = useRef<ProfileInfo | null>(null);
 
+    const [mentionSuggestions, setMentionSuggestions] = useState<ProfileInfo[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
     // Navigation and room selection states
     const [activeRoom, setActiveRoom] = useState<string>('westeros');
     const [mobileShowChat, setMobileShowChat] = useState<boolean>(false);
@@ -80,6 +83,55 @@ export default function ChatRoomsPage() {
             const suffix = `@${username} `;
             return prev.endsWith(' ') || prev === '' ? prev + suffix : prev + ' ' + suffix;
         });
+        setTimeout(() => {
+            inputRef.current?.focus();
+        }, 50);
+    };
+
+    const handleInputChange = async (val: string) => {
+        setNewMessage(val);
+
+        const words = val.split(' ');
+        const lastWord = words[words.length - 1];
+
+        if (lastWord.startsWith('@') && lastWord.length > 1) {
+            const query = lastWord.slice(1).toLowerCase();
+            try {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('id, username, full_name, avatar_url, gender, faction_id')
+                    .ilike('username', `${query}%`)
+                    .limit(5);
+
+                if (data && data.length > 0) {
+                    setMentionSuggestions(data as ProfileInfo[]);
+                    setShowSuggestions(true);
+                } else {
+                    setMentionSuggestions([]);
+                    setShowSuggestions(false);
+                }
+            } catch (e) {
+                console.error("Mention search error:", e);
+                setMentionSuggestions([]);
+                setShowSuggestions(false);
+            }
+        } else {
+            setMentionSuggestions([]);
+            setShowSuggestions(false);
+        }
+    };
+
+    const selectSuggestion = (username: string) => {
+        if (!username) return;
+        setNewMessage(prev => {
+            const words = prev.trim().split(' ');
+            if (words.length > 0) {
+                words[words.length - 1] = `@${username} `;
+            }
+            return words.join(' ');
+        });
+        setShowSuggestions(false);
+        setMentionSuggestions([]);
         setTimeout(() => {
             inputRef.current?.focus();
         }, 50);
@@ -271,7 +323,7 @@ export default function ChatRoomsPage() {
                 
                 {/* Rooms Selection List Sidebar */}
                 <div className={`${mobileShowChat ? 'hidden md:flex' : 'flex'} w-full md:w-80 border-r border-white/10 flex-col shrink-0 bg-zinc-950/20`}>
-                    <div className="p-5 border-b border-white/10">
+                    <div className="py-2.5 px-5 border-b border-white/10">
                         <h2 className="text-xl font-black tracking-wider flex items-center gap-2">
                             <MessageSquare className="w-5 h-5 text-indigo-400" />
                             CHAT HALLS
@@ -360,7 +412,7 @@ export default function ChatRoomsPage() {
                 <div className={`${mobileShowChat ? 'flex' : 'hidden md:flex'} flex-1 flex-col relative overflow-hidden h-full bg-zinc-950/10`}>
                     
                     {/* Header */}
-                    <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/85 backdrop-blur-md sticky top-0 z-30 shrink-0">
+                    <div className="py-2 px-4 border-b border-white/10 flex items-center justify-between bg-black/85 backdrop-blur-md sticky top-0 z-30 shrink-0">
                         <div className="flex items-center gap-3">
                             <button 
                                 onClick={() => setMobileShowChat(false)} 
@@ -512,6 +564,33 @@ export default function ChatRoomsPage() {
                         <div ref={messagesEndRef} />
                     </div>
 
+                    {/* Suggestions Dropdown */}
+                    {showSuggestions && mentionSuggestions.length > 0 && (
+                        <div className="mx-4 mb-2 p-1.5 bg-zinc-900/95 backdrop-blur-md border border-white/15 rounded-xl shadow-2xl z-40 max-h-40 overflow-y-auto animate-in slide-in-from-bottom-2 duration-150">
+                            <div className="text-[9px] text-zinc-500 uppercase tracking-widest font-mono px-2.5 py-1 border-b border-white/5">Suggested Users</div>
+                            {mentionSuggestions.map((suggestedUser) => (
+                                <button
+                                    key={suggestedUser.id}
+                                    onClick={() => selectSuggestion(suggestedUser.username || '')}
+                                    className="w-full px-2.5 py-1.5 flex items-center gap-2 hover:bg-white/5 rounded-lg transition-colors text-left"
+                                >
+                                    <div className="w-6 h-6 rounded-full overflow-hidden border border-white/10 shrink-0 bg-zinc-800">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img 
+                                            src={getUserAvatar(suggestedUser.avatar_url, suggestedUser.gender, suggestedUser.id)} 
+                                            alt={suggestedUser.username || 'User'} 
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="text-[11px] font-bold text-white truncate leading-none">{suggestedUser.full_name || 'Vassal'}</div>
+                                        {suggestedUser.username && <div className="text-[9px] text-zinc-450 font-mono truncate mt-0.5">@{suggestedUser.username}</div>}
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
                     {/* Message Input Bar */}
                     {!dbError && (
                         <div className="p-4 border-t border-white/5 bg-black shrink-0">
@@ -520,7 +599,7 @@ export default function ChatRoomsPage() {
                                     ref={inputRef}
                                     type="text"
                                     value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    onChange={(e) => handleInputChange(e.target.value)}
                                     onKeyDown={handleKeyPress}
                                     placeholder={`Send message to ${activeRoom === 'westeros' ? 'Westeros Global' : getFactionDetails(activeRoom)?.name || 'House'}...`}
                                     className="flex-1 bg-transparent border-none px-3 py-1.5 text-white text-sm focus:outline-none placeholder:text-zinc-500"
