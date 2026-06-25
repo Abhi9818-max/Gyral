@@ -602,7 +602,8 @@ export default function ChatRoomsPage() {
                                     onChange={(e) => handleInputChange(e.target.value)}
                                     onKeyDown={handleKeyPress}
                                     placeholder={`Send message to ${activeRoom === 'westeros' ? 'Westeros Global' : getFactionDetails(activeRoom)?.name || 'House'}...`}
-                                    className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 px-3 py-1.5 text-white text-sm placeholder:text-zinc-500 shadow-none ring-0"
+                                    className="flex-1 bg-transparent border-none !outline-none focus:!outline-none focus:ring-0 focus-visible:!outline-none focus-visible:ring-0 px-3 py-1.5 text-white text-sm placeholder:text-zinc-500 !shadow-none ring-0"
+                                    style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
                                     disabled={isLoading}
                                 />
                                 {newMessage.trim() ? (
