@@ -31,6 +31,8 @@ export default function ChatRoomsPage() {
     const supabase = createClient();
     const { currentFaction, user, isLoaded } = useUserData();
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const profileRef = useRef<ProfileInfo | null>(null);
 
     // Navigation and room selection states
     const [activeRoom, setActiveRoom] = useState<string>('westeros');
@@ -48,6 +50,40 @@ export default function ChatRoomsPage() {
 
     // Fetch user profile on mount
     const [currentUserProfile, setCurrentUserProfile] = useState<ProfileInfo | null>(null);
+
+    useEffect(() => {
+        profileRef.current = currentUserProfile;
+    }, [currentUserProfile]);
+
+    const playMentionSound = () => {
+        try {
+            const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+            osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1); // A5
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.45);
+        } catch (e) {
+            console.error("Audio error:", e);
+        }
+    };
+
+    const handleMentionUser = (username: string) => {
+        if (!username) return;
+        setNewMessage(prev => {
+            const suffix = `@${username} `;
+            return prev.endsWith(' ') || prev === '' ? prev + suffix : prev + ' ' + suffix;
+        });
+        setTimeout(() => {
+            inputRef.current?.focus();
+        }, 50);
+    };
 
     // Fetch current user details
     useEffect(() => {
@@ -151,6 +187,15 @@ export default function ChatRoomsPage() {
                             profiles: senderProfile
                         };
                         setMessages(prev => [...prev, enrichedMsg]);
+
+                        // Play alert sound if mentioned in real-time
+                        if (
+                            newMsg.sender_id !== user?.id &&
+                            profileRef.current?.username &&
+                            newMsg.content.includes(`@${profileRef.current.username}`)
+                        ) {
+                            playMentionSound();
+                        }
                     }
                 }
             )
@@ -388,13 +433,18 @@ export default function ChatRoomsPage() {
                                 const senderFaction = getFactionDetails(message.profiles?.faction_id);
                                 const isSystemRoom = activeRoom === 'westeros';
 
+                                const isMentioned = currentUserProfile?.username && message.content.includes(`@${currentUserProfile.username}`);
+
                                 return (
                                     <div 
                                         key={message.id} 
                                         className={`flex gap-3 max-w-[85%] ${isMine ? 'ml-auto flex-row-reverse' : ''}`}
                                     >
                                         {/* Avatar */}
-                                        <div className="w-9 h-9 rounded-full overflow-hidden border border-white/10 flex-shrink-0 bg-zinc-900 shadow-inner">
+                                        <div 
+                                            onClick={() => handleMentionUser(message.profiles?.username || '')}
+                                            className="w-9 h-9 rounded-full overflow-hidden border border-white/10 flex-shrink-0 bg-zinc-900 shadow-inner cursor-pointer hover:border-indigo-500/50 transition-colors"
+                                        >
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img 
                                                 src={getUserAvatar(message.profiles?.avatar_url, message.profiles?.gender, message.sender_id)} 
@@ -407,7 +457,10 @@ export default function ChatRoomsPage() {
                                         <div className="flex flex-col space-y-1 min-w-0">
                                             {/* Meta Header */}
                                             <div className={`flex items-center gap-1.5 text-xs text-zinc-400 select-none ${isMine ? 'justify-end' : ''}`}>
-                                                <span className="font-bold text-white hover:underline cursor-pointer truncate">
+                                                <span 
+                                                    onClick={() => handleMentionUser(message.profiles?.username || '')}
+                                                    className="font-bold text-white hover:underline cursor-pointer truncate"
+                                                >
                                                     {message.profiles?.full_name || message.profiles?.username || 'Vassal'}
                                                 </span>
                                                 {message.profiles?.username && (
@@ -436,7 +489,9 @@ export default function ChatRoomsPage() {
                                                 className={`rounded-2xl px-4 py-2.5 break-words leading-relaxed text-[13px] sm:text-sm border shadow-sm ${
                                                     isMine
                                                         ? 'bg-gradient-to-tr from-indigo-650 via-indigo-600 to-indigo-500 text-white border-indigo-500/20'
-                                                        : 'bg-zinc-900/50 text-zinc-100 border-white/5'
+                                                        : isMentioned
+                                                            ? 'bg-amber-500/10 text-amber-100 border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.15)] animate-[pulse_2s_infinite]'
+                                                            : 'bg-zinc-900/50 text-zinc-100 border-white/5'
                                                 }`}
                                                 style={isMine && currentFaction ? {
                                                     backgroundImage: `linear-gradient(to top right, ${currentFaction.primaryColor}aa, ${currentFaction.primaryColor}80)`
@@ -462,6 +517,7 @@ export default function ChatRoomsPage() {
                         <div className="p-4 border-t border-white/5 bg-black shrink-0">
                             <div className="relative flex items-center gap-2 bg-zinc-900 border border-white/10 rounded-[22px] px-2 py-1.5 focus-within:border-white/20 transition-all shadow-inner">
                                 <input
+                                    ref={inputRef}
                                     type="text"
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
