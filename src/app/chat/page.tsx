@@ -594,7 +594,7 @@ export default function ChatRoomsPage() {
                     {/* Message Input Bar */}
                     {!dbError && (
                         <div className="p-4 border-t border-white/5 bg-black shrink-0">
-                            <div className="relative flex items-center gap-2 bg-zinc-900 border border-white/10 rounded-[22px] px-2.5 py-1.5 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/15 transition-all shadow-inner">
+                            <div className="relative flex items-center gap-2 bg-zinc-900 border border-white/10 rounded-[22px] px-2.5 py-1.5 transition-all shadow-inner">
                                 <input
                                     ref={inputRef}
                                     type="text"
