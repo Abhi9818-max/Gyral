@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { X, Coins, Plus, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
-import { PaymentModal } from './payment-modal';
 
 interface BankModalProps {
     isOpen: boolean;
@@ -21,7 +19,6 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [activePayDebt, setActivePayDebt] = useState<{ id: string; amount: string; description: string } | null>(null);
 
     const [payNoxAmount, setPayNoxAmount] = useState('');
     const [isPaying, setIsPaying] = useState(false);
@@ -39,21 +36,6 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
         setDescription('');
         setAmount('');
         setIsSubmitting(false);
-    };
-
-    const handlePayClick = (debt: any) => {
-        setActivePayDebt({
-            id: debt.id,
-            amount: debt.amount,
-            description: `Penalty settlement: "${debt.description}"`
-        });
-    };
-
-    const handlePaymentSuccess = async () => {
-        if (activePayDebt) {
-            await payDebt(activePayDebt.id);
-            setActivePayDebt(null);
-        }
     };
 
     const handlePayDebtWithNox = async () => {
@@ -100,10 +82,10 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
             />
 
             {/* Modal Content */}
-            <div className="relative w-full max-w-lg bg-zinc-950 border border-yellow-900/40 rounded-2xl shadow-[0_0_50px_rgba(234,179,8,0.1)] flex flex-col max-h-[90vh] overflow-hidden animate-[scaleIn_0.3s_ease-out]">
+            <div className="relative w-[95%] sm:w-full max-w-lg bg-zinc-950 border border-yellow-900/40 rounded-2xl shadow-[0_0_50px_rgba(234,179,8,0.1)] flex flex-col max-h-[90vh] overflow-hidden animate-[scaleIn_0.3s_ease-out]">
 
                 {/* Header */}
-                <div className="p-6 border-b border-yellow-900/20 flex justify-between items-center bg-gradient-to-r from-zinc-950 to-yellow-950/20 shrink-0">
+                <div className="p-4 sm:p-6 border-b border-yellow-900/20 flex justify-between items-center bg-gradient-to-r from-zinc-950 to-yellow-950/20 shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-yellow-900/20 rounded-full border border-yellow-700/30">
                             <Coins className="w-6 h-6 text-yellow-500" />
@@ -127,7 +109,7 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
                     </div>
                 </div>
 
-                <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+                <div className="p-4 sm:p-6 space-y-5 sm:space-y-6 flex-1 overflow-y-auto custom-scrollbar">
 
                     {/* STATS PANEL */}
                     <div className="grid grid-cols-3 gap-3 shrink-0">
@@ -269,14 +251,6 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
                                                 )}
                                             </div>
                                         </div>
-                                        {debt.status !== 'PAID' && (
-                                            <button
-                                                onClick={() => handlePayClick(debt)}
-                                                className="px-3 py-2 text-xs font-bold bg-zinc-900 hover:bg-green-900/30 text-zinc-500 hover:text-green-500 border border-zinc-800 hover:border-green-800 rounded transition-all flex items-center justify-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 self-end sm:self-auto shrink-0"
-                                            >
-                                                <Coins className="w-3.5 h-3.5" /> PAY DEBT
-                                            </button>
-                                        )}
                                     </div>
                                 ))
                             )}
@@ -285,14 +259,6 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
 
                 </div>
             </div>
-
-            <PaymentModal
-                isOpen={activePayDebt !== null}
-                onClose={() => setActivePayDebt(null)}
-                amount={activePayDebt?.amount || '0'}
-                description={activePayDebt?.description || ''}
-                onSuccess={handlePaymentSuccess}
-            />
         </div>
     );
 }

@@ -52,8 +52,6 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
     const [year, setYear] = useState('');
     const [soundEnabled, setSoundEnabled] = useState(true);
     const [bucketDefaultPref, setBucketDefaultPref] = useState('last_opened');
-    const [razorpayKey, setRazorpayKey] = useState('');
-    const [paypalClientId, setPaypalClientId] = useState('');
 
     useEffect(() => {
         setSoundEnabled(sfx.isEnabled());
@@ -61,8 +59,6 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
         if (savedPref) {
             setBucketDefaultPref(savedPref);
         }
-        setRazorpayKey(localStorage.getItem('diogenes-razorpay-key-id') || '');
-        setPaypalClientId(localStorage.getItem('diogenes-paypal-client-id') || '');
     }, []);
 
     const handleSoundToggle = () => {
@@ -566,44 +562,6 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                                 </select>
                             }
                             isLast
-                        />
-                    </SettingsGroup>
-
-                    <SettingsGroup title="Payment Configuration">
-                        <SettingsItem
-                            icon={Coins}
-                            label="Razorpay Key ID"
-                            action={
-                                <input
-                                    type="text"
-                                    value={razorpayKey}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        setRazorpayKey(val);
-                                        localStorage.setItem('diogenes-razorpay-key-id', val);
-                                    }}
-                                    placeholder="rzp_test_..."
-                                    className="bg-transparent text-sm text-zinc-400 focus:outline-none text-right cursor-pointer w-28 xs:w-36 sm:w-48 md:w-64 min-w-0"
-                                />
-                            }
-                        />
-                        <SettingsItem
-                            icon={Coins}
-                            label="PayPal Client ID"
-                            isLast
-                            action={
-                                <input
-                                    type="text"
-                                    value={paypalClientId}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        setPaypalClientId(val);
-                                        localStorage.setItem('diogenes-paypal-client-id', val);
-                                    }}
-                                    placeholder="sb / Client ID"
-                                    className="bg-transparent text-sm text-zinc-400 focus:outline-none text-right cursor-pointer w-28 xs:w-36 sm:w-48 md:w-64 min-w-0"
-                                />
-                            }
                         />
                     </SettingsGroup>
 

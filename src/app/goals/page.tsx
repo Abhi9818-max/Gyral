@@ -55,7 +55,7 @@ export default function GoalsPage() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6 relative z-10">
                 <div className="relative">
                     <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg blur opacity-20" />
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tight flex items-center gap-4 relative">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight flex items-center gap-3 sm:gap-4 relative">
                         <Link href="/bucket-list" className="text-zinc-500 hover:text-white transition-colors p-1 rounded-lg">
                             <ArrowLeft className="w-8 h-8" />
                         </Link>
@@ -75,7 +75,7 @@ export default function GoalsPage() {
                             setIsDownloading(false);
                         }}
                         disabled={isDownloading}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all border ${isLight ? 'bg-white border-zinc-200 hover:bg-zinc-50 text-black shadow-lg' : 'bg-zinc-900/50 border-white/10 hover:bg-white/5 text-white'} ${isDownloading ? 'opacity-50 cursor-wait' : ''}`}
+                        className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-full font-bold transition-all border w-full md:w-auto ${isLight ? 'bg-white border-zinc-200 hover:bg-zinc-50 text-black shadow-lg' : 'bg-zinc-900/50 border-white/10 hover:bg-white/5 text-white'} ${isDownloading ? 'opacity-50 cursor-wait' : ''}`}
                     >
                         <Download className={`w-4 h-4 ${isDownloading ? 'animate-bounce text-blue-500' : ''}`} />
                         {isDownloading ? 'Downloading...' : 'Download Goals'}
@@ -84,17 +84,17 @@ export default function GoalsPage() {
             </div>
 
             {/* Dashboard Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
                 
                 {/* Overall Stats Card */}
-                <div className={`p-6 rounded-3xl ${isLight ? 'bg-white shadow-xl shadow-zinc-200' : 'bg-zinc-900/50 border border-white/5'} flex items-center gap-4 relative overflow-hidden group`}>
+                <div className={`p-4 sm:p-6 rounded-3xl ${isLight ? 'bg-white shadow-xl shadow-zinc-200' : 'bg-zinc-900/50 border border-white/5'} flex items-center gap-4 relative overflow-hidden group`}>
                     <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition-colors" />
                     <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 text-blue-500">
                         <Flag className="w-7 h-7" />
                     </div>
                     <div>
                         <p className={`text-sm font-bold ${isLight ? 'text-zinc-500' : 'text-zinc-400'} uppercase tracking-wider`}>Total Goals</p>
-                        <p className="text-3xl font-black">{bucketItems.length}</p>
+                        <p className="text-2xl sm:text-3xl font-black">{bucketItems.length}</p>
                         <p className="text-[10px] font-mono text-zinc-500 uppercase mt-0.5">
                             {lifeItems.length} Life • {yearItems.length} Year
                         </p>
@@ -102,7 +102,7 @@ export default function GoalsPage() {
                 </div>
                 
                 {/* Completed Link Card */}
-                <Link href="/achievements" className={`p-6 rounded-3xl ${isLight ? 'bg-white shadow-xl shadow-zinc-200 hover:shadow-emerald-200' : 'bg-zinc-900/50 border border-white/5 hover:border-emerald-500/30 hover:bg-zinc-900/80'} flex items-center justify-between relative overflow-hidden group transition-all duration-300`}>
+                <Link href="/achievements" className={`p-4 sm:p-6 rounded-3xl ${isLight ? 'bg-white shadow-xl shadow-zinc-200 hover:shadow-emerald-200' : 'bg-zinc-900/50 border border-white/5 hover:border-emerald-500/30 hover:bg-zinc-900/80'} flex items-center justify-between relative overflow-hidden group transition-all duration-300`}>
                     <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-colors" />
                     <div className="flex items-center gap-4 relative z-10">
                         <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 text-emerald-500 group-hover:scale-110 transition-transform">

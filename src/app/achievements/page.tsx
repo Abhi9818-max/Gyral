@@ -81,7 +81,7 @@ export default function AchievementsPage() {
                     className={`px-8 py-4 rounded-3xl ${isLight ? 'bg-white shadow-xl shadow-amber-100 border border-amber-100' : 'bg-zinc-900/40 border border-amber-500/20 shadow-[0_0_30px_rgba(251,191,36,0.1)]'} flex flex-col items-center backdrop-blur-md`}
                 >
                     <span className={`text-sm font-bold uppercase tracking-widest ${isLight ? 'text-zinc-400' : 'text-zinc-500'}`}>Total Completed</span>
-                    <span className="text-4xl font-black text-amber-500">{achievements.length}</span>
+                    <span className="text-3xl md:text-4xl font-black text-amber-500">{achievements.length}</span>
                 </motion.div>
 
                 {achievements.length > 0 && (
@@ -114,7 +114,7 @@ export default function AchievementsPage() {
                     className={`max-w-2xl mx-auto p-12 text-center rounded-[3rem] border border-dashed ${isLight ? 'border-zinc-300 text-zinc-500 bg-white/50' : 'border-zinc-800 text-zinc-500 bg-zinc-900/20'} backdrop-blur-sm`}
                 >
                     <Medal className="w-16 h-16 mx-auto mb-6 opacity-30" />
-                    <h3 className="text-2xl font-bold mb-2">No Achievements Yet</h3>
+                    <h3 className="text-xl md:text-2xl font-bold mb-2">No Achievements Yet</h3>
                     <p className="text-lg">Complete a bucket list item to add it to your accomplishments.</p>
                 </motion.div>
             ) : (
@@ -122,7 +122,7 @@ export default function AchievementsPage() {
                     variants={containerVariants}
                     initial="hidden"
                     animate="show"
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10"
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 relative z-10"
                 >
                     <AnimatePresence>
                         {achievements.map((achievement, idx) => {
@@ -166,7 +166,7 @@ export default function AchievementsPage() {
                                         </div>
                                     </div>
 
-                                    <h3 className={`text-2xl font-black mb-3 leading-tight ${isLight ? 'text-zinc-800' : 'text-white'}`}>
+                                    <h3 className={`text-xl md:text-2xl font-black mb-3 leading-tight ${isLight ? 'text-zinc-800' : 'text-white'}`}>
                                         {achievement.title}
                                     </h3>
 
@@ -177,7 +177,7 @@ export default function AchievementsPage() {
                                     )}
 
                                     {/* Action Buttons */}
-                                    <div className="absolute bottom-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-4 group-hover:translate-y-0 flex gap-2">
+                                    <div className="absolute bottom-0 right-0 p-4 md:p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-4 group-hover:translate-y-0 flex gap-2">
                                         <div className={`p-3 rounded-xl ${isLight ? 'bg-amber-50 text-amber-500' : 'bg-amber-500/10 text-amber-400'}`}>
                                             <Sparkles className="w-5 h-5" />
                                         </div>

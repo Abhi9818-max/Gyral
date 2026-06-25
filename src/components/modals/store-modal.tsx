@@ -70,17 +70,17 @@ export function StoreModal({ isOpen, onClose }: StoreModalProps) {
             />
 
             {/* Modal Content */}
-            <div className="relative w-full max-w-4xl bg-zinc-950 border border-indigo-900/40 rounded-2xl shadow-[0_0_50px_rgba(99,102,241,0.1)] flex flex-col max-h-[90vh] overflow-hidden animate-[scaleIn_0.3s_ease-out]">
+            <div className="relative w-[95%] sm:w-full max-w-4xl bg-zinc-950 border border-indigo-900/40 rounded-2xl shadow-[0_0_50px_rgba(99,102,241,0.1)] flex flex-col max-h-[90vh] overflow-hidden animate-[scaleIn_0.3s_ease-out]">
 
                 {/* Header */}
-                <div className="p-6 border-b border-indigo-900/20 flex justify-between items-center bg-gradient-to-r from-zinc-950 to-indigo-950/20 shrink-0">
+                <div className="p-4 sm:p-6 border-b border-indigo-900/20 flex justify-between items-center bg-gradient-to-r from-zinc-950 to-indigo-950/20 shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-900/20 rounded-full border border-indigo-700/30 shadow-[0_0_15px_rgba(99,102,241,0.3)]">
                             <Store className="w-6 h-6 text-indigo-400" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-white tracking-wide">THE EXCHANGE</h2>
-                            <p className="text-xs text-indigo-400/80 font-serif italic">"Trade your sweat for power."</p>
+                            <h2 className="text-lg sm:text-xl font-bold text-white tracking-wide">THE EXCHANGE</h2>
+                            <p className="text-[10px] sm:text-xs text-indigo-400/80 font-serif italic">"Trade your sweat for power."</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -100,14 +100,14 @@ export function StoreModal({ isOpen, onClose }: StoreModalProps) {
                     </div>
                 </div>
 
-                <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+                <div className="p-4 sm:p-6 overflow-y-auto custom-scrollbar flex-1">
                     {errorMsg && (
-                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center justify-center gap-2 animate-[pulse_1s_ease-in-out]">
-                            <span className="text-xl">⚠️</span> {errorMsg}
+                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-xs sm:text-sm flex items-center justify-center gap-2 animate-[pulse_1s_ease-in-out]">
+                            <span className="text-lg sm:text-xl">⚠️</span> {errorMsg}
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                         {STORE_ITEMS.map((item) => {
                             const isPurchased = purchasedItems[item.id];
                             const canAfford = noxBalance >= item.price;

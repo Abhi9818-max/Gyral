@@ -28,7 +28,6 @@ import Link from "next/link";
 const TABS = [
   { id: "terms", label: "Terms of Service", icon: FileText },
   { id: "privacy", label: "Privacy Policy", icon: Lock },
-  { id: "refund", label: "Refund Policy", icon: RefreshCcw },
   { id: "contact", label: "Contact Us", icon: Mail },
 ] as const;
 
@@ -166,7 +165,6 @@ function PrivacyContent() {
             "Account information: email address, display name, and profile photo",
             "Usage data: tasks, habits, goals, and progress you choose to track",
             "Device data: browser type, OS version, and screen resolution for optimization",
-            "Payment data: processed securely through Razorpay and PayPal — we never store card details",
           ].map((item, i) => (
             <li key={i} className="flex items-start gap-2.5">
               <CheckCircle className="w-3.5 h-3.5 text-emerald-400/60 mt-1 shrink-0" />
@@ -215,57 +213,7 @@ function PrivacyContent() {
   );
 }
 
-/* ─── Refund Policy Content ─── */
-function RefundContent() {
-  return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
-      <SectionCard icon={CreditCard} title="Payment Terms">
-        <p>
-          Gyral offers certain premium features via one-time and recurring payments processed through
-          Razorpay (for UPI, Google Pay, PhonePe, and Indian payment methods) and PayPal (for
-          international cards and wallets).
-        </p>
-        <p>
-          All amounts are displayed in Indian Rupees (INR) unless otherwise specified. Payment
-          processing fees, if any, are included in the displayed price.
-        </p>
-      </SectionCard>
 
-      <SectionCard icon={RefreshCcw} title="Refund Eligibility">
-        <p>We believe in fair outcomes. Refunds are available under the following conditions:</p>
-        <ul className="list-none space-y-2 mt-2">
-          {[
-            "Duplicate or erroneous charges — full refund within 7 business days",
-            "Service not delivered as described — full refund upon verification",
-            "Technical issues preventing access — prorated refund for downtime",
-            "Cancellation within 48 hours of purchase — full refund, no questions asked",
-          ].map((item, i) => (
-            <li key={i} className="flex items-start gap-2.5">
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-400/60 mt-1 shrink-0" />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      </SectionCard>
-
-      <SectionCard icon={Clock} title="Refund Process">
-        <p>
-          To request a refund, email us with your registered email, transaction ID, and reason for the
-          refund. Refunds are typically processed within 5–10 business days after approval. The refund
-          will be credited to the original payment method.
-        </p>
-      </SectionCard>
-
-      <SectionCard icon={Shield} title="Non-Refundable Items">
-        <p>
-          The following are not eligible for refunds: completed one-time services that have been fully
-          delivered, voluntary penalty payments made through the Iron Bank system (as these are
-          self-imposed accountability mechanisms), and any charges older than 90 days.
-        </p>
-      </SectionCard>
-    </motion.div>
-  );
-}
 
 /* ─── Contact Content ─── */
 function ContactContent() {
@@ -333,8 +281,6 @@ export default function LandingPage() {
         return <TermsContent />;
       case "privacy":
         return <PrivacyContent />;
-      case "refund":
-        return <RefundContent />;
       case "contact":
         return <ContactContent />;
     }
