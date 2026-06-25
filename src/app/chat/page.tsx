@@ -317,13 +317,13 @@ export default function ChatRoomsPage() {
     }
 
     return (
-        <div className="h-screen flex flex-col bg-black text-white overflow-hidden pt-0 pb-16 md:pb-0">
+        <div className="h-screen flex flex-col bg-black text-white overflow-hidden pt-3 md:pt-4 pb-16 md:pb-0">
             {/* Rooms View Layout */}
             <div className="flex-1 flex max-w-7xl mx-auto w-full overflow-hidden relative">
                 
                 {/* Rooms Selection List Sidebar */}
                 <div className={`${mobileShowChat ? 'hidden md:flex' : 'flex'} w-full md:w-80 border-r border-white/10 flex-col shrink-0 bg-zinc-950/20`}>
-                    <div className="py-2.5 px-5 border-b border-white/10">
+                    <div className="py-3.5 px-5 border-b border-white/10">
                         <h2 className="text-xl font-black tracking-wider flex items-center gap-2">
                             <MessageSquare className="w-5 h-5 text-indigo-400" />
                             CHAT HALLS
@@ -412,7 +412,7 @@ export default function ChatRoomsPage() {
                 <div className={`${mobileShowChat ? 'flex' : 'hidden md:flex'} flex-1 flex-col relative overflow-hidden h-full bg-zinc-950/10`}>
                     
                     {/* Header */}
-                    <div className="py-2 px-4 border-b border-white/10 flex items-center justify-between bg-black/85 backdrop-blur-md sticky top-0 z-30 shrink-0">
+                    <div className="py-3.5 px-4 border-b border-white/10 flex items-center justify-between bg-black/85 backdrop-blur-md sticky top-0 z-30 shrink-0">
                         <div className="flex items-center gap-3">
                             <button 
                                 onClick={() => setMobileShowChat(false)} 
@@ -594,7 +594,7 @@ export default function ChatRoomsPage() {
                     {/* Message Input Bar */}
                     {!dbError && (
                         <div className="p-4 border-t border-white/5 bg-black shrink-0">
-                            <div className="relative flex items-center gap-2 bg-zinc-900 border border-white/10 rounded-[22px] px-2 py-1.5 focus-within:border-white/20 transition-all shadow-inner">
+                            <div className="relative flex items-center gap-2 bg-zinc-900 border border-white/10 rounded-[22px] px-2.5 py-1.5 focus-within:border-white/30 focus-within:ring-1 focus-within:ring-white/15 transition-all shadow-inner">
                                 <input
                                     ref={inputRef}
                                     type="text"
@@ -602,7 +602,7 @@ export default function ChatRoomsPage() {
                                     onChange={(e) => handleInputChange(e.target.value)}
                                     onKeyDown={handleKeyPress}
                                     placeholder={`Send message to ${activeRoom === 'westeros' ? 'Westeros Global' : getFactionDetails(activeRoom)?.name || 'House'}...`}
-                                    className="flex-1 bg-transparent border-none px-3 py-1.5 text-white text-sm focus:outline-none placeholder:text-zinc-500"
+                                    className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 px-3 py-1.5 text-white text-sm placeholder:text-zinc-500 shadow-none ring-0"
                                     disabled={isLoading}
                                 />
                                 {newMessage.trim() ? (
