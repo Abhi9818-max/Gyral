@@ -190,6 +190,10 @@ export function Header() {
                       <span class="text-indigo-400">🛍️</span>
                       <span class="text-white font-medium">Store</span>
                     </button>
+                    <button id="chat-rooms-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                      <span class="text-sky-400">💬</span>
+                      <span class="text-white font-medium">Chat Rooms</span>
+                    </button>
                     <button id="world-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>🌍</span>
                       <span class="text-white font-medium">World</span>
@@ -276,6 +280,10 @@ export function Header() {
               document.getElementById('store-btn')?.addEventListener('click', () => {
                 closeMenu();
                 router.push('/store');
+              });
+              document.getElementById('chat-rooms-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/chat');
               });
               document.getElementById('world-nav-btn')?.addEventListener('click', () => {
                 closeMenu();

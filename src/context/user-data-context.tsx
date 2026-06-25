@@ -109,7 +109,7 @@ export type Vow = {
 };
 
 
-export type NavItemKey = 'world' | 'bank' | 'watch' | 'notes' | 'messages' | 'pacts' | 'memento' | 'citadel' | 'goals' | 'achievements' | 'bucket' | 'store';
+export type NavItemKey = 'world' | 'bank' | 'watch' | 'notes' | 'messages' | 'pacts' | 'memento' | 'citadel' | 'goals' | 'achievements' | 'bucket' | 'store' | 'chat';
 
 export const ALL_NAV_ITEMS: { key: NavItemKey, label: string, icon: string, href?: string }[] = [
     { key: 'world', label: 'World', icon: 'Globe', href: '/world' },
@@ -120,6 +120,7 @@ export const ALL_NAV_ITEMS: { key: NavItemKey, label: string, icon: string, href
     { key: 'achievements', label: 'Achievements', icon: 'Trophy', href: '/achievements' },
     { key: 'notes', label: 'Notes', icon: 'ClipboardList', href: '/notes' },
     { key: 'messages', label: 'Messages', icon: 'MessageCircle', href: '/messages' },
+    { key: 'chat', label: 'Chat Rooms', icon: 'MessageSquare', href: '/chat' },
     { key: 'pacts', label: 'Pacts Modal', icon: 'ScrollText' },
     { key: 'memento', label: 'Memento Page', icon: 'Skull', href: '/memento' },
     { key: 'citadel', label: 'Pacts Page', icon: 'ScrollText', href: '/citadel' },

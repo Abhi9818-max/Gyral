@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
     Home, Globe, Flame, Coins, Shield, Sword,
-    ClipboardList, MessageCircle, ScrollText, User, Skull, Infinity
+    ClipboardList, MessageCircle, MessageSquare, ScrollText, User, Skull, Infinity
 } from 'lucide-react';
 import { useUserData, ALL_NAV_ITEMS, NavItemKey } from '@/context/user-data-context';
 import { useToday } from '@/hooks/use-today';
@@ -16,7 +16,7 @@ import { PactsModal } from './modals/pacts-modal';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
     Home, Globe, Flame, Coins, Shield, Sword,
-    ClipboardList, MessageCircle, ScrollText, User, Skull, Infinity
+    ClipboardList, MessageCircle, MessageSquare, ScrollText, User, Skull, Infinity
 };
 
 export function MobileNav() {
