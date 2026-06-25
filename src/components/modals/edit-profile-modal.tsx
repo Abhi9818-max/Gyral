@@ -23,6 +23,25 @@ export function EditProfileModal({ isOpen, onClose, user, profile, onUpdate }: E
     const [isLoading, setIsLoading] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [presetGender, setPresetGender] = useState<'male' | 'female'>('male');
+
+    // Dynamically set preset gender default based on user gender if available
+    useEffect(() => {
+        if (profile?.gender === 'female') {
+            setPresetGender('female');
+        } else {
+            setPresetGender('male');
+        }
+    }, [profile, isOpen]);
+
+    const malePresets = Array.from({ length: 20 }, (_, i) => i + 1)
+        .filter(n => n !== 14) // skip missing #14
+        .map(n => `/avatars/default-male${n}.jpeg`);
+
+    const femalePresets = Array.from({ length: 15 }, (_, i) => i + 1)
+        .map(n => `/avatars/default-female${n}.jpeg`);
+
+    const presets = presetGender === 'male' ? malePresets : femalePresets;
 
     useEffect(() => {
         if (user) {
@@ -48,16 +67,14 @@ export function EditProfileModal({ isOpen, onClose, user, profile, onUpdate }: E
 
         try {
             const supabase = createClient();
-            let uploadedAvatarUrl = user.user_metadata?.avatar_url;
+            let uploadedAvatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url || null;
 
             // 1. Upload Image if changed
             if (file) {
-                // Delete old avatar if exists
-                const oldAvatarUrl = user.user_metadata?.avatar_url;
-                if (oldAvatarUrl) {
+                // Delete old avatar from storage if it was a user-uploaded image (not a preset)
+                const oldAvatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url;
+                if (oldAvatarUrl && !oldAvatarUrl.startsWith('/avatars/')) {
                     try {
-                        // Extract file path from URL
-                        // URL format: https://<project>.supabase.co/storage/v1/object/public/avatars/<filename>
                         const urlParts = oldAvatarUrl.split('/avatars/');
                         if (urlParts.length > 1) {
                             const oldFileName = urlParts[1];
@@ -68,7 +85,6 @@ export function EditProfileModal({ isOpen, onClose, user, profile, onUpdate }: E
                         }
                     } catch (deleteError) {
                         console.warn('Could not delete old avatar:', deleteError);
-                        // Don't fail upload if deletion fails
                     }
                 }
 
@@ -82,13 +98,34 @@ export function EditProfileModal({ isOpen, onClose, user, profile, onUpdate }: E
 
                 if (uploadError) {
                     console.error('Upload error:', uploadError);
-                    // Fallback check - maybe create bucket? (Can't via client usually)
                     alert("Failed to upload image. Ensure 'avatars' bucket exists and is public.");
                 } else {
                     const { data: { publicUrl } } = supabase.storage
                         .from('avatars')
                         .getPublicUrl(filePath);
                     uploadedAvatarUrl = publicUrl;
+                }
+            } else {
+                // If they chose a preset or removed it, save the new url state
+                const originalAvatar = getUserAvatar(profile?.avatar_url || user.user_metadata?.avatar_url, profile?.gender, user.id);
+                if (avatarUrl !== originalAvatar) {
+                    uploadedAvatarUrl = avatarUrl || null;
+
+                    // If they had a custom uploaded avatar, clean it up from storage
+                    const oldAvatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url;
+                    if (oldAvatarUrl && !oldAvatarUrl.startsWith('/avatars/')) {
+                        try {
+                            const urlParts = oldAvatarUrl.split('/avatars/');
+                            if (urlParts.length > 1) {
+                                const oldFileName = urlParts[1];
+                                await supabase.storage
+                                    .from('avatars')
+                                    .remove([oldFileName]);
+                            }
+                        } catch (e) {
+                            console.warn('Could not delete old avatar:', e);
+                        }
+                    }
                 }
             }
 
@@ -254,6 +291,47 @@ export function EditProfileModal({ isOpen, onClose, user, profile, onUpdate }: E
                                 Remove Photo
                             </button>
                         )}
+                    </div>
+
+                    {/* Preset Avatars Selection */}
+                    <div className="space-y-3 border-t border-b border-white/5 py-4">
+                        <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Choose a Preset Avatar</label>
+                            <div className="flex gap-2 bg-zinc-900/60 p-0.5 rounded-lg border border-white/5">
+                                <button
+                                    type="button"
+                                    onClick={() => setPresetGender('male')}
+                                    className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors ${presetGender === 'male' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'}`}
+                                >
+                                    Male
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setPresetGender('female')}
+                                    className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors ${presetGender === 'female' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'}`}
+                                >
+                                    Female
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-6 gap-2 max-h-[120px] overflow-y-auto p-1 bg-black/40 border border-white/5 rounded-lg scrollbar-thin scrollbar-thumb-zinc-800">
+                            {presets.map((presetUrl) => {
+                                const isSelected = avatarUrl === presetUrl;
+                                return (
+                                    <div
+                                        key={presetUrl}
+                                        onClick={() => {
+                                            setAvatarUrl(presetUrl);
+                                            setFile(null); // Clear pending upload
+                                        }}
+                                        className={`relative aspect-square rounded-full overflow-hidden cursor-pointer border-2 transition-all ${isSelected ? 'border-emerald-500 scale-105 shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'border-transparent hover:border-white/30'}`}
+                                    >
+                                        <img src={presetUrl} alt="Preset Avatar" className="w-full h-full object-cover" />
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
 
                     {/* Inputs */}
