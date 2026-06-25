@@ -350,13 +350,6 @@ export default function ChatRoomsPage() {
                             </div>
                         </div>
 
-                        <button 
-                            onClick={() => router.push('/dashboard')}
-                            className="p-2 hover:bg-white/5 rounded-full border border-white/10 transition-colors text-zinc-400 hover:text-white"
-                            title="Dashboard"
-                        >
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
                     </div>
 
                     {/* Messages Panel */}
