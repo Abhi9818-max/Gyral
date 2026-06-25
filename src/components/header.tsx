@@ -117,67 +117,7 @@ export function Header() {
           </Link>
         </div>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-8 text-sm font-semibold text-muted-foreground/80">
-          <Link href="/world" className="hover:text-white hover:scale-105 transition-all duration-300 ease-out flex items-center gap-2 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] group">
-            <Globe className="w-4 h-4 group-hover:text-accent transition-colors" /> <span className="relative">World <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-accent group-hover:w-full transition-all duration-300" /></span>
-          </Link>
-
-          <Link href="/memento" className="hover:text-white hover:scale-105 transition-all duration-300 ease-out flex items-center gap-2 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] group">
-            <Skull className="w-4 h-4 group-hover:text-accent transition-colors" /> <span className="relative">Memento <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-accent group-hover:w-full transition-all duration-300" /></span>
-          </Link>
-
-          <Link href="/goals" className="hover:text-white hover:scale-105 transition-all duration-300 ease-out flex items-center gap-2 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] group">
-            <Flag className="w-4 h-4 group-hover:text-blue-500 transition-colors" /> <span className="relative">Goals <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-blue-500 group-hover:w-full transition-all duration-300" /></span>
-          </Link>
-
-          <Link href="/bucket-list" className="hover:text-white hover:scale-105 transition-all duration-300 ease-out flex items-center gap-2 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] group">
-            <ScrollText className="w-4 h-4 group-hover:text-emerald-400 transition-colors" /> <span className="relative">Bucket List <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-emerald-400 group-hover:w-full transition-all duration-300" /></span>
-          </Link>
-
-          <Link href="/achievements" className="hover:text-white hover:scale-105 transition-all duration-300 ease-out flex items-center gap-2 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] group">
-            <Trophy className="w-4 h-4 group-hover:text-amber-500 transition-colors" /> <span className="relative">Achievements <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-amber-500 group-hover:w-full transition-all duration-300" /></span>
-          </Link>
-
-          <Link href="/notes" className="hover:text-white hover:scale-105 transition-all duration-300 ease-out flex items-center gap-2 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] group">
-            <ClipboardList className="w-4 h-4 group-hover:text-accent transition-colors" /> <span className="relative">Notes <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-accent group-hover:w-full transition-all duration-300" /></span>
-          </Link>
-
-          <button
-            onClick={() => setIsWatchModalOpen(true)}
-            className="hover:text-white hover:scale-105 transition-all duration-300 ease-out flex items-center gap-2 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] group"
-          >
-            <Shield className="w-4 h-4 text-slate-400 group-hover:text-slate-200 transition-colors" /> <span className="relative">The Watch <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-slate-500 group-hover:w-full transition-all duration-300" /></span>
-          </button>
-
-          <button
-            onClick={() => setIsPactsModalOpen(true)}
-            className="hover:text-white hover:scale-105 transition-all duration-300 ease-out flex items-center gap-2 hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] group"
-          >
-            <ScrollText className="w-4 h-4 text-amber-400 group-hover:text-amber-200 transition-colors" /> <span className="relative">Pacts <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-amber-500 group-hover:w-full transition-all duration-300" /></span>
-          </button>
-        </nav>
-
         <div className="flex items-center gap-2 md:gap-4">
-
-
-          {/* Desktop Settings Link */}
-          <Link
-            href="/settings"
-            className="hidden md:flex w-8 h-8 items-center justify-center rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
-            title="System Settings"
-          >
-            <Settings className="w-5 h-5" />
-          </Link>
-
-          {/* Desktop Manage Habits Button */}
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="hidden lg:flex items-center gap-2 px-4 py-2 text-sm font-bold text-muted-foreground hover:text-white transition-all duration-300 border border-transparent hover:border-white/20 rounded-full hover:bg-white/5 shadow-[0_0_0_rgba(0,0,0,0)] hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-          >
-            <Settings className="w-4 h-4" /> Manage Habits
-          </button>
-
           {/* Streak Indicator - Always Visible */}
           <div className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-full bg-white/5 border border-white/10 relative group cursor-help hover:border-white/20 transition-colors">
             <Flame
@@ -192,8 +132,6 @@ export function Header() {
                 {getStrengthLabel()}
               </span>
             )}
-
-            {/* Tooltip */}
             <div className="absolute top-full right-0 mt-2 bg-black border border-white/20 text-xs text-white px-3 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-xl">
               {getTooltipText()}
             </div>
@@ -211,71 +149,29 @@ export function Header() {
             </span>
           </div>
 
-          {/* Desktop Add Record Button */}
+          {/* Universal Menu Button */}
           <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="hidden md:flex items-center gap-2 px-4 md:px-6 py-2 text-sm font-bold bg-white text-black rounded-full transition-all duration-300 hover:scale-105 shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:shadow-[0_0_30px_rgba(255,255,255,0.7)] hover:bg-white border-2 border-white/50"
-          >
-            <Plus className="w-4 h-4" /> Add Record
-          </button>
-
-          {/* Daily Review Button */}
-          <button
-            onClick={() => setIsDailyReviewModalOpen(true)}
-            className="hidden md:flex w-10 h-10 items-center justify-center rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 hover:text-indigo-300 transition-all border border-indigo-500/20 hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.3)]"
-            title="Daily Review"
-          >
-            <span className="sr-only">Daily Review</span>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-          </button>
-
-          {/* Messages Button */}
-          <Link
-            href="/messages"
-            className="hidden md:flex w-10 h-10 items-center justify-center rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-all duration-300 relative"
-            title="Messages"
-          >
-            <MessageCircle className="w-5 h-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </Link>
-
-          {/* Friend Requests Bell - Desktop */}
-          <button
-            onClick={() => setIsFriendRequestsModalOpen(true)}
-            className="hidden md:flex w-10 h-10 items-center justify-center rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-all duration-300 relative"
-            title="Friend Requests"
-          >
-            <Bell className="w-5 h-5" />
-            {friendRequestCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
-                {friendRequestCount > 9 ? '9+' : friendRequestCount}
-              </span>
-            )}
-          </button>
-
-          {/* Desktop Menu Button - Three Dots / Sigil */}
-          <button
-            className={`hidden md:flex w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 items-center justify-center text-zinc-400 hover:text-white transition-all border border-transparent hover:border-white/20 relative ${currentFaction ? 'p-1 hover:scale-105' : ''}`}
+            className={`w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-all border border-transparent hover:border-white/20 relative ${currentFaction ? 'p-1' : ''}`}
             onClick={() => {
-              // Create a temporary div to hold the menu
               const menuDiv = document.createElement('div');
               menuDiv.className = 'fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] animate-in fade-in duration-200';
               menuDiv.innerHTML = `
                 <div class="absolute top-20 right-4 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl w-64 max-h-[70vh] overflow-y-auto shadow-2xl">
                   <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
-                    <h3 class="text-lg font-bold text-white">More</h3>
+                    <h3 class="text-lg font-bold text-white">Features</h3>
                     <button id="close-menu" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-all">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                   </div>
                   <div class="p-3 space-y-2">
-                    <button id="search-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
-                      <span class="text-white font-medium">Search Users</span>
+                    <button id="profile-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                      <span>👤</span>
+                      <span class="text-white font-medium">Profile</span>
+                    </button>
+                    <button id="messages-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left relative">
+                      <span>💬</span>
+                      <span class="text-white font-medium">Messages</span>
+                      ${unreadCount > 0 ? `<span class="ml-auto w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${unreadCount > 9 ? '9+' : unreadCount}</span>` : ''}
                     </button>
                     <button id="friend-requests-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left relative">
                       <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -294,24 +190,28 @@ export function Header() {
                       <span class="text-indigo-400">🛍️</span>
                       <span class="text-white font-medium">Store</span>
                     </button>
+                    <button id="world-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                      <span>🌍</span>
+                      <span class="text-white font-medium">World</span>
+                    </button>
+                    <button id="memento-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                      <span>💀</span>
+                      <span class="text-white font-medium">Memento</span>
+                    </button>
+                    <button id="pacts-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                      <span>📜</span>
+                      <span class="text-white font-medium">Pacts</span>
+                    </button>
                     <button id="watch-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span class="text-slate-400">🛡️</span>
                       <span class="text-white font-medium">The Watch</span>
-                    </button>
-                    <button id="negotiate-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span class="text-emerald-500">💎</span>
-                      <span class="text-white font-medium">Negotiate</span>
-                    </button>
-                    <button id="feed-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>👻</span>
-                      <span class="text-white font-medium">Feed</span>
                     </button>
                     <button id="goals-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>🎯</span>
                       <span class="text-white font-medium">Goals</span>
                     </button>
                     <button id="bucket-list-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>📜</span>
+                      <span>📝</span>
                       <span class="text-white font-medium">Bucket List</span>
                     </button>
                     <button id="achievements-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
@@ -322,20 +222,27 @@ export function Header() {
                       <span>📋</span>
                       <span class="text-white font-medium">Notes</span>
                     </button>
+                    <button id="habits-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                      <span>➕</span>
+                      <span class="text-white font-medium">Manage Habits</span>
+                    </button>
+                    <button id="daily-review-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 hover:border-indigo-500/40 transition-all text-left">
+                      <span>🌙</span>
+                      <span class="text-indigo-300 font-medium">Daily Review</span>
+                    </button>
                     <button id="settings-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span>⚙️</span>
                       <span class="text-white font-medium">Settings</span>
                     </button>
-                    <button id="habits-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>➕</span>
-                      <span class="text-white font-medium">Manage Habits</span>
+                    <button id="logout-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/30 transition-all text-left">
+                      <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                      <span class="text-red-400 font-medium">Logout</span>
                     </button>
                   </div>
                 </div>
               `;
               document.body.appendChild(menuDiv);
-
-              // Close menu handlers
+ 
               const closeMenu = () => {
                 if (document.body.contains(menuDiv)) {
                   document.body.removeChild(menuDiv);
@@ -345,11 +252,14 @@ export function Header() {
                 if (e.target === menuDiv) closeMenu();
               });
               document.getElementById('close-menu')?.addEventListener('click', closeMenu);
-
-              // Feature button handlers
-              document.getElementById('search-btn')?.addEventListener('click', () => {
+ 
+              document.getElementById('profile-btn')?.addEventListener('click', () => {
                 closeMenu();
-                setIsSearchModalOpen(true);
+                router.push('/profile');
+              });
+              document.getElementById('messages-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/messages');
               });
               document.getElementById('friend-requests-btn')?.addEventListener('click', () => {
                 closeMenu();
@@ -367,21 +277,21 @@ export function Header() {
                 closeMenu();
                 setIsStoreModalOpen(true);
               });
+              document.getElementById('world-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/world');
+              });
+              document.getElementById('memento-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/memento');
+              });
+              document.getElementById('pacts-btn')?.addEventListener('click', () => {
+                closeMenu();
+                setIsPactsModalOpen(true);
+              });
               document.getElementById('watch-btn')?.addEventListener('click', () => {
                 closeMenu();
                 setIsWatchModalOpen(true);
-              });
-              document.getElementById('negotiate-btn')?.addEventListener('click', () => {
-                closeMenu();
-                setIsInvestmentModalOpen(true);
-              });
-              document.getElementById('habits-btn')?.addEventListener('click', () => {
-                closeMenu();
-                setIsAddModalOpen(true);
-              });
-              document.getElementById('feed-nav-btn')?.addEventListener('click', () => {
-                closeMenu();
-                router.push('/feed');
               });
               document.getElementById('goals-nav-btn')?.addEventListener('click', () => {
                 closeMenu();
@@ -399,168 +309,25 @@ export function Header() {
                 closeMenu();
                 router.push('/notes');
               });
-              document.getElementById('settings-nav-btn')?.addEventListener('click', () => {
-                closeMenu();
-                router.push('/settings');
-              });
-            }}
-          >
-            {currentFaction ? (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={currentFaction.sigilUrl} alt={currentFaction.name} className="w-full h-full object-cover rounded-full" />
-              </>
-            ) : (
-              <Menu className="w-5 h-5" />
-            )}
-
-            {(friendRequestCount > 0 && !currentFaction) && (
-              <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-black animate-pulse"></span>
-            )}
-          </button>
-
-          {/* Mobile Menu Button - Moved to end for better mobile UX */}
-          <button
-            className={`md:hidden w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-all border border-transparent hover:border-white/20 relative ${currentFaction ? 'p-1' : ''}`}
-            onClick={() => {
-              // Create a temporary div to hold the menu
-              const menuDiv = document.createElement('div');
-              menuDiv.className = 'fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] animate-in fade-in duration-200';
-              menuDiv.innerHTML = `
-                <div class="absolute top-20 right-4 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl w-64 max-h-[70vh] overflow-y-auto shadow-2xl">
-                  <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
-                    <h3 class="text-lg font-bold text-white">Features</h3>
-                    <button id="close-menu" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-all">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                  </div>
-                  <div class="p-3 space-y-2">
-                    <button id="mobile-friend-requests-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left relative">
-                      <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                      <span class="text-white font-medium">Friend Requests</span>
-                      ${friendRequestCount > 0 ? `<span class="ml-auto w-5 h-5 bg-purple-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${friendRequestCount > 9 ? '9+' : friendRequestCount}</span>` : ''}
-                    </button>
-                    <button id="faction-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                       <span class="text-white">🚩</span>
-                       <span class="text-white font-medium">House</span>
-                    </button>
-                    <button id="bank-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span class="text-yellow-500">💰</span>
-                      <span class="text-white font-medium">Bank</span>
-                    </button>
-                    <button id="store-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span class="text-indigo-400">🛍️</span>
-                      <span class="text-white font-medium">Store</span>
-                    </button>
-                    <button id="watch-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span class="text-slate-400">🛡️</span>
-                      <span class="text-white font-medium">The Watch</span>
-                    </button>
-                    <button id="mobile-goals-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>🎯</span>
-                      <span class="text-white font-medium">Goals</span>
-                    </button>
-                    <button id="mobile-bucket-list-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>📜</span>
-                      <span class="text-white font-medium">Bucket List</span>
-                    </button>
-                    <button id="mobile-achievements-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>🏆</span>
-                      <span class="text-white font-medium">Achievements</span>
-                    </button>
-                    <button id="mobile-notes-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>📋</span>
-                      <span class="text-white font-medium">Notes</span>
-                    </button>
-                    <button id="mobile-settings-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>⚙️</span>
-                      <span class="text-white font-medium">Settings</span>
-                    </button>
-                    <button id="habits-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>➕</span>
-                      <span class="text-white font-medium">Manage Habits</span>
-                    </button>
-                    <button id="mobile-daily-review-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 hover:border-indigo-500/40 transition-all text-left">
-                      <span>🌙</span>
-                      <span class="text-indigo-300 font-medium">Daily Review</span>
-                    </button>
-                    <button id="mobile-logout-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/30 transition-all text-left">
-                      <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                      <span class="text-red-400 font-medium">Logout</span>
-                    </button>
-                  </div>
-                </div>
-              `;
-              document.body.appendChild(menuDiv);
- 
-              // Close menu handlers
-              const closeMenu = () => {
-                if (document.body.contains(menuDiv)) {
-                  document.body.removeChild(menuDiv);
-                }
-              };
-              menuDiv.addEventListener('click', (e) => {
-                if (e.target === menuDiv) closeMenu();
-              });
-              document.getElementById('close-menu')?.addEventListener('click', closeMenu);
- 
-              document.getElementById('mobile-friend-requests-btn')?.addEventListener('click', () => {
-                closeMenu();
-                setIsFriendRequestsModalOpen(true);
-              });
- 
-              // Feature button handlers
-              document.getElementById('faction-btn')?.addEventListener('click', () => {
-                closeMenu();
-                setIsFactionModalOpen(true);
-              });
-              document.getElementById('bank-btn')?.addEventListener('click', () => {
-                closeMenu();
-                setIsBankModalOpen(true);
-              });
-              document.getElementById('store-btn')?.addEventListener('click', () => {
-                closeMenu();
-                setIsStoreModalOpen(true);
-              });
-              document.getElementById('watch-btn')?.addEventListener('click', () => {
-                closeMenu();
-                setIsWatchModalOpen(true);
-              });
               document.getElementById('habits-btn')?.addEventListener('click', () => {
                 closeMenu();
                 setIsAddModalOpen(true);
               });
-              document.getElementById('mobile-daily-review-btn')?.addEventListener('click', () => {
+              document.getElementById('daily-review-btn')?.addEventListener('click', () => {
                 closeMenu();
                 setIsDailyReviewModalOpen(true);
               });
-              document.getElementById('mobile-logout-btn')?.addEventListener('click', async () => {
+              document.getElementById('settings-nav-btn')?.addEventListener('click', () => {
+                closeMenu();
+                router.push('/settings');
+              });
+              document.getElementById('logout-btn')?.addEventListener('click', async () => {
                 closeMenu();
                 const { createClient } = await import('@/utils/supabase/client');
                 const supabase = createClient();
                 await supabase.auth.signOut();
                 router.push('/login');
               });
-              document.getElementById('mobile-goals-nav-btn')?.addEventListener('click', () => {
-                closeMenu();
-                router.push('/goals');
-              });
-              document.getElementById('mobile-bucket-list-nav-btn')?.addEventListener('click', () => {
-                closeMenu();
-                router.push('/bucket-list');
-              });
-              document.getElementById('mobile-achievements-nav-btn')?.addEventListener('click', () => {
-                closeMenu();
-                router.push('/achievements');
-              });
-              document.getElementById('mobile-notes-nav-btn')?.addEventListener('click', () => {
-                closeMenu();
-                router.push('/notes');
-              });
-              document.getElementById('mobile-settings-nav-btn')?.addEventListener('click', () => {
-                closeMenu();
-                router.push('/settings');
-              });
             }}
           >
             {currentFaction ? (
@@ -571,25 +338,10 @@ export function Header() {
             ) : (
               <Menu className="w-5 h-5" />
             )}
-            {friendRequestCount > 0 && (
+            {(friendRequestCount > 0 || unreadCount > 0) && (
               <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-black animate-pulse"></span>
             )}
           </button>
-
-          {/* Profile Picture Link - Hidden on mobile */}
-          <Link href="/profile" className="hidden md:flex w-10 h-10 rounded-full border-2 border-white/10 items-center justify-center relative overflow-hidden group cursor-pointer hover:border-accent/50 transition-all duration-300 shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] bg-gradient-to-tr from-zinc-800 to-zinc-700">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={user?.id ? getUserAvatar(profile?.avatar_url || user?.user_metadata?.avatar_url, profile?.gender, user.id as string) : '/avatars/default-male1.jpeg.jpeg'}
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
-
-            {/* Tooltip on Hover */}
-            <div className="absolute top-full right-0 mt-2 bg-black border border-white/20 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-              View Profile
-            </div>
-          </Link>
         </div>
       </header>
 

@@ -7,7 +7,7 @@ import { Settings, Grid, Calendar, LogOut, Share2, LayoutGrid, Video, FileText }
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { SettingsModal } from "@/components/modals/settings-modal";
+
 import { EditProfileModal } from "@/components/modals/edit-profile-modal";
 import { CreateStoryModal } from "@/components/stories/create-story-modal";
 import { StoryViewer } from "@/components/stories/story-viewer";
@@ -39,7 +39,7 @@ export default function ProfilePage() {
     const [user, setUser] = useState<User | null>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [profile, setProfile] = useState<any>(null);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
     const [isCreateStoryOpen, setIsCreateStoryOpen] = useState(false);
     const [isArtifactGalleryOpen, setIsArtifactGalleryOpen] = useState(false);
@@ -140,7 +140,7 @@ export default function ProfilePage() {
                                     Edit Profile
                                 </button>
                                 <button
-                                    onClick={() => setIsSettingsOpen(true)}
+                                    onClick={() => router.push('/settings')}
                                     className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
                                 >
                                     <Settings className="w-4 h-4" />
@@ -206,7 +206,7 @@ export default function ProfilePage() {
                         Open Vault
                     </button>
                     <button
-                        onClick={() => setIsSettingsOpen(true)}
+                        onClick={() => router.push('/settings')}
                         className="px-3 py-2 bg-zinc-800/80 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-zinc-700/80 rounded-lg transition-all active:scale-95"
                     >
                         <Settings className="w-5 h-5" />
@@ -415,7 +415,7 @@ export default function ProfilePage() {
 
             </div>
 
-            <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
 
             <EditProfileModal
                 isOpen={isEditProfileOpen}

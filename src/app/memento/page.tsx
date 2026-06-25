@@ -5,13 +5,13 @@ import { useUserData, LifeEvent } from '@/context/user-data-context';
 import { Skull, ArrowLeft, Calendar, Settings, Plus, Star, Flag } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { SettingsModal } from '@/components/modals/settings-modal';
+import { useRouter } from 'next/navigation';
 import { AddLifeEventModal } from '@/components/modals/add-life-event-modal';
 
 export default function MementoPage() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { birthDate, lifeEvents, deleteLifeEvent, mementoViewMode, user } = useUserData();
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const router = useRouter();
     const [isMobile, setIsMobile] = useState(false);
 
     // Interaction State
@@ -130,7 +130,7 @@ export default function MementoPage() {
                         {mementoViewMode === 'year' ? 'YEAR VIEW' : 'LIFE VIEW'}
                     </div>
                     <button
-                        onClick={() => setIsSettingsOpen(true)}
+                        onClick={() => router.push('/settings')}
                         className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm text-zinc-400 hover:text-white"
                     >
                         <Settings className="w-4 h-4" />
@@ -161,7 +161,7 @@ export default function MementoPage() {
                         <h3 className="text-xl font-bold text-white mb-2">No Birth Date Set</h3>
                         <p className="text-zinc-500 mb-6">Enter your birth date to generate your life grid.</p>
                         <button
-                            onClick={() => setIsSettingsOpen(true)}
+                            onClick={() => router.push('/settings')}
                             className="px-6 py-3 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform"
                         >
                             Set Birth Date
@@ -298,7 +298,7 @@ export default function MementoPage() {
                 )}
             </div>
 
-            <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
 
             {/* Add/View Event Modal */}
             <AddLifeEventModal
