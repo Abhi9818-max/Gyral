@@ -139,7 +139,7 @@ export function Header() {
 
           {/* Nox Balance Indicator - Always Visible */}
           <div 
-            onClick={() => setIsBankModalOpen(true)}
+            onClick={() => router.push('/bank')}
             className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/35 transition-colors cursor-pointer group select-none"
             title="Nox Balance (Iron Bank)"
           >
@@ -271,11 +271,11 @@ export function Header() {
               });
               document.getElementById('bank-btn')?.addEventListener('click', () => {
                 closeMenu();
-                setIsBankModalOpen(true);
+                router.push('/bank');
               });
               document.getElementById('store-btn')?.addEventListener('click', () => {
                 closeMenu();
-                setIsStoreModalOpen(true);
+                router.push('/store');
               });
               document.getElementById('world-nav-btn')?.addEventListener('click', () => {
                 closeMenu();

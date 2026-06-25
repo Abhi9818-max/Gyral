@@ -113,8 +113,8 @@ export type NavItemKey = 'world' | 'bank' | 'watch' | 'notes' | 'messages' | 'pa
 
 export const ALL_NAV_ITEMS: { key: NavItemKey, label: string, icon: string, href?: string }[] = [
     { key: 'world', label: 'World', icon: 'Globe', href: '/world' },
-    { key: 'bank', label: 'Bank', icon: 'Coins' },
-    { key: 'store', label: 'Store', icon: 'Store' },
+    { key: 'bank', label: 'Bank', icon: 'Coins', href: '/bank' },
+    { key: 'store', label: 'Store', icon: 'Store', href: '/store' },
     { key: 'watch', label: 'The Watch', icon: 'Shield' },
     { key: 'goals', label: 'Goals', icon: 'Flag', href: '/goals' },
     { key: 'achievements', label: 'Achievements', icon: 'Trophy', href: '/achievements' },

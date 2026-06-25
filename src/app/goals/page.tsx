@@ -56,15 +56,9 @@ export default function GoalsPage() {
                 <div className="relative">
                     <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg blur opacity-20" />
                     <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight flex items-center gap-3 sm:gap-4 relative">
-                        <Link href="/bucket-list" className="text-zinc-500 hover:text-white transition-colors p-1 rounded-lg">
-                            <ArrowLeft className="w-8 h-8" />
-                        </Link>
                         <Target className="w-10 h-10 text-blue-500" />
                         Goals
                     </h1>
-                    <p className={`mt-2 ${isLight ? 'text-zinc-500' : 'text-zinc-400'} font-medium`}>
-                        A detailed view and analysis of your Lifetime and Yearly bucket lists.
-                    </p>
                 </div>
 
                 {pendingAll.length > 0 && (
