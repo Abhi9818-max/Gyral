@@ -265,7 +265,7 @@ export default function ChatRoomsPage() {
     }
 
     return (
-        <div className="h-screen flex flex-col bg-black text-white overflow-hidden pt-16 pb-16 md:pb-0">
+        <div className="h-screen flex flex-col bg-black text-white overflow-hidden pt-0 pb-16 md:pb-0">
             {/* Rooms View Layout */}
             <div className="flex-1 flex max-w-7xl mx-auto w-full overflow-hidden relative">
                 
