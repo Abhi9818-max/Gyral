@@ -21,6 +21,7 @@ import { getUserAvatar } from '@/utils/avatar-helpers';
 import { useMessageNotifications } from '@/context/message-notification-context';
 
 import { FactionPickerModal } from './modals/faction-picker-modal';
+import { StoreModal } from './modals/store-modal';
 
 import { InvestmentModal } from './modals/investment-modal';
 
@@ -34,6 +35,7 @@ export function Header() {
   const [isFriendRequestsModalOpen, setIsFriendRequestsModalOpen] = useState(false);
   const [isFactionModalOpen, setIsFactionModalOpen] = useState(false);
   const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
+  const [isStoreModalOpen, setIsStoreModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { consistencyScore, currentStreak, streakStatus, streakTier, streakStrength, activeFilterTaskId, tasks, currentFaction, user, profile, noxBalance } = useUserData();
   const { unreadCount, friendRequestCount } = useMessageNotifications();
@@ -288,6 +290,10 @@ export function Header() {
                       <span class="text-yellow-500">💰</span>
                       <span class="text-white font-medium">Bank</span>
                     </button>
+                    <button id="store-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                      <span class="text-indigo-400">🛍️</span>
+                      <span class="text-white font-medium">Store</span>
+                    </button>
                     <button id="watch-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span class="text-slate-400">🛡️</span>
                       <span class="text-white font-medium">The Watch</span>
@@ -356,6 +362,10 @@ export function Header() {
               document.getElementById('bank-btn')?.addEventListener('click', () => {
                 closeMenu();
                 setIsBankModalOpen(true);
+              });
+              document.getElementById('store-btn')?.addEventListener('click', () => {
+                closeMenu();
+                setIsStoreModalOpen(true);
               });
               document.getElementById('watch-btn')?.addEventListener('click', () => {
                 closeMenu();
@@ -438,6 +448,10 @@ export function Header() {
                       <span class="text-yellow-500">💰</span>
                       <span class="text-white font-medium">Bank</span>
                     </button>
+                    <button id="store-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                      <span class="text-indigo-400">🛍️</span>
+                      <span class="text-white font-medium">Store</span>
+                    </button>
                     <button id="watch-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span class="text-slate-400">🛡️</span>
                       <span class="text-white font-medium">The Watch</span>
@@ -503,6 +517,10 @@ export function Header() {
               document.getElementById('bank-btn')?.addEventListener('click', () => {
                 closeMenu();
                 setIsBankModalOpen(true);
+              });
+              document.getElementById('store-btn')?.addEventListener('click', () => {
+                closeMenu();
+                setIsStoreModalOpen(true);
               });
               document.getElementById('watch-btn')?.addEventListener('click', () => {
                 closeMenu();
@@ -592,6 +610,7 @@ export function Header() {
       />
       <FactionPickerModal isOpen={isFactionModalOpen} onClose={() => setIsFactionModalOpen(false)} />
       <InvestmentModal isOpen={isInvestmentModalOpen} onClose={() => setIsInvestmentModalOpen(false)} />
+      <StoreModal isOpen={isStoreModalOpen} onClose={() => setIsStoreModalOpen(false)} />
     </>
   );
 }
