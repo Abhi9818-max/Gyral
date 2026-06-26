@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Globe, Send, ArrowLeft, MessageSquare, Shield, HelpCircle, User, Sparkles, LogIn, Users, Image, X } from 'lucide-react';
 import { useUserData, DEFAULT_FACTIONS } from '@/context/user-data-context';
@@ -48,6 +48,7 @@ export default function ChatRoomsPage() {
     const [showParticipants, setShowParticipants] = useState<boolean>(false);
     const [roomParticipants, setRoomParticipants] = useState<ProfileInfo[]>([]);
     const [participantsLoading, setParticipantsLoading] = useState<boolean>(false);
+    const [participantsStatus, setParticipantsStatus] = useState<Record<string, string>>({});
 
     // Image upload states
     const [selectedImage, setSelectedImage] = useState<{ file: File; url: string } | null>(null);
@@ -173,52 +174,113 @@ export default function ChatRoomsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Fetch room participants
+    // Fetch room participants currently in the active room
+    const fetchParticipants = useCallback(async () => {
+        if (!user) return;
+        setParticipantsLoading(true);
+        try {
+            // 1. Fetch user IDs from user_presence where current_room = activeRoom and status in ('online', 'away')
+            const { data: presenceData, error: presenceError } = await supabase
+                .from('user_presence')
+                .select('user_id, status')
+                .eq('current_room', activeRoom)
+                .in('status', ['online', 'away']);
+
+            if (presenceError) {
+                console.error('Error fetching presence room members:', presenceError);
+                return;
+            }
+
+            const activeUserIds = presenceData?.map(p => p.user_id) || [];
+            if (activeUserIds.length === 0) {
+                setRoomParticipants([]);
+                setParticipantsStatus({});
+                return;
+            }
+
+            // Store statuses locally
+            const statuses: Record<string, string> = {};
+            presenceData?.forEach(p => {
+                statuses[p.user_id] = p.status;
+            });
+            setParticipantsStatus(statuses);
+
+            // 2. Fetch profiles for those active user IDs
+            const { data: profilesData, error: profilesError } = await supabase
+                .from('profiles')
+                .select('id, full_name, username, avatar_url, gender, faction_id')
+                .in('id', activeUserIds)
+                .order('username', { ascending: true });
+
+            if (profilesError) {
+                console.error('Error fetching profiles for participants:', profilesError);
+                return;
+            }
+
+            setRoomParticipants(profilesData as ProfileInfo[] || []);
+        } catch (err) {
+            console.error('Failed to fetch participants:', err);
+        } finally {
+            setParticipantsLoading(false);
+        }
+    }, [activeRoom, user]);
+
+    // Load participants when room changes or user loads
+    useEffect(() => {
+        fetchParticipants();
+    }, [fetchParticipants]);
+
+    // Update current user's active room in user_presence
     useEffect(() => {
         if (!user) return;
 
-        let active = true;
-        setParticipantsLoading(true);
-
-        const fetchParticipants = async () => {
+        const updateRoomPresence = async (room: string | null) => {
             try {
-                let query = supabase
-                    .from('profiles')
-                    .select('id, full_name, username, avatar_url, gender, faction_id');
-
-                if (activeRoom !== 'westeros') {
-                    // For house rooms, fetch users in that faction
-                    query = query.eq('faction_id', activeRoom);
-                }
-
-                const { data, error } = await query.order('username', { ascending: true });
-
-                if (error) {
-                    console.error('Error fetching participants:', error);
-                    return;
-                }
-
-                if (active) {
-                    setRoomParticipants(data as ProfileInfo[] || []);
-                }
+                await supabase
+                    .from('user_presence')
+                    .upsert({
+                        user_id: user.id,
+                        status: 'online',
+                        current_room: room,
+                        last_seen: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'user_id' });
             } catch (err) {
-                console.error('Failed to fetch participants:', err);
-            } finally {
-                if (active) {
-                    setParticipantsLoading(false);
-                }
+                console.error("Error updating active room presence:", err);
             }
         };
 
-        fetchParticipants();
+        updateRoomPresence(activeRoom);
 
         return () => {
-            active = false;
+            // Clear current room on unmount or activeRoom change
+            updateRoomPresence(null);
         };
     }, [activeRoom, user]);
 
-    const participantIds = roomParticipants.map(p => p.id);
-    const presenceMap = useUserPresence(participantIds);
+    // Subscribe to presence changes to keep room member list in sync in real-time
+    useEffect(() => {
+        if (!user) return;
+
+        const channel = supabase
+            .channel('room_presence_sync')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'user_presence'
+                },
+                () => {
+                    fetchParticipants();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [user, fetchParticipants]);
 
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -838,7 +900,7 @@ export default function ChatRoomsPage() {
                                     <div className="text-center py-8 text-xs font-serif italic text-zinc-650">No members in this House yet</div>
                                 ) : (
                                     roomParticipants.map((p) => {
-                                        const status = presenceMap[p.id]?.status || 'offline';
+                                        const status = participantsStatus[p.id] || 'offline';
                                         return (
                                             <div key={p.id} className="flex items-center gap-2.5 p-1 hover:bg-white/5 rounded-lg transition-colors">
                                                 <div className="relative w-8 h-8 rounded-full overflow-hidden border border-white/5 bg-zinc-900 shrink-0">
@@ -907,7 +969,7 @@ export default function ChatRoomsPage() {
                                         <div className="text-center py-8 text-xs font-serif italic text-zinc-650">No members in this House yet</div>
                                     ) : (
                                         roomParticipants.map((p) => {
-                                            const status = presenceMap[p.id]?.status || 'offline';
+                                            const status = participantsStatus[p.id] || 'offline';
                                             return (
                                                 <div key={p.id} className="flex items-center gap-2.5 p-1 hover:bg-white/5 rounded-lg transition-colors">
                                                     <div className="relative w-8 h-8 rounded-full overflow-hidden border border-white/5 bg-zinc-900 shrink-0">
