@@ -8,7 +8,6 @@ import { MessageNotificationProvider } from "@/context/message-notification-cont
 import { PresenceProvider } from "@/context/presence-provider";
 import { ToastProvider } from "@/context/toast-context";
 import { MobileNavWrapper } from "@/components/mobile-nav-wrapper";
-import { PageTransition } from "@/components/global/page-transition";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -66,9 +65,7 @@ export default function RootLayout({
                   <CapacitorAuthHandler />
                   <FCMHandler />
                   <OnboardingWrapper />
-                  <PageTransition>
                     {children}
-                  </PageTransition>
                   <MobileNavWrapper />
                 </PresenceProvider>
               </MessageNotificationProvider>
