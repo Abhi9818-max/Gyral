@@ -34,11 +34,28 @@ export default function WorldPage() {
             const { data: { user } } = await supabase.auth.getUser();
             setCurrentUser(user);
 
-            // 2. Fetch Profiles for Reel (Real Users)
-            const { data: profiles } = await supabase
-                .from('profiles')
-                .select('*')
-                .limit(20);
+            // 2. Fetch Profiles, Records, and Factions concurrently
+            const [profilesRes, recordsRes, factionsRes] = await Promise.all([
+                supabase
+                    .from('profiles')
+                    .select('*')
+                    .limit(20),
+                supabase
+                    .from('records')
+                    .select(`
+                        *,
+                        tasks (name, color)
+                    `)
+                    .order('timestamp', { ascending: false })
+                    .limit(20),
+                supabase
+                    .from('factions')
+                    .select('*')
+            ]);
+
+            const profiles = profilesRes.data;
+            const records = recordsRes.data;
+            const factions = factionsRes.data;
 
             if (profiles) {
                 const mappedUsers: WorldUser[] = profiles.map(p => ({
@@ -46,7 +63,6 @@ export default function WorldPage() {
                     name: p.full_name || 'Anonymous',
                     handle: p.username ? `@${p.username}` : '@user',
                     avatar: p.avatar_url || `https://api.dicebear.com/7.x/shapes/svg?seed=${p.id}`,
-                    // Mocking social stats as they don't exist in DB yet
                     followers: '-',
                     following: '-',
                     creations: '-',
@@ -56,19 +72,8 @@ export default function WorldPage() {
                 setUsers(mappedUsers);
             }
 
-            // 3. Fetch Recent Records for Feed (Real Activity)
-            const { data: records } = await supabase
-                .from('records')
-                .select(`
-                    *,
-                    tasks (name, color)
-                `)
-                .order('timestamp', { ascending: false })
-                .limit(20);
-
             if (records) {
                 const mappedPosts: FeedPost[] = records.map(r => {
-                    // Try to find profile in fetched profiles
                     const author = profiles?.find(p => p.id === r.user_id) || {
                         id: r.user_id,
                         full_name: 'Unknown',
@@ -100,8 +105,6 @@ export default function WorldPage() {
                 setPosts(mappedPosts);
             }
 
-            // 4. Fetch Faction Power (Leaderboard)
-            const { data: factions } = await supabase.from('factions').select('*');
             if (factions && profiles) {
                 const power = factions.map(f => {
                     const houseMembers = profiles.filter(p => p.faction_id === f.id);

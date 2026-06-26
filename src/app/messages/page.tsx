@@ -126,17 +126,21 @@ function MessagesContent() {
     const loadFriends = async () => {
         setIsLoading(true);
 
-        const { data: data1 } = await supabase
-            .from('friendships')
-            .select('friend_id')
-            .eq('user_id', currentUser)
-            .eq('status', 'accepted');
+        const [res1, res2] = await Promise.all([
+            supabase
+                .from('friendships')
+                .select('friend_id')
+                .eq('user_id', currentUser)
+                .eq('status', 'accepted'),
+            supabase
+                .from('friendships')
+                .select('user_id')
+                .eq('friend_id', currentUser)
+                .eq('status', 'accepted')
+        ]);
 
-        const { data: data2 } = await supabase
-            .from('friendships')
-            .select('user_id')
-            .eq('friend_id', currentUser)
-            .eq('status', 'accepted');
+        const data1 = res1.data;
+        const data2 = res2.data;
 
         const friendIds: string[] = [];
         if (data1) data1.forEach((f) => friendIds.push(f.friend_id));

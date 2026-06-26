@@ -64,56 +64,67 @@ export default function ActivityFeedPage() {
                 .order('created_at', { ascending: false })
                 .limit(50);
 
-            if (activities) {
+            if (activities && activities.length > 0) {
                 // Get profiles for all activity users
                 const userIds = [...new Set(activities.map(a => a.user_id))];
-                const { data: profiles } = await supabase
-                    .from('profiles')
-                    .select('id, full_name, username, avatar_url, gender')
-                    .in('id', userIds);
+                const activityIds = activities.map(a => a.id);
 
-                // Get likes and comments counts
-                const enrichedActivities = await Promise.all(
-                    activities.map(async (activity) => {
-                        const { count: likesCount } = await supabase
-                            .from('activity_likes')
-                            .select('*', { count: 'exact', head: true })
-                            .eq('activity_id', activity.id);
+                // Fetch profiles, all likes and all comments in parallel
+                const [profilesRes, likesRes, commentsRes] = await Promise.all([
+                    supabase
+                        .from('profiles')
+                        .select('id, full_name, username, avatar_url, gender')
+                        .in('id', userIds),
+                    supabase
+                        .from('activity_likes')
+                        .select('id, activity_id, user_id')
+                        .in('activity_id', activityIds),
+                    supabase
+                        .from('activity_comments')
+                        .select('id, activity_id')
+                        .in('activity_id', activityIds)
+                ]);
 
-                        const { count: commentsCount } = await supabase
-                            .from('activity_comments')
-                            .select('*', { count: 'exact', head: true })
-                            .eq('activity_id', activity.id);
+                const profiles = profilesRes.data || [];
+                const allLikes = likesRes.data || [];
+                const allComments = commentsRes.data || [];
 
-                        const { data: userLike } = await supabase
-                            .from('activity_likes')
-                            .select('id')
-                            .eq('activity_id', activity.id)
-                            .eq('user_id', userId)
-                            .single();
+                // Map to accumulate counts/status
+                const likesCountMap: Record<string, number> = {};
+                const userLikedMap: Record<string, boolean> = {};
+                allLikes.forEach(l => {
+                    likesCountMap[l.activity_id] = (likesCountMap[l.activity_id] || 0) + 1;
+                    if (l.user_id === userId) {
+                        userLikedMap[l.activity_id] = true;
+                    }
+                });
 
-                        return {
-                            ...activity,
-                            profile: profiles?.find(p => p.id === activity.user_id) || {
-                                full_name: null,
-                                username: null,
-                                avatar_url: null,
-                                gender: null
-                            },
-                            likes_count: likesCount || 0,
-                            comments_count: commentsCount || 0,
-                            user_liked: !!userLike
-                        };
-                    })
-                );
+                const commentsCountMap: Record<string, number> = {};
+                allComments.forEach(c => {
+                    commentsCountMap[c.activity_id] = (commentsCountMap[c.activity_id] || 0) + 1;
+                });
+
+                const enrichedActivities = activities.map((activity) => ({
+                    ...activity,
+                    profile: profiles.find(p => p.id === activity.user_id) || {
+                        full_name: null,
+                        username: null,
+                        avatar_url: null,
+                        gender: null
+                    },
+                    likes_count: likesCountMap[activity.id] || 0,
+                    comments_count: commentsCountMap[activity.id] || 0,
+                    user_liked: !!userLikedMap[activity.id]
+                }));
 
                 setActivities(enrichedActivities);
+            } else {
+                setActivities([]);
             }
         } catch (error) {
             console.error('Error loading activities:', error);
         } finally {
-            // Add a small artificial delay to show off the skeleton (optional, remove in prod if too slow)
-            setTimeout(() => setIsLoading(false), 800);
+            setIsLoading(false);
         }
     };
 

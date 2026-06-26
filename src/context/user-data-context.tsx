@@ -444,32 +444,52 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             setUser(user);
 
             if (user) {
-                // FETCH FROM DB
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let dbTasks: any[] | null = null;
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let dbRecords: any[] | null = null;
-
                 try {
-                    // 1. Tasks
-                    try {
-                        const { data, error: tasksError } = await supabase.from('tasks').select('*');
-                        if (tasksError) throw tasksError;
-                        dbTasks = data;
-                        if (dbTasks) setTasks(dbTasks.map(t => ({
+                    const [
+                        tasksRes,
+                        recordsRes,
+                        pactsRes,
+                        dailyPactsRes,
+                        notesRes,
+                        settingsRes,
+                        lifeEventsRes,
+                        debtsRes,
+                        vowsRes,
+                        factionsRes,
+                        profileRes,
+                        investmentsRes
+                    ] = await Promise.all([
+                        supabase.from('tasks').select('*').then(r => r, e => ({ data: null, error: e })),
+                        supabase.from('records').select('*').then(r => r, e => ({ data: null, error: e })),
+                        supabase.from('pacts').select('*').then(r => r, e => ({ data: null, error: e })),
+                        supabase.from('daily_pacts').select('*').then(r => r, e => ({ data: null, error: e })),
+                        supabase.from('notes').select('*').then(r => r, e => ({ data: null, error: e })),
+                        supabase.from('user_settings').select('*').single().then(r => r, e => ({ data: null, error: e })),
+                        supabase.from('life_events').select('*').order('event_date', { ascending: true }).then(r => r, e => ({ data: null, error: e })),
+                        supabase.from('debts').select('*').order('created_at', { ascending: false }).then(r => r, e => ({ data: null, error: e })),
+                        supabase.from('vows').select('*').then(r => r, e => ({ data: null, error: e })),
+                        supabase.from('factions').select('*').then(r => r, e => ({ data: null, error: e })),
+                        supabase.from('profiles').select('*').eq('id', user.id).single().then(r => r, e => ({ data: null, error: e })),
+                        supabase.from('investments').select('*').order('created_at', { ascending: false }).then(r => r, e => ({ data: null, error: e }))
+                    ]);
+
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    let dbTasks: any[] | null = tasksRes.data;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    let dbRecords: any[] | null = recordsRes.data;
+
+                    if (tasksRes.error) console.error("Error loading tasks:", tasksRes.error);
+                    if (dbTasks) {
+                        setTasks(dbTasks.map(t => ({
                             id: t.id,
                             name: t.name,
                             color: t.color,
                             isArchived: t.is_archived,
                             metricConfig: t.metric_config
                         })));
-                    } catch (e) {
-                        console.error("Error loading tasks:", e);
                     }
 
-                    // 2. Records
-                    const { data } = await supabase.from('records').select('*');
-                    dbRecords = data;
+                    if (recordsRes.error) console.error("Error loading records:", recordsRes.error);
                     if (dbRecords) {
                         const newRecords: RecordsMap = {};
                         dbRecords.forEach(r => {
@@ -485,8 +505,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                         setRecords(newRecords);
                     }
 
-                    // 3. Pacts
-                    const { data: dbPacts } = await supabase.from('pacts').select('*');
+                    const dbPacts = pactsRes.data;
+                    if (pactsRes.error) console.error("Error loading pacts:", pactsRes.error);
                     const newPacts: PactsMap = {};
                     if (dbPacts) {
                         dbPacts.forEach(p => {
@@ -502,9 +522,9 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                         });
                     }
 
-                    // 3.5 Daily Pacts (Templates)
+                    const dbDailyPacts = dailyPactsRes.data;
+                    if (dailyPactsRes.error) console.error("Error loading daily pacts:", dailyPactsRes.error);
                     let loadedDailyPacts: DailyPact[] = [];
-                    const { data: dbDailyPacts } = await supabase.from('daily_pacts').select('*');
                     if (dbDailyPacts) {
                         loadedDailyPacts = dbDailyPacts.map(dp => ({
                             id: dp.id,
@@ -538,22 +558,19 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
                     setPacts(newPacts);
 
-                    try {
-                        // 4. Notes
-                        const { data: dbNotes, error: notesError } = await supabase.from('notes').select('*');
-                        if (notesError) throw notesError;
-                        if (dbNotes) setNotes(dbNotes.map(n => ({
+                    const dbNotes = notesRes.data;
+                    if (notesRes.error) console.error("Error loading notes:", notesRes.error);
+                    if (dbNotes) {
+                        setNotes(dbNotes.map(n => ({
                             id: n.id,
                             title: n.title,
                             content: n.content,
                             updatedAt: n.updated_at
                         })));
-                    } catch (e) {
-                        console.error("Error loading notes:", e);
                     }
 
-                    // 5. Settings
-                    const { data: dbSettings } = await supabase.from('user_settings').select('*').single();
+                    const dbSettings = settingsRes.data;
+                    if (settingsRes.error) console.error("Error loading settings:", settingsRes.error);
                     if (dbSettings) {
                         setBirthDate(dbSettings.birth_date);
                         if (dbSettings.show_stats_card !== undefined) setShowStatsCard(dbSettings.show_stats_card);
@@ -562,25 +579,28 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
                         if (dbSettings.default_filter_task_id) {
                             setDefaultFilterTaskIdState(dbSettings.default_filter_task_id);
-                            // Apply it immediately if no filter is set (fresh load)
                             setActiveFilterTaskId(dbSettings.default_filter_task_id);
                         }
 
                         if (dbSettings.profile_streak_mode) {
                             setProfileStreakModeState(dbSettings.profile_streak_mode as 'pinned' | 'combined');
                         }
+
+                        // Re-use is_exiled & exiled_until from settings, eliminating the redundant settings select
+                        setIsExiled(dbSettings.is_exiled || false);
+                        setExiledUntil(dbSettings.exiled_until || null);
                     }
 
-                    // 6. Life Events
-                    const { data: dbLifeEvents } = await supabase.from('life_events').select('*').order('event_date', { ascending: true });
+                    const dbLifeEvents = lifeEventsRes.data;
+                    if (lifeEventsRes.error) console.error("Error loading life events:", lifeEventsRes.error);
                     if (dbLifeEvents) setLifeEvents(dbLifeEvents as LifeEvent[]);
 
-                    // 7. Debts
-                    const { data: dbDebts } = await supabase.from('debts').select('*').order('created_at', { ascending: false });
+                    const dbDebts = debtsRes.data;
+                    if (debtsRes.error) console.error("Error loading debts:", debtsRes.error);
                     if (dbDebts) setDebts(dbDebts as Debt[]);
 
-                    // 9. Vows
-                    const { data: dbVows } = await supabase.from('vows').select('*');
+                    const dbVows = vowsRes.data;
+                    if (vowsRes.error) console.error("Error loading vows:", vowsRes.error);
                     if (dbVows) {
                         const loadedVows = dbVows.map(v => ({
                             id: v.id,
@@ -593,33 +613,33 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                             brokenOn: v.broken_on
                         }));
                         setVows(loadedVows);
-                        // checkVowFailures removed - deferred to UI
                     }
 
-                    const { data: dbFactions, error: fetchErr } = await supabase.from('factions').select('*');
-                    if (fetchErr) console.error("Error fetching factions:", fetchErr.message);
+                    const dbFactions = factionsRes.data;
+                    if (factionsRes.error) console.error("Error loading factions:", factionsRes.error);
 
                     // Seed missing factions if user is login
                     if (user && dbFactions) {
                         const missingFactions = DEFAULT_FACTIONS.filter(df => !dbFactions.find(f => f.name === df.name));
                         if (missingFactions.length > 0) {
                             console.log("Seeding missing factions:", missingFactions.map(f => f.name));
-                            const { error: insErr } = await supabase.from('factions').insert(missingFactions.map(f => ({
+                            supabase.from('factions').insert(missingFactions.map(f => ({
                                 name: f.name,
                                 sigil_url: f.sigilUrl,
                                 primary_color: f.primaryColor,
                                 quote: f.quote
-                            })));
-                            if (insErr) console.warn("Factions seeded failed (likely RLS). Run advanced-features.sql manually.", insErr.message);
-
-                            // Re-fetch to get new IDs
-                            const { data: reFetched } = await supabase.from('factions').select('*');
-                            const available = reFetched || dbFactions || [];
-                            const mapped = DEFAULT_FACTIONS.map(df => {
-                                const dbMatch = available.find(f => f.name === df.name);
-                                return dbMatch ? { ...df, id: dbMatch.id } : df;
+                            }))).then(({ error }) => {
+                                if (error) console.warn("Factions seeded failed (likely RLS). Run advanced-features.sql manually.", error.message);
+                                // Re-fetch to get new IDs
+                                supabase.from('factions').select('*').then(({ data: reFetched }) => {
+                                    const available = reFetched || dbFactions || [];
+                                    const mapped = DEFAULT_FACTIONS.map(df => {
+                                        const dbMatch = available.find(f => f.name === df.name);
+                                        return dbMatch ? { ...df, id: dbMatch.id } : df;
+                                    });
+                                    setFactions(mapped);
+                                });
                             });
-                            setFactions(mapped);
                         } else {
                             const mapped = DEFAULT_FACTIONS.map(df => {
                                 const dbMatch = dbFactions.find(f => f.name === df.name);
@@ -631,7 +651,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                         setFactions(DEFAULT_FACTIONS);
                     }
 
-                    const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                    const profileData = profileRes.data;
+                    if (profileRes.error) console.error("Error loading profile:", profileRes.error);
                     if (profileData) {
                         setProfile(profileData);
                         setNoxBalance(profileData.nox_balance || 0);
@@ -647,20 +668,9 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                         if (profileData.navigation_preferences) {
                             setNavPreferences(profileData.navigation_preferences as NavItemKey[]);
                         }
-                        if (profileData.faction_id) {
-                            // Try to find in fetched dbFactions
-                            const finalDbFactions = (await supabase.from('factions').select('*')).data || dbFactions || [];
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const dbMatch = finalDbFactions.find((f: any) => f.id === profileData.faction_id);
-
-                            // Fallback: If not found by ID (maybe RLS issue), try matching by name from local defaults if possible, 
-                            // OR just try to use localStorage as a fail-safe if the ID exists but we can't resolve it.
-                            if (!dbMatch) {
-                                // Last ditch: check if we have a saved local faction that matches the ID? 
-                                // Or more likely, if we can't load factions table, we can't verify ID.
-                                // Let's rely on Guest Mode-style local storage check as a backup below if DB fails.
-                            }
-
+                        if (profileData.faction_id && dbFactions) {
+                            // Re-use already loaded dbFactions, completely eliminating the redundant finalDbFactions select query!
+                            const dbMatch = dbFactions.find((f: any) => f.id === profileData.faction_id);
                             if (dbMatch) {
                                 const localMatch = DEFAULT_FACTIONS.find(df => df.name === dbMatch.name);
                                 if (localMatch) {
@@ -675,20 +685,13 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                     const savedLocalFaction = localStorage.getItem('diogenes-current-faction');
                     if (savedLocalFaction && !currentFaction) {
                         try {
-                            // Only use local if we didn't find one from DB, OR if we trust local more for immediate UI
                             const parsed = JSON.parse(savedLocalFaction);
-                            // If we haven't set a faction from DB yet, use this
                             setCurrentFaction((prev) => prev || parsed);
                         } catch (e) { console.error(e); }
                     }
 
-                    const { data: dbSettingsExile } = await supabase.from('user_settings').select('is_exiled, exiled_until').single();
-                    if (dbSettingsExile) {
-                        setIsExiled(dbSettingsExile.is_exiled || false);
-                        setExiledUntil(dbSettingsExile.exiled_until || null);
-                    }
-
-                    const { data: dbInvestments } = await supabase.from('investments').select('*').order('created_at', { ascending: false });
+                    const dbInvestments = investmentsRes.data;
+                    if (investmentsRes.error) console.error("Error loading investments:", investmentsRes.error);
                     if (dbInvestments) setInvestments(dbInvestments as Investment[]);
 
                     if (dbSettings && dbSettings.last_audit_date) {
