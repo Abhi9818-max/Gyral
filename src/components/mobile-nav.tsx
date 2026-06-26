@@ -10,6 +10,8 @@ import {
 import { useUserData, ALL_NAV_ITEMS, NavItemKey } from '@/context/user-data-context';
 import { useToday } from '@/hooks/use-today';
 import { getUserAvatar } from '@/utils/avatar-helpers';
+import { haptic } from '@/utils/haptic';
+import { sfx } from '@/utils/sfx';
 import { BankModal } from './modals/bank-modal';
 import { NightsWatchModal } from './modals/nights-watch-modal';
 import { PactsModal } from './modals/pacts-modal';
@@ -37,6 +39,11 @@ export function MobileNav() {
         if (key === 'bank') setIsBankModalOpen(true);
         if (key === 'watch') setIsWatchModalOpen(true);
         if (key === 'pacts') setIsPactsModalOpen(true);
+    };
+
+    const playClickFeedback = () => {
+        haptic.light();
+        sfx.playClick();
     };
 
     const isActive = (href: string) => {
@@ -72,6 +79,7 @@ export function MobileNav() {
                     {/* Home Button - Fixed */}
                     <Link
                         href="/dashboard"
+                        onClick={playClickFeedback}
                         className="flex flex-col items-center justify-center flex-1 h-full relative"
                     >
                         <Home
@@ -93,6 +101,7 @@ export function MobileNav() {
                                 <Link
                                     key={item.key}
                                     href={item.href}
+                                    onClick={playClickFeedback}
                                     className="flex flex-col items-center justify-center flex-1 h-full relative"
                                 >
                                     <div className="relative">
@@ -111,7 +120,10 @@ export function MobileNav() {
                         return (
                             <button
                                 key={item.key}
-                                onClick={() => handleAction(item.key)}
+                                onClick={() => {
+                                    playClickFeedback();
+                                    handleAction(item.key);
+                                }}
                                 className="flex flex-col items-center justify-center flex-1 h-full relative"
                             >
                                 <div className="relative">
@@ -127,6 +139,7 @@ export function MobileNav() {
                     {/* Profile Button - Fixed */}
                     <Link
                         href="/profile"
+                        onClick={playClickFeedback}
                         className="flex flex-col items-center justify-center flex-1 h-full relative"
                     >
                         <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center overflow-hidden transition-all ${isActive('/profile') ? 'border-white scale-110' : 'border-white/30'} bg-gradient-to-tr from-zinc-800 to-zinc-700`}>

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Coins, AlertTriangle, CheckCircle2, Plus, Sparkles } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
+import { haptic } from '@/utils/haptic';
+import { sfx } from '@/utils/sfx';
 
 const parseDebtAmount = (amountStr: string): number => {
     const num = parseFloat(amountStr.replace(/[^0-9.]/g, ''));
@@ -34,8 +36,12 @@ export default function BankPage() {
             await addDebt({ description, amount });
             setDescription('');
             setAmount('');
+            sfx.playSuccess();
+            haptic.medium();
         } catch (err) {
             console.error("Failed to add debt:", err);
+            sfx.playError();
+            haptic.error();
         } finally {
             setIsSubmitting(false);
         }
@@ -45,10 +51,14 @@ export default function BankPage() {
         setPayError(null);
         const amountToPay = parseFloat(payNoxAmount);
         if (isNaN(amountToPay) || amountToPay <= 0) {
+            sfx.playError();
+            haptic.error();
             setPayError('Please enter a valid amount.');
             return;
         }
         if (amountToPay > noxBalance) {
+            sfx.playError();
+            haptic.error();
             setPayError(`Insufficient balance. You only have ${noxBalance} Nox.`);
             return;
         }
@@ -59,6 +69,9 @@ export default function BankPage() {
             setPayNoxAmount('');
             setIsPayInputVisible(false);
             
+            sfx.playSuccess();
+            haptic.success();
+
             const confetti = (await import('canvas-confetti')).default;
             confetti({
                 particleCount: 80,
@@ -68,6 +81,8 @@ export default function BankPage() {
             });
         } catch (e) {
             console.error(e);
+            sfx.playError();
+            haptic.error();
             setPayError('An error occurred during payment.');
         } finally {
             setIsPaying(false);
@@ -84,7 +99,11 @@ export default function BankPage() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => router.push('/dashboard')}
+                        onClick={() => {
+                            sfx.playClick();
+                            haptic.light();
+                            router.push('/dashboard');
+                        }}
                         className="p-2 hover:bg-white/5 rounded-full border border-white/10 transition-colors"
                         title="Back to Dashboard"
                     >

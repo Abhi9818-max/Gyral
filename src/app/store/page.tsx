@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Store, Coins, Sparkles, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
+import { haptic } from '@/utils/haptic';
+import { sfx } from '@/utils/sfx';
 
 const STORE_ITEMS = [
     { id: 'freeze', name: 'Streak Freeze', description: 'Protects your streaks for one day if you miss your tasks.', price: 30, icon: '❄️', color: 'from-blue-500/20 to-cyan-500/5', border: 'border-blue-500/30' },
@@ -25,6 +27,8 @@ export default function StorePage() {
     const handleBuy = async (item: typeof STORE_ITEMS[0]) => {
         setErrorMsg(null);
         if (noxBalance < item.price) {
+            sfx.playError();
+            haptic.error();
             setErrorMsg(`Not enough Nox for ${item.name}.`);
             return;
         }
@@ -33,6 +37,9 @@ export default function StorePage() {
             await updateNoxBalance(-item.price);
             setPurchasedItems(prev => ({ ...prev, [item.id]: true }));
             
+            sfx.playSuccess();
+            haptic.success();
+
             const confetti = (await import('canvas-confetti')).default;
             confetti({
                 particleCount: 100,
@@ -47,6 +54,8 @@ export default function StorePage() {
 
         } catch (e) {
             console.error(e);
+            sfx.playError();
+            haptic.error();
             setErrorMsg("Failed to process transaction.");
         }
     };
@@ -57,7 +66,11 @@ export default function StorePage() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => router.push('/dashboard')}
+                        onClick={() => {
+                            sfx.playClick();
+                            haptic.light();
+                            router.push('/dashboard');
+                        }}
                         className="p-2 hover:bg-white/5 rounded-full border border-white/10 transition-colors"
                         title="Back to Dashboard"
                     >

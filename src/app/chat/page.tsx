@@ -7,6 +7,8 @@ import { useUserData, DEFAULT_FACTIONS } from '@/context/user-data-context';
 import { createClient } from '@/utils/supabase/client';
 import { getUserAvatar } from '@/utils/avatar-helpers';
 import { useUserPresence } from '@/hooks/usePresence';
+import { haptic } from '@/utils/haptic';
+import { sfx } from '@/utils/sfx';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProfileInfo {
@@ -136,6 +138,8 @@ export default function ChatRoomsPage() {
 
     const selectSuggestion = (username: string) => {
         if (!username) return;
+        sfx.playClick();
+        haptic.light();
         setNewMessage(prev => {
             const words = prev.trim().split(' ');
             if (words.length > 0) {
@@ -287,9 +291,14 @@ export default function ChatRoomsPage() {
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
+            sfx.playError();
+            haptic.error();
             alert('Please select an image file.');
             return;
         }
+
+        sfx.playClick();
+        haptic.light();
 
         setSelectedImage({
             file,
@@ -433,6 +442,8 @@ export default function ChatRoomsPage() {
 
                 if (uploadError) {
                     console.error('Storage upload error:', uploadError);
+                    sfx.playError();
+                    haptic.error();
                     alert('Failed to upload image. Please ensure the "chat-media" bucket exists in Supabase Storage by running the chat-enhancements.sql script.');
                     setIsSending(false);
                     return;
@@ -457,12 +468,18 @@ export default function ChatRoomsPage() {
 
             if (error) {
                 console.error('Error inserting message:', error);
+                sfx.playError();
+                haptic.error();
             } else {
+                sfx.playPop();
+                haptic.medium();
                 setNewMessage('');
                 setSelectedImage(null);
             }
         } catch (err) {
             console.error('Failed to send message:', err);
+            sfx.playError();
+            haptic.error();
         } finally {
             setIsSending(false);
         }
@@ -513,6 +530,8 @@ export default function ChatRoomsPage() {
                         {/* Westeros Global Room */}
                         <button
                             onClick={() => {
+                                sfx.playClick();
+                                haptic.light();
                                 setActiveRoom('westeros');
                                 setMobileShowChat(true);
                             }}
@@ -543,6 +562,8 @@ export default function ChatRoomsPage() {
                                 <button
                                     key={faction.id}
                                     onClick={() => {
+                                        sfx.playClick();
+                                        haptic.light();
                                         setActiveRoom(faction.id);
                                         setMobileShowChat(true);
                                     }}
