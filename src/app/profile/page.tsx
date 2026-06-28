@@ -69,7 +69,22 @@ export default function ProfilePage() {
 
     const handleLogout = async () => {
         const supabase = createClient();
-        await supabase.auth.signOut();
+        try {
+            await supabase.auth.signOut();
+        } catch (e) {
+            console.error("Sign out failed:", e);
+        }
+        
+        // Force cleanup of all cookies on the client side
+        if (typeof document !== 'undefined') {
+            document.cookie.split(";").forEach((c) => {
+                document.cookie = c
+                    .replace(/^ +/, "")
+                    .replace(/=.*/, "=;expires=" + new Date(0).toUTCString() + ";path=/");
+            });
+        }
+        
+        localStorage.clear();
         router.push('/login');
     };
 
