@@ -458,13 +458,26 @@ img {
   100% { transform: translateX(100%); }
 }
 
-/* Prevent Default Long-Press/Touch Callouts on Mobile for Images and Videos */
-img, video {
+/* Prevent Default Long-Press/Touch Callouts globally on mobile for premium native app experience */
+* {
   -webkit-touch-callout: none !important;
-  -webkit-user-select: none !important;
-  -khtml-user-select: none !important;
-  -moz-user-select: none !important;
-  -ms-user-select: none !important;
-  user-select: none !important;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection inside inputs and editable fields so users can type and edit normally */
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text !important;
+  -khtml-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+}
+
+/* Ensure images and videos prevent default browser dragging behaviors */
+img, video {
   -webkit-user-drag: none !important;
 }
