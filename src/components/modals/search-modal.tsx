@@ -83,7 +83,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder="Search users by username or name..."
-                        className="flex-1 bg-transparent text-white placeholder-zinc-500 focus:outline-none text-base"
+                        className="flex-1 bg-transparent text-white placeholder-zinc-500 text-base !outline-none !ring-0 focus:!outline-none focus:!ring-0 focus-visible:!outline-none focus-visible:!ring-0 active:!outline-none active:!ring-0"
                         autoFocus
                     />
                     <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">

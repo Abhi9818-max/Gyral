@@ -179,7 +179,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                 <div className="flex items-start gap-6 mb-8">
                     {/* Avatar */}
                     <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 border-2 border-white/10 overflow-hidden flex-shrink-0">
-                        // eslint-disable-next-line @next/next/no-img-element
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={getUserAvatar(profile.avatar_url, profile.gender, profile.id)}
                             alt={profile.full_name || 'User'}
@@ -221,7 +221,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                 {/* Activity Heatmap */}
                 <div className="mb-8">
                     <h2 className="text-xl font-bold mb-4">Activity</h2>
-                    <Heatmap />
+                    <Heatmap userId={profile.id} />
                 </div>
             </div>
         </div>

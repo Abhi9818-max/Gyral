@@ -2,18 +2,82 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Calendar as CalendarIcon } from 'lucide-react';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { useUserData, Record } from '@/context/user-data-context';
+import { useUserData } from '@/context/user-data-context';
 import { LogActivityModal } from './modals/log-activity-modal';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { format, setYear, setMonth, setDate, getDay, getDaysInMonth, startOfYear } from 'date-fns';
 import Link from 'next/link';
+import { createClient } from '@/utils/supabase/client';
 
-export function Heatmap() {
-    const { records, tasks, activeFilterTaskId } = useUserData();
+interface HeatmapProps {
+    userId?: string;
+}
+
+export function Heatmap({ userId }: HeatmapProps = {}) {
+    const contextData = useUserData();
+    const supabase = createClient();
+
+    const [localRecords, setLocalRecords] = useState<Record<string, any[]>>({});
+    const [localTasks, setLocalTasks] = useState<any[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [loadingLocal, setLoadingLocal] = useState(false);
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const currentMonthRef = useRef<HTMLDivElement>(null);
+
+    const isExternalUser = userId && contextData.user && userId !== contextData.user.id;
+
+    useEffect(() => {
+        if (!isExternalUser) return;
+
+        const fetchExternalData = async () => {
+            setLoadingLocal(true);
+            try {
+                // Fetch external user's tasks
+                const { data: tasksData } = await supabase
+                    .from('tasks')
+                    .select('*')
+                    .eq('user_id', userId);
+
+                // Fetch external user's records
+                const { data: recordsData } = await supabase
+                    .from('records')
+                    .select('*')
+                    .eq('user_id', userId);
+
+                if (tasksData) {
+                    setLocalTasks(tasksData);
+                }
+
+                if (recordsData) {
+                    const map: Record<string, any[]> = {};
+                    recordsData.forEach(r => {
+                        const dateKey = r.date;
+                        if (!map[dateKey]) map[dateKey] = [];
+                        map[dateKey].push({
+                            id: r.id,
+                            taskId: r.task_id, // map task_id to taskId
+                            intensity: r.intensity,
+                            value: r.value,
+                            timestamp: r.timestamp
+                        });
+                    });
+                    setLocalRecords(map);
+                }
+            } catch (err) {
+                console.error("Error fetching external heatmap data:", err);
+            } finally {
+                setLoadingLocal(false);
+            }
+        };
+
+        fetchExternalData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userId, isExternalUser]);
+
+    const records = isExternalUser ? localRecords : contextData.records;
+    const tasks = isExternalUser ? localTasks : contextData.tasks;
+    const activeFilterTaskId = isExternalUser ? null : contextData.activeFilterTaskId;
 
     // Current Year 2026 Logic
     const currentYear = 2026;
@@ -123,14 +187,6 @@ export function Heatmap() {
                         {/* Calendar grid with proper alignment */}
                         <div className="grid grid-cols-7 gap-1 md:gap-1.5">
                             {/* Add empty boxes for offset (days before the 1st) */}
-                            {/* Adjustment: getDay returns 0 for Sunday. If we want Mon start, we need to shift. 
-                                Let's assume Standard JS getDay: 0=Sun, 1=Mon... 6=Sat.
-                                If UI expects Mon=0, Tue=1.. Sun=6.
-                                
-                                JS: Sun=0, Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6
-                                UI Target: Mon=0, Tue=1 ... Sun=6
-                                Conversion: (day + 6) % 7
-                            */}
                             {Array.from({ length: (month.startDay + 6) % 7 }).map((_, i) => (
                                 <div key={`empty-${i}`} className="w-[28px] h-[28px] md:w-[25px] md:h-[25px]" />
                             ))}
@@ -138,8 +194,6 @@ export function Heatmap() {
                             {/* Actual day boxes - responsive size */}
                             {Array.from({ length: month.days }).map((_, i) => {
                                 const day = i + 1;
-                                // Create date string YYYY-MM-DD
-                                // Note: monthIndex is 0-11, so +1 for string
                                 const dateStr = `${currentYear}-${String(month.monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                                 const isToday = dateStr === todayStr;
                                 const style = getDayColor(dateStr);
@@ -166,13 +220,17 @@ export function Heatmap() {
                                 return (
                                     <div
                                         key={i}
-                                        onClick={() => setSelectedDate(dateStr)}
-                                        className={`w-[28px] h-[28px] md:w-[25px] md:h-[25px] rounded-[5px] md:rounded-[4px] transition-all duration-300 cursor-pointer hover:scale-110 active:scale-95 relative group ${!style ? 'bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] hover:from-[#2a2a2a] hover:to-[#1a1a1a] hover:shadow-[0_0_15px_rgba(16,185,129,0.4),inset_0_1px_2px_rgba(0,0,0,0.3)]' : ''} ${isToday ? 'z-20 scale-110' : 'hover:z-10'}`}
+                                        onClick={() => !isExternalUser && setSelectedDate(dateStr)}
+                                        className={`w-[28px] h-[28px] md:w-[25px] md:h-[25px] rounded-[5px] md:rounded-[4px] transition-all duration-300 relative group ${
+                                            isExternalUser ? 'cursor-default' : 'cursor-pointer hover:scale-110 active:scale-95'
+                                        } ${!style ? 'bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] hover:from-[#2a2a2a] hover:to-[#1a1a1a] hover:shadow-[0_0_15px_rgba(16,185,129,0.4),inset_0_1px_2px_rgba(0,0,0,0.3)]' : ''} ${isToday ? 'z-20 scale-110' : 'hover:z-10'}`}
                                         style={boxStyle}
                                         title={`${month.name} ${day}${isToday ? ' (Today)' : ''}`}
                                     >
                                         {/* Shimmer Effect */}
-                                        <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[4px]" />
+                                        {!isExternalUser && (
+                                            <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[4px]" />
+                                        )}
                                     </div>
                                 );
                             })}
@@ -181,14 +239,16 @@ export function Heatmap() {
                 ))}
             </div>
 
-            <div className="flex justify-center">
-                <Link href="/calendar" className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-card to-card/80 border border-border/60 rounded-lg text-xs md:text-sm text-[#f5f5f5] hover:bg-gradient-to-r hover:from-muted hover:to-muted/80 transition-all duration-500 cursor-pointer shadow-[0_10px_40px_rgba(0,0,0,0.5)] hover:shadow-[0_15px_60px_rgba(16,185,129,0.2)] hover:scale-105 hover:-translate-y-1 backdrop-blur-xl group">
-                    <CalendarIcon className="w-4 h-4 group-hover:text-accent transition-colors duration-300" />
-                    View Full Calendar
-                </Link>
-            </div>
+            {!isExternalUser && (
+                <div className="flex justify-center">
+                    <Link href="/calendar" className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-card to-card/80 border border-border/60 rounded-lg text-xs md:text-sm text-[#f5f5f5] hover:bg-gradient-to-r hover:from-muted hover:to-muted/80 transition-all duration-500 cursor-pointer shadow-[0_10px_40px_rgba(0,0,0,0.5)] hover:shadow-[0_15px_60px_rgba(16,185,129,0.2)] hover:scale-105 hover:-translate-y-1 backdrop-blur-xl group">
+                        <CalendarIcon className="w-4 h-4 group-hover:text-accent transition-colors duration-300" />
+                        View Full Calendar
+                    </Link>
+                </div>
+            )}
 
-            {selectedDate && (
+            {!isExternalUser && selectedDate && (
                 <LogActivityModal
                     isOpen={!!selectedDate}
                     onClose={() => setSelectedDate(null)}
