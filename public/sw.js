@@ -2,7 +2,7 @@
 // Handles push notifications and background sync
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const CACHE_NAME = 'mind-flayer-v1';
+const CACHE_NAME = 'gyral-v2';
 
 // Install event
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
