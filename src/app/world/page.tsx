@@ -25,7 +25,7 @@ export default function WorldPage() {
     const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
     const [isFriendRequestsModalOpen, setIsFriendRequestsModalOpen] = useState(false);
     const { friendRequestCount } = useMessageNotifications();
-    const [activeTab, setActiveTab] = useState<'houses' | 'chronicles' | 'atlas'>('houses');
+    const [activeTab, setActiveTab] = useState<'houses' | 'chronicles' | 'atlas'>('chronicles');
 
     useEffect(() => {
         const fetchData = async () => {
