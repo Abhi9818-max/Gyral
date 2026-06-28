@@ -27,7 +27,7 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
     const {
         tasks, records, pacts, notes,
         currentStreak, longestStreak, consistencyScore, streakTier, streakStrength,
-        restoreData,
+        restoreData, syncCloudData,
         birthDate, setBirthDate,
         mementoViewMode, toggleMementoViewMode,
         showStatsCard, toggleStatsCard,
@@ -569,6 +569,23 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                         <SettingsItem icon={Cloud} label="Archive (JSON)" onClick={handleExport} value="Export" />
                         <input type="file" accept=".json" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
                         <SettingsItem icon={RefreshCw} label="Resurrect Backup" onClick={handleImportClick} value="Import" />
+                        {user && (
+                            <SettingsItem
+                                icon={Cloud}
+                                label="Restore from Cloud"
+                                onClick={async () => {
+                                    if (confirm("Restore all your data from your cloud backup? This will overwrite local data with your Supabase database records.")) {
+                                        try {
+                                            await syncCloudData();
+                                            alert("Backup restored successfully from Supabase!");
+                                        } catch (err) {
+                                            alert("Failed to restore from cloud: " + ((err as Error)?.message || "Unknown error"));
+                                        }
+                                    }
+                                }}
+                                value="Restore"
+                            />
+                        )}
                         <SettingsItem
                             icon={Trash2}
                             label="Total Wipe"

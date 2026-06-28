@@ -303,6 +303,7 @@ interface UserDataContextType {
     // Data Management
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     restoreData: (data: any) => boolean;
+    syncCloudData: () => Promise<void>;
 
     // Memento Mori
     birthDate: string | null;
@@ -436,366 +437,387 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
     const supabase = createClient();
 
-    // --- INITIAL DATA LOADING ---
-    useEffect(() => {
-        const initData = async () => {
-            // Check if supabase is configured before calling getUser to avoid errors in dev if not set up
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
+    // --- INITIAL DATA LOADING & AUTH SYNC ---
+    const loadData = async (currentUser: User | null) => {
+        setIsLoaded(false);
 
-            if (user) {
-                try {
-                    const [
-                        tasksRes,
-                        recordsRes,
-                        pactsRes,
-                        dailyPactsRes,
-                        notesRes,
-                        settingsRes,
-                        lifeEventsRes,
-                        debtsRes,
-                        vowsRes,
-                        factionsRes,
-                        profileRes,
-                        investmentsRes
-                    ] = await Promise.all([
-                        supabase.from('tasks').select('*').then(r => r, e => ({ data: null, error: e })),
-                        supabase.from('records').select('*').then(r => r, e => ({ data: null, error: e })),
-                        supabase.from('pacts').select('*').then(r => r, e => ({ data: null, error: e })),
-                        supabase.from('daily_pacts').select('*').then(r => r, e => ({ data: null, error: e })),
-                        supabase.from('notes').select('*').then(r => r, e => ({ data: null, error: e })),
-                        supabase.from('user_settings').select('*').single().then(r => r, e => ({ data: null, error: e })),
-                        supabase.from('life_events').select('*').order('event_date', { ascending: true }).then(r => r, e => ({ data: null, error: e })),
-                        supabase.from('debts').select('*').order('created_at', { ascending: false }).then(r => r, e => ({ data: null, error: e })),
-                        supabase.from('vows').select('*').then(r => r, e => ({ data: null, error: e })),
-                        supabase.from('factions').select('*').then(r => r, e => ({ data: null, error: e })),
-                        supabase.from('profiles').select('*').eq('id', user.id).single().then(r => r, e => ({ data: null, error: e })),
-                        supabase.from('investments').select('*').order('created_at', { ascending: false }).then(r => r, e => ({ data: null, error: e }))
-                    ]);
+        if (currentUser) {
+            try {
+                const [
+                    tasksRes,
+                    recordsRes,
+                    pactsRes,
+                    dailyPactsRes,
+                    notesRes,
+                    settingsRes,
+                    lifeEventsRes,
+                    debtsRes,
+                    vowsRes,
+                    factionsRes,
+                    profileRes,
+                    investmentsRes
+                ] = await Promise.all([
+                    supabase.from('tasks').select('*').then(r => r, e => ({ data: null, error: e })),
+                    supabase.from('records').select('*').then(r => r, e => ({ data: null, error: e })),
+                    supabase.from('pacts').select('*').then(r => r, e => ({ data: null, error: e })),
+                    supabase.from('daily_pacts').select('*').then(r => r, e => ({ data: null, error: e })),
+                    supabase.from('notes').select('*').then(r => r, e => ({ data: null, error: e })),
+                    supabase.from('user_settings').select('*').single().then(r => r, e => ({ data: null, error: e })),
+                    supabase.from('life_events').select('*').order('event_date', { ascending: true }).then(r => r, e => ({ data: null, error: e })),
+                    supabase.from('debts').select('*').order('created_at', { ascending: false }).then(r => r, e => ({ data: null, error: e })),
+                    supabase.from('vows').select('*').then(r => r, e => ({ data: null, error: e })),
+                    supabase.from('factions').select('*').then(r => r, e => ({ data: null, error: e })),
+                    supabase.from('profiles').select('*').eq('id', currentUser.id).single().then(r => r, e => ({ data: null, error: e })),
+                    supabase.from('investments').select('*').order('created_at', { ascending: false }).then(r => r, e => ({ data: null, error: e }))
+                ]);
 
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    let dbTasks: any[] | null = tasksRes.data;
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    let dbRecords: any[] | null = recordsRes.data;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let dbTasks: any[] | null = tasksRes.data;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let dbRecords: any[] | null = recordsRes.data;
 
-                    if (tasksRes.error) console.error("Error loading tasks:", tasksRes.error);
-                    if (dbTasks) {
-                        setTasks(dbTasks.map(t => ({
-                            id: t.id,
-                            name: t.name,
-                            color: t.color,
-                            isArchived: t.is_archived,
-                            metricConfig: t.metric_config
-                        })));
-                    }
+                if (tasksRes.error) console.error("Error loading tasks:", tasksRes.error);
+                if (dbTasks) {
+                    setTasks(dbTasks.map(t => ({
+                        id: t.id,
+                        name: t.name,
+                        color: t.color,
+                        isArchived: t.is_archived,
+                        metricConfig: t.metric_config
+                    })));
+                }
 
-                    if (recordsRes.error) console.error("Error loading records:", recordsRes.error);
-                    if (dbRecords) {
-                        const newRecords: RecordsMap = {};
-                        dbRecords.forEach(r => {
-                            if (!newRecords[r.date]) newRecords[r.date] = [];
-                            newRecords[r.date].push({
-                                id: r.id,
-                                taskId: r.task_id,
-                                intensity: r.intensity,
-                                value: r.value,
-                                timestamp: r.timestamp
-                            });
+                if (recordsRes.error) console.error("Error loading records:", recordsRes.error);
+                if (dbRecords) {
+                    const newRecords: RecordsMap = {};
+                    dbRecords.forEach(r => {
+                        if (!newRecords[r.date]) newRecords[r.date] = [];
+                        newRecords[r.date].push({
+                            id: r.id,
+                            taskId: r.task_id,
+                            intensity: r.intensity,
+                            value: r.value,
+                            timestamp: r.timestamp
                         });
-                        setRecords(newRecords);
-                    }
+                    });
+                    setRecords(newRecords);
+                }
 
-                    const dbPacts = pactsRes.data;
-                    if (pactsRes.error) console.error("Error loading pacts:", pactsRes.error);
-                    const newPacts: PactsMap = {};
-                    if (dbPacts) {
-                        dbPacts.forEach(p => {
-                            const d = p.date;
-                            if (!newPacts[d]) newPacts[d] = [];
-                            newPacts[d].push({
-                                id: p.id,
-                                text: p.text,
-                                isCompleted: p.is_completed,
-                                shiftedCount: p.shifted_count,
-                                createdAt: p.created_at
-                            });
-                        });
-                    }
-
-                    const dbDailyPacts = dailyPactsRes.data;
-                    if (dailyPactsRes.error) console.error("Error loading daily pacts:", dailyPactsRes.error);
-                    let loadedDailyPacts: DailyPact[] = [];
-                    if (dbDailyPacts) {
-                        loadedDailyPacts = dbDailyPacts.map(dp => ({
-                            id: dp.id,
-                            text: dp.text,
-                            createdAt: dp.created_at
-                        }));
-                        setDailyPacts(loadedDailyPacts);
-                    }
-
-                    // Auto-inject daily pacts if today has none
-                    if (!newPacts[todayStr] && loadedDailyPacts.length > 0) {
-                        const autoPacts = loadedDailyPacts.map(dp => ({
-                            id: crypto.randomUUID(),
-                            text: dp.text,
-                            isCompleted: false
-                        }));
-                        newPacts[todayStr] = autoPacts;
-                        
-                        // Async insert to DB
-                        const inserts = autoPacts.map(p => ({
+                const dbPacts = pactsRes.data;
+                if (pactsRes.error) console.error("Error loading pacts:", pactsRes.error);
+                const newPacts: PactsMap = {};
+                if (dbPacts) {
+                    dbPacts.forEach(p => {
+                        const d = p.date;
+                        if (!newPacts[d]) newPacts[d] = [];
+                        newPacts[d].push({
                             id: p.id,
-                            user_id: user.id,
                             text: p.text,
-                            date: todayStr,
-                            is_completed: false
-                        }));
-                        supabase.from('pacts').insert(inserts).then(({ error }) => {
-                            if (error) console.error("Failed auto-injecting daily pacts:", error);
+                            isCompleted: p.is_completed,
+                            shiftedCount: p.shifted_count,
+                            createdAt: p.created_at
                         });
+                    });
+                }
+
+                const dbDailyPacts = dailyPactsRes.data;
+                if (dailyPactsRes.error) console.error("Error loading daily pacts:", dailyPactsRes.error);
+                let loadedDailyPacts: DailyPact[] = [];
+                if (dbDailyPacts) {
+                    loadedDailyPacts = dbDailyPacts.map(dp => ({
+                        id: dp.id,
+                        text: dp.text,
+                        createdAt: dp.created_at
+                    }));
+                    setDailyPacts(loadedDailyPacts);
+                }
+
+                // Auto-inject daily pacts if today has none
+                if (!newPacts[todayStr] && loadedDailyPacts.length > 0) {
+                    const autoPacts = loadedDailyPacts.map(dp => ({
+                        id: crypto.randomUUID(),
+                        text: dp.text,
+                        isCompleted: false
+                    }));
+                    newPacts[todayStr] = autoPacts;
+                    
+                    // Async insert to DB
+                    const inserts = autoPacts.map(p => ({
+                        id: p.id,
+                        user_id: currentUser.id,
+                        text: p.text,
+                        date: todayStr,
+                        is_completed: false
+                    }));
+                    supabase.from('pacts').insert(inserts).then(({ error }) => {
+                        if (error) console.error("Failed auto-injecting daily pacts:", error);
+                    });
+                }
+
+                setPacts(newPacts);
+
+                const dbNotes = notesRes.data;
+                if (notesRes.error) console.error("Error loading notes:", notesRes.error);
+                if (dbNotes) {
+                    setNotes(dbNotes.map(n => ({
+                        id: n.id,
+                        title: n.title,
+                        content: n.content,
+                        updatedAt: n.updated_at
+                    })));
+                }
+
+                const dbSettings = settingsRes.data;
+                if (settingsRes.error) console.error("Error loading settings:", settingsRes.error);
+                if (dbSettings) {
+                    setBirthDate(dbSettings.birth_date);
+                    if (dbSettings.show_stats_card !== undefined) setShowStatsCard(dbSettings.show_stats_card);
+                    if (dbSettings.theme) setThemeState(dbSettings.theme);
+                    if (dbSettings.language) setLanguageState(dbSettings.language);
+
+                    if (dbSettings.default_filter_task_id) {
+                        setDefaultFilterTaskIdState(dbSettings.default_filter_task_id);
+                        setActiveFilterTaskId(dbSettings.default_filter_task_id);
                     }
 
-                    setPacts(newPacts);
-
-                    const dbNotes = notesRes.data;
-                    if (notesRes.error) console.error("Error loading notes:", notesRes.error);
-                    if (dbNotes) {
-                        setNotes(dbNotes.map(n => ({
-                            id: n.id,
-                            title: n.title,
-                            content: n.content,
-                            updatedAt: n.updated_at
-                        })));
+                    if (dbSettings.profile_streak_mode) {
+                        setProfileStreakModeState(dbSettings.profile_streak_mode as 'pinned' | 'combined');
                     }
 
-                    const dbSettings = settingsRes.data;
-                    if (settingsRes.error) console.error("Error loading settings:", settingsRes.error);
-                    if (dbSettings) {
-                        setBirthDate(dbSettings.birth_date);
-                        if (dbSettings.show_stats_card !== undefined) setShowStatsCard(dbSettings.show_stats_card);
-                        if (dbSettings.theme) setThemeState(dbSettings.theme);
-                        if (dbSettings.language) setLanguageState(dbSettings.language);
+                    // Re-use is_exiled & exiled_until from settings
+                    setIsExiled(dbSettings.is_exiled || false);
+                    setExiledUntil(dbSettings.exiled_until || null);
+                }
 
-                        if (dbSettings.default_filter_task_id) {
-                            setDefaultFilterTaskIdState(dbSettings.default_filter_task_id);
-                            setActiveFilterTaskId(dbSettings.default_filter_task_id);
-                        }
+                const dbLifeEvents = lifeEventsRes.data;
+                if (lifeEventsRes.error) console.error("Error loading life events:", lifeEventsRes.error);
+                if (dbLifeEvents) setLifeEvents(dbLifeEvents as LifeEvent[]);
 
-                        if (dbSettings.profile_streak_mode) {
-                            setProfileStreakModeState(dbSettings.profile_streak_mode as 'pinned' | 'combined');
-                        }
+                const dbDebts = debtsRes.data;
+                if (debtsRes.error) console.error("Error loading debts:", debtsRes.error);
+                if (dbDebts) setDebts(dbDebts as Debt[]);
 
-                        // Re-use is_exiled & exiled_until from settings, eliminating the redundant settings select
-                        setIsExiled(dbSettings.is_exiled || false);
-                        setExiledUntil(dbSettings.exiled_until || null);
-                    }
+                const dbVows = vowsRes.data;
+                if (vowsRes.error) console.error("Error loading vows:", vowsRes.error);
+                if (dbVows) {
+                    const loadedVows = dbVows.map(v => ({
+                        id: v.id,
+                        text: v.text,
+                        status: v.status,
+                        currentStreak: v.current_streak,
+                        maxStreak: v.max_streak,
+                        lastCompletedDate: v.last_completed_date,
+                        startDate: v.start_date,
+                        brokenOn: v.broken_on
+                    }));
+                    setVows(loadedVows);
+                }
 
-                    const dbLifeEvents = lifeEventsRes.data;
-                    if (lifeEventsRes.error) console.error("Error loading life events:", lifeEventsRes.error);
-                    if (dbLifeEvents) setLifeEvents(dbLifeEvents as LifeEvent[]);
+                const dbFactions = factionsRes.data;
+                if (factionsRes.error) console.error("Error loading factions:", factionsRes.error);
 
-                    const dbDebts = debtsRes.data;
-                    if (debtsRes.error) console.error("Error loading debts:", debtsRes.error);
-                    if (dbDebts) setDebts(dbDebts as Debt[]);
-
-                    const dbVows = vowsRes.data;
-                    if (vowsRes.error) console.error("Error loading vows:", vowsRes.error);
-                    if (dbVows) {
-                        const loadedVows = dbVows.map(v => ({
-                            id: v.id,
-                            text: v.text,
-                            status: v.status,
-                            currentStreak: v.current_streak,
-                            maxStreak: v.max_streak,
-                            lastCompletedDate: v.last_completed_date,
-                            startDate: v.start_date,
-                            brokenOn: v.broken_on
-                        }));
-                        setVows(loadedVows);
-                    }
-
-                    const dbFactions = factionsRes.data;
-                    if (factionsRes.error) console.error("Error loading factions:", factionsRes.error);
-
-                    // Seed missing factions if user is login
-                    if (user && dbFactions) {
-                        const missingFactions = DEFAULT_FACTIONS.filter(df => !dbFactions.find(f => f.name === df.name));
-                        if (missingFactions.length > 0) {
-                            console.log("Seeding missing factions:", missingFactions.map(f => f.name));
-                            supabase.from('factions').insert(missingFactions.map(f => ({
-                                name: f.name,
-                                sigil_url: f.sigilUrl,
-                                primary_color: f.primaryColor,
-                                quote: f.quote
-                            }))).then(({ error }) => {
-                                if (error) console.warn("Factions seeded failed (likely RLS). Run advanced-features.sql manually.", error.message);
-                                // Re-fetch to get new IDs
-                                supabase.from('factions').select('*').then(({ data: reFetched }) => {
-                                    const available = reFetched || dbFactions || [];
-                                    const mapped = DEFAULT_FACTIONS.map(df => {
-                                        const dbMatch = available.find(f => f.name === df.name);
-                                        return dbMatch ? { ...df, id: dbMatch.id } : df;
-                                    });
-                                    setFactions(mapped);
+                // Seed missing factions if user is login
+                if (dbFactions) {
+                    const missingFactions = DEFAULT_FACTIONS.filter(df => !dbFactions.find(f => f.name === df.name));
+                    if (missingFactions.length > 0) {
+                        console.log("Seeding missing factions:", missingFactions.map(f => f.name));
+                        supabase.from('factions').insert(missingFactions.map(f => ({
+                            name: f.name,
+                            sigil_url: f.sigilUrl,
+                            primary_color: f.primaryColor,
+                            quote: f.quote
+                        }))).then(({ error }) => {
+                            if (error) console.warn("Factions seeded failed (likely RLS). Run advanced-features.sql manually.", error.message);
+                            // Re-fetch to get new IDs
+                            supabase.from('factions').select('*').then(({ data: reFetched }) => {
+                                const available = reFetched || dbFactions || [];
+                                const mapped = DEFAULT_FACTIONS.map(df => {
+                                    const dbMatch = available.find(f => f.name === df.name);
+                                    return dbMatch ? { ...df, id: dbMatch.id } : df;
                                 });
+                                setFactions(mapped);
                             });
-                        } else {
-                            const mapped = DEFAULT_FACTIONS.map(df => {
-                                const dbMatch = dbFactions.find(f => f.name === df.name);
-                                return dbMatch ? { ...df, id: dbMatch.id } : df;
-                            });
-                            setFactions(mapped);
-                        }
+                        });
                     } else {
-                        setFactions(DEFAULT_FACTIONS);
+                        const mapped = DEFAULT_FACTIONS.map(df => {
+                            const dbMatch = dbFactions.find(f => f.name === df.name);
+                            return dbMatch ? { ...df, id: dbMatch.id } : df;
+                        });
+                        setFactions(mapped);
+                    }
+                } else {
+                    setFactions(DEFAULT_FACTIONS);
+                }
+
+                const profileData = profileRes.data;
+                if (profileRes.error) console.error("Error loading profile:", profileRes.error);
+                if (profileData) {
+                    setProfile(profileData);
+                    setNoxBalance(profileData.nox_balance || 0);
+
+                    const isOnboardingComplete = profileData.onboarding_completed === true;
+                    setOnboardingCompleted(isOnboardingComplete);
+
+                    if (isOnboardingComplete && profileData.date_of_birth) {
+                        setBirthDate(profileData.date_of_birth);
                     }
 
-                    const profileData = profileRes.data;
-                    if (profileRes.error) console.error("Error loading profile:", profileRes.error);
-                    if (profileData) {
-                        setProfile(profileData);
-                        setNoxBalance(profileData.nox_balance || 0);
-
-                        // Set onboarding status - explicitly check for true
-                        const isOnboardingComplete = profileData.onboarding_completed === true;
-                        setOnboardingCompleted(isOnboardingComplete);
-
-                        if (isOnboardingComplete && profileData.date_of_birth) {
-                            setBirthDate(profileData.date_of_birth);
-                        }
-
-                        if (profileData.navigation_preferences) {
-                            setNavPreferences(profileData.navigation_preferences as NavItemKey[]);
-                        }
-                        if (profileData.faction_id && dbFactions) {
-                            // Re-use already loaded dbFactions, completely eliminating the redundant finalDbFactions select query!
-                            const dbMatch = dbFactions.find((f: any) => f.id === profileData.faction_id);
-                            if (dbMatch) {
-                                const localMatch = DEFAULT_FACTIONS.find(df => df.name === dbMatch.name);
-                                if (localMatch) {
-                                    setCurrentFaction({ ...localMatch, id: dbMatch.id });
-                                }
+                    if (profileData.navigation_preferences) {
+                        setNavPreferences(profileData.navigation_preferences as NavItemKey[]);
+                    }
+                    if (profileData.faction_id && dbFactions) {
+                        const dbMatch = dbFactions.find((f: any) => f.id === profileData.faction_id);
+                        if (dbMatch) {
+                            const localMatch = DEFAULT_FACTIONS.find(df => df.name === dbMatch.name);
+                            if (localMatch) {
+                                setCurrentFaction({ ...localMatch, id: dbMatch.id });
                             }
                         }
                     }
+                }
 
-                    // Always allow local storage override/backup if DB failed to produce a faction but we have one saved locally
-                    // This handles the "I selected it but it's not showing" case if DB update worked but read failed
-                    const savedLocalFaction = localStorage.getItem('diogenes-current-faction');
-                    if (savedLocalFaction && !currentFaction) {
-                        try {
-                            const parsed = JSON.parse(savedLocalFaction);
-                            setCurrentFaction((prev) => prev || parsed);
-                        } catch (e) { console.error(e); }
-                    }
+                const savedLocalFaction = localStorage.getItem('diogenes-current-faction');
+                if (savedLocalFaction && !currentFaction) {
+                    try {
+                        const parsed = JSON.parse(savedLocalFaction);
+                        setCurrentFaction((prev) => prev || parsed);
+                    } catch (e) { console.error(e); }
+                }
 
-                    const dbInvestments = investmentsRes.data;
-                    if (investmentsRes.error) console.error("Error loading investments:", investmentsRes.error);
-                    if (dbInvestments) setInvestments(dbInvestments as Investment[]);
+                const dbInvestments = investmentsRes.data;
+                if (investmentsRes.error) console.error("Error loading investments:", investmentsRes.error);
+                if (dbInvestments) setInvestments(dbInvestments as Investment[]);
 
-                    if (dbSettings && dbSettings.last_audit_date) {
-                        const lastAudit = new Date(dbSettings.last_audit_date);
-                        const yesterday = subDays(new Date(), 1);
+                if (dbSettings && dbSettings.last_audit_date) {
+                    const lastAudit = new Date(dbSettings.last_audit_date);
+                    const yesterday = subDays(new Date(), 1);
 
-                        if (isBefore(lastAudit, yesterday)) {
+                    if (isBefore(lastAudit, yesterday)) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const missed: any[] = [];
+                        let checkDate = addDays(lastAudit, 1);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const recordsMap: { [key: string]: any[] } = {};
+                        const dbRecordsData = dbRecords || [];
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        dbRecordsData.forEach((r: any) => {
+                            if (!recordsMap[r.date]) recordsMap[r.date] = [];
+                            recordsMap[r.date].push(r);
+                        });
+
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const activeTasks = (dbTasks || []).filter((t: any) => !t.is_archived);
+
+                        while (isBefore(checkDate, new Date()) && differenceInCalendarDays(new Date(), checkDate) >= 1) {
+                            const dateStr = format(checkDate, 'yyyy-MM-dd');
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const missed: any[] = [];
-                            let checkDate = addDays(lastAudit, 1);
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const recordsMap: { [key: string]: any[] } = {};
-                            const dbRecordsData = dbRecords || [];
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            dbRecordsData.forEach((r: any) => {
-                                if (!recordsMap[r.date]) recordsMap[r.date] = [];
-                                recordsMap[r.date].push(r);
-                            });
-
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const activeTasks = (dbTasks || []).filter((t: any) => !t.is_archived);
-
-                            while (isBefore(checkDate, new Date()) && differenceInCalendarDays(new Date(), checkDate) >= 1) {
-                                const dateStr = format(checkDate, 'yyyy-MM-dd');
+                            activeTasks.forEach((task: any) => {
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                activeTasks.forEach((task: any) => {
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    const hasRecord = recordsMap[dateStr]?.some((r: any) => r.task_id === task.id);
-                                    if (!hasRecord) {
-                                        missed.push({
-                                            user_id: user.id,
-                                            description: `Missed ${task.name} on ${dateStr}`,
-                                            amount: '3 Nox',
-                                            status: 'OWED',
-                                            created_at: new Date().toISOString()
-                                        });
-                                    }
-                                });
-                                checkDate = addDays(checkDate, 1);
-                            }
-
-                            if (missed.length > 0) {
-                                const { error: debtError } = await supabase.from('debts').insert(missed);
-                                if (!debtError) {
-                                    const { data: newDebts } = await supabase.from('debts').select('*').eq('status', 'OWED').order('created_at', { ascending: false });
-                                    if (newDebts) setDebts(newDebts as Debt[]);
+                                const hasRecord = recordsMap[dateStr]?.some((r: any) => r.task_id === task.id);
+                                if (!hasRecord) {
+                                    missed.push({
+                                        user_id: currentUser.id,
+                                        description: `Missed ${task.name} on ${dateStr}`,
+                                        amount: '3 Nox',
+                                        status: 'OWED',
+                                        created_at: new Date().toISOString()
+                                    });
                                 }
-                            }
-
-                            await supabase.from('user_settings').update({
-                                last_audit_date: format(subDays(new Date(), 1), 'yyyy-MM-dd')
-                            }).eq('user_id', user.id);
+                            });
+                            checkDate = addDays(checkDate, 1);
                         }
+
+                        if (missed.length > 0) {
+                            const { error: debtError } = await supabase.from('debts').insert(missed);
+                            if (!debtError) {
+                                const { data: newDebts } = await supabase.from('debts').select('*').eq('status', 'OWED').order('created_at', { ascending: false });
+                                if (newDebts) setDebts(newDebts as Debt[]);
+                            }
+                        }
+
+                        await supabase.from('user_settings').update({
+                            last_audit_date: format(subDays(new Date(), 1), 'yyyy-MM-dd')
+                        }).eq('user_id', currentUser.id);
                     }
-                } catch (error) {
-                    console.error("Error loading cloud data:", error);
                 }
-            } else {
-                // FETCH FROM LOCAL STORAGE (Guest Mode)
-                const savedTasks = localStorage.getItem('diogenes-tasks');
-                const savedRecords = localStorage.getItem('diogenes-records');
-                const savedPacts = localStorage.getItem('diogenes-pacts');
-                const savedNotes = localStorage.getItem('diogenes-notes');
-                const savedBirthDate = localStorage.getItem('diogenes-birth-date');
-
-                if (savedTasks) try { setTasks(JSON.parse(savedTasks)); } catch (e) { console.error(e); }
-                if (savedRecords) try { setRecords(JSON.parse(savedRecords)); } catch (e) { console.error(e); }
-                if (savedPacts) try { setPacts(JSON.parse(savedPacts)); } catch (e) { console.error(e); }
-                if (savedNotes) try { setNotes(JSON.parse(savedNotes)); } catch (e) { console.error(e); }
-                if (savedBirthDate) setBirthDate(savedBirthDate);
-                const savedShowStats = localStorage.getItem('diogenes-show-stats');
-                if (savedShowStats) setShowStatsCard(JSON.parse(savedShowStats));
-                const savedTheme = localStorage.getItem('diogenes-theme');
-                if (savedTheme) setThemeState(savedTheme);
-                const savedLang = localStorage.getItem('diogenes-lang');
-                if (savedLang) setLanguageState(savedLang);
-                const savedNav = localStorage.getItem('diogenes-nav-prefs');
-                if (savedNav) try { setNavPreferences(JSON.parse(savedNav)); } catch (e) { console.error(e); }
-                const savedFaction = localStorage.getItem('diogenes-current-faction');
-                if (savedFaction) try { setCurrentFaction(JSON.parse(savedFaction)); } catch (e) { console.error(e); }
-                const savedMementoMode = localStorage.getItem('diogenes-memento-mode');
-                if (savedMementoMode) setMementoViewMode(savedMementoMode as 'life' | 'year');
-
-                const savedDefaultFilter = localStorage.getItem('diogenes-default-filter');
-                if (savedDefaultFilter) {
-                    setDefaultFilterTaskIdState(savedDefaultFilter);
-                    setActiveFilterTaskId(savedDefaultFilter);
-                }
-
-                const savedProfileStreakMode = localStorage.getItem('diogenes-profile-streak-mode');
-                if (savedProfileStreakMode) {
-                    setProfileStreakModeState(savedProfileStreakMode as 'pinned' | 'combined');
-                }
-                const savedNox = localStorage.getItem('diogenes-nox-balance');
-                if (savedNox) setNoxBalance(parseInt(savedNox) || 0);
-                const savedDebts = localStorage.getItem('diogenes-debts');
-                if (savedDebts) try { setDebts(JSON.parse(savedDebts)); } catch (e) { console.error(e); }
+            } catch (error) {
+                console.error("Error loading cloud data:", error);
             }
-            setIsLoaded(true);
-        };
+        } else {
+            // FETCH FROM LOCAL STORAGE (Guest Mode)
+            const savedTasks = localStorage.getItem('diogenes-tasks');
+            const savedRecords = localStorage.getItem('diogenes-records');
+            const savedPacts = localStorage.getItem('diogenes-pacts');
+            const savedNotes = localStorage.getItem('diogenes-notes');
+            const savedBirthDate = localStorage.getItem('diogenes-birth-date');
 
-        initData();
+            if (savedTasks) try { setTasks(JSON.parse(savedTasks)); } catch (e) { console.error(e); }
+            if (savedRecords) try { setRecords(JSON.parse(savedRecords)); } catch (e) { console.error(e); }
+            if (savedPacts) try { setPacts(JSON.parse(savedPacts)); } catch (e) { console.error(e); }
+            if (savedNotes) try { setNotes(JSON.parse(savedNotes)); } catch (e) { console.error(e); }
+            if (savedBirthDate) setBirthDate(savedBirthDate);
+            const savedShowStats = localStorage.getItem('diogenes-show-stats');
+            if (savedShowStats) setShowStatsCard(JSON.parse(savedShowStats));
+            const savedTheme = localStorage.getItem('diogenes-theme');
+            if (savedTheme) setThemeState(savedTheme);
+            const savedLang = localStorage.getItem('diogenes-lang');
+            if (savedLang) setLanguageState(savedLang);
+            const savedNav = localStorage.getItem('diogenes-nav-prefs');
+            if (savedNav) try { setNavPreferences(JSON.parse(savedNav)); } catch (e) { console.error(e); }
+            const savedFaction = localStorage.getItem('diogenes-current-faction');
+            if (savedFaction) try { setCurrentFaction(JSON.parse(savedFaction)); } catch (e) { console.error(e); }
+            const savedMementoMode = localStorage.getItem('diogenes-memento-mode');
+            if (savedMementoMode) setMementoViewMode(savedMementoMode as 'life' | 'year');
+
+            const savedDefaultFilter = localStorage.getItem('diogenes-default-filter');
+            if (savedDefaultFilter) {
+                setDefaultFilterTaskIdState(savedDefaultFilter);
+                setActiveFilterTaskId(savedDefaultFilter);
+            }
+
+            const savedProfileStreakMode = localStorage.getItem('diogenes-profile-streak-mode');
+            if (savedProfileStreakMode) {
+                setProfileStreakModeState(savedProfileStreakMode as 'pinned' | 'combined');
+            }
+            const savedNox = localStorage.getItem('diogenes-nox-balance');
+            if (savedNox) setNoxBalance(parseInt(savedNox) || 0);
+            const savedDebts = localStorage.getItem('diogenes-debts');
+            if (savedDebts) try { setDebts(JSON.parse(savedDebts)); } catch (e) { console.error(e); }
+        }
+
+        setIsLoaded(true);
+    };
+
+    const syncCloudData = async () => {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        setUser(currentUser);
+        await loadData(currentUser);
+    };
+
+    useEffect(() => {
+        let active = true;
+
+        supabase.auth.getUser().then(({ data: { user: initialUser } }) => {
+            if (active) {
+                setUser(initialUser);
+                loadData(initialUser);
+            }
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (active) {
+                const currentUser = session?.user ?? null;
+                setUser(currentUser);
+                loadData(currentUser);
+            }
+        });
+
+        return () => {
+            active = false;
+            subscription.unsubscribe();
+        };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [todayStr]);
 
     // Automatically inject daily pacts on midnight rollover
     useEffect(() => {
@@ -2097,7 +2119,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             tasks, records, addTask, updateTask, deleteTask, toggleTaskArchive, addRecord, deleteRecord, getRecordsForDate, activeFilterTaskId, setActiveFilterTaskId,
             consistencyScore, currentStreak, longestStreak, streakStatus, streakTier, streakStrength, rebuildMode, analyzePatterns, getAdaptiveSuggestion, getTaskAnalytics,
             lastCompletion, setLastCompletion, getStreakForDate, showLossModal, setShowLossModal, pacts, addPact, togglePact, deletePact, shiftPact, dailyPacts, addDailyPact, deleteDailyPact, notes, addNote, updateNote, deleteNote,
-            restoreData, birthDate, setBirthDate: updateBirthDate, showStatsCard, toggleStatsCard, theme, setTheme, language, setLanguage, user, lifeEvents, addLifeEvent, updateLifeEvent, deleteLifeEvent,
+            restoreData, syncCloudData, birthDate, setBirthDate: updateBirthDate, showStatsCard, toggleStatsCard, theme, setTheme, language, setLanguage, user, lifeEvents, addLifeEvent, updateLifeEvent, deleteLifeEvent,
             debts, addDebt, payDebt, vows, addVow, completeVowDaily, extendVow, isExiled, exiledUntil, redeemExile, factions, currentFaction, setFaction, investments, addInvestment, completeInvestment,
             navPreferences, updateNavPreferences, ALL_NAV_ITEMS, profile, setProfile, onboardingCompleted, completeOnboarding, mementoViewMode, toggleMementoViewMode,
             breakVow, restoreVowStreak, getBrokenVows,
