@@ -68,9 +68,14 @@ export default function ProfilePage() {
     }, []);
 
     const handleLogout = async () => {
-        const supabase = createClient();
-        await supabase.auth.signOut();
-        router.push('/login');
+        try {
+            const supabase = createClient();
+            await supabase.auth.signOut();
+        } catch (e) {
+            console.error("SignOut error:", e);
+        } finally {
+            window.location.href = '/login';
+        }
     };
 
     // Derived Stats

@@ -331,10 +331,15 @@ export function Header() {
               });
               document.getElementById('logout-btn')?.addEventListener('click', async () => {
                 closeMenu();
-                const { createClient } = await import('@/utils/supabase/client');
-                const supabase = createClient();
-                await supabase.auth.signOut();
-                router.push('/login');
+                try {
+                  const { createClient } = await import('@/utils/supabase/client');
+                  const supabase = createClient();
+                  await supabase.auth.signOut();
+                } catch (e) {
+                  console.error("SignOut error:", e);
+                } finally {
+                  window.location.href = '/login';
+                }
               });
             }}
           >
