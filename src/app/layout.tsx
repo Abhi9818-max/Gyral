@@ -20,28 +20,15 @@ const geistMono = Geist_Mono({
 });
 
 import { PWAInit } from "@/components/pwa-init";
-import { PWAInstallBanner } from "@/components/pwa-install-banner";
-
 
 export const metadata: Metadata = {
   title: "Gyral — Forge Your Discipline",
   description: "A cognitive architecture and habit formation system. Track habits, conquer goals, and hold yourself accountable with an AI mentor by your side.",
   manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "Gyral",
-  },
   icons: {
-    icon: [
-      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-    ],
+    icon: '/icons/icon-192.png',
     shortcut: '/icons/icon-192.png',
-    apple: [
-      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-    ],
+    apple: '/icons/icon-512.png',
   }
 };
 
@@ -78,7 +65,6 @@ export default function RootLayout({
                   <CapacitorAuthHandler />
                   <FCMHandler />
                   <OnboardingWrapper />
-                  <PWAInstallBanner />
                     {children}
                   <MobileNavWrapper />
                 </PresenceProvider>
@@ -87,33 +73,21 @@ export default function RootLayout({
           </ToastProvider>
         </UserDataProvider>
         <Script
-          id="pwa-install-capture"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.addEventListener('beforeinstallprompt', function(e) {
-                e.preventDefault();
-                window.deferredPrompt = e;
-                window.dispatchEvent(new Event('deferred-prompt-available'));
-              });
-            `,
-          }}
-        />
-        <Script
           id="register-sw"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then(
-                  function(registration) {
-                    console.log('SW registered:', registration.scope);
-                    registration.update();
-                  },
-                  function(err) {
-                    console.log('SW registration failed:', err);
-                  }
-                );
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    function(registration) {
+                      console.log('Service Worker registration successful with scope: ', registration.scope);
+                    },
+                    function(err) {
+                      console.log('Service Worker registration failed: ', err);
+                    }
+                  );
+                });
               }
             `,
           }}

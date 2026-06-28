@@ -2,7 +2,7 @@
 // Handles push notifications and background sync
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const CACHE_NAME = 'gyral-v2';
+const CACHE_NAME = 'mind-flayer-v1';
 
 // Install event
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -15,16 +15,6 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
     console.log('[SW] Activating Service Worker...');
     event.waitUntil(self.clients.claim());
-});
-
-// Fetch event - REQUIRED by Chrome for PWA installability
-self.addEventListener('fetch', (event) => {
-    // Network-first strategy: try network, fall back to cache
-    event.respondWith(
-        fetch(event.request).catch(() => {
-            return caches.match(event.request);
-        })
-    );
 });
 
 // Push event - receives push notifications from server
