@@ -3,7 +3,6 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
 import { useStories } from "@/context/stories-context";
 import { CreateStoryModal } from "@/components/stories/create-story-modal";
 import { StoryViewer } from "@/components/stories/story-viewer";
@@ -39,17 +38,6 @@ export function RecommendedReel() {
             <h3 className="text-zinc-500 text-xs font-medium tracking-wide">Live Signals (Stories)</h3>
 
             <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-                {/* Add Button */}
-                <div className="flex flex-col items-center gap-2 min-w-[64px] snap-start">
-                    <button
-                        onClick={() => setIsCreateOpen(true)}
-                        className={`w-16 h-16 rounded-full border-2 border-dashed flex items-center justify-center transition-all bg-white/5 ${myStories.length > 0 ? 'border-purple-500 text-purple-400' : 'border-white/20 text-white/50 hover:text-white hover:border-white/50'}`}
-                    >
-                        <Plus className="w-6 h-6" />
-                    </button>
-                    <span className="text-[10px] text-zinc-500 font-medium">Add Signal</span>
-                </div>
-
                 {/* Stories */}
                 {uniqueStories.map((story) => {
                     const userName = story.profiles?.full_name || story.profiles?.username || 'User';
