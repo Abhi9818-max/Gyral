@@ -23,16 +23,14 @@ export function EditProfileModal({ isOpen, onClose, user, profile, onUpdate }: E
     const [isLoading, setIsLoading] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [presetGender, setPresetGender] = useState<'male' | 'female'>('male');
+    const [activeGenderFilter, setActiveGenderFilter] = useState<'male' | 'female' | null>(null);
 
-    // Dynamically set preset gender default based on user gender if available
+    // Reset gender selection on modal open/close
     useEffect(() => {
-        if (profile?.gender === 'female') {
-            setPresetGender('female');
-        } else {
-            setPresetGender('male');
+        if (isOpen) {
+            setActiveGenderFilter(null);
         }
-    }, [profile, isOpen]);
+    }, [isOpen]);
 
     const malePresets = Array.from({ length: 20 }, (_, i) => i + 1)
         .filter(n => n !== 14) // skip missing #14
@@ -41,7 +39,7 @@ export function EditProfileModal({ isOpen, onClose, user, profile, onUpdate }: E
     const femalePresets = Array.from({ length: 15 }, (_, i) => i + 1)
         .map(n => `/avatars/default-female${n}.jpeg`);
 
-    const presets = presetGender === 'male' ? malePresets : femalePresets;
+    const presets = activeGenderFilter === 'male' ? malePresets : activeGenderFilter === 'female' ? femalePresets : [];
 
     useEffect(() => {
         if (user) {
@@ -250,7 +248,7 @@ export function EditProfileModal({ isOpen, onClose, user, profile, onUpdate }: E
                     </button>
                 </div>
 
-                <div className="p-6 space-y-6">
+                <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800">
                     {/* Avatar Upload */}
                     <div className="flex flex-col items-center gap-4">
                         <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
@@ -300,38 +298,41 @@ export function EditProfileModal({ isOpen, onClose, user, profile, onUpdate }: E
                             <div className="flex gap-2 bg-zinc-900/60 p-0.5 rounded-lg border border-white/5">
                                 <button
                                     type="button"
-                                    onClick={() => setPresetGender('male')}
-                                    className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors ${presetGender === 'male' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'}`}
+                                    onClick={() => setActiveGenderFilter('male')}
+                                    className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors ${activeGenderFilter === 'male' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'}`}
                                 >
                                     Male
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setPresetGender('female')}
-                                    className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors ${presetGender === 'female' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'}`}
+                                    onClick={() => setActiveGenderFilter('female')}
+                                    className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors ${activeGenderFilter === 'female' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'}`}
                                 >
                                     Female
                                 </button>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-6 gap-2 max-h-[120px] overflow-y-auto p-1 bg-black/40 border border-white/5 rounded-lg scrollbar-thin scrollbar-thumb-zinc-800">
-                            {presets.map((presetUrl) => {
-                                const isSelected = avatarUrl === presetUrl;
-                                return (
-                                    <div
-                                        key={presetUrl}
-                                        onClick={() => {
-                                            setAvatarUrl(presetUrl);
-                                            setFile(null); // Clear pending upload
-                                        }}
-                                        className={`relative aspect-square rounded-full overflow-hidden cursor-pointer border-2 transition-all ${isSelected ? 'border-emerald-500 scale-105 shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'border-transparent hover:border-white/30'}`}
-                                    >
-                                        <img src={presetUrl} alt="Preset Avatar" className="w-full h-full object-cover" />
-                                    </div>
-                                );
-                            })}
-                        </div>
+                        {activeGenderFilter && (
+                            <div className="grid grid-cols-6 gap-2 max-h-[120px] overflow-y-auto p-1 bg-black/40 border border-white/5 rounded-lg scrollbar-thin scrollbar-thumb-zinc-800">
+                                {presets.map((presetUrl) => {
+                                    const isSelected = avatarUrl === presetUrl;
+                                    return (
+                                        <div
+                                            key={presetUrl}
+                                            onClick={() => {
+                                                setAvatarUrl(presetUrl);
+                                                setFile(null); // Clear pending upload
+                                            }}
+                                            className={`relative aspect-square rounded-full overflow-hidden cursor-pointer border-2 transition-all ${isSelected ? 'border-emerald-500 scale-105 shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'border-transparent hover:border-white/30'}`}
+                                        >
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={presetUrl} alt="Preset Avatar" className="w-full h-full object-cover" />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
 
                     {/* Inputs */}
