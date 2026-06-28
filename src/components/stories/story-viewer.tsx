@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { X, Eye, Trash2 } from 'lucide-react';
+import { X, Eye, Trash2, Plus } from 'lucide-react';
 import { useStories, Story } from '@/context/stories-context';
 import { useUserData } from '@/context/user-data-context';
 import { createClient } from '@/utils/supabase/client';
@@ -11,6 +11,7 @@ interface StoryViewerProps {
     initialStoryIndex: number;
     stories: Story[];
     onClose: () => void;
+    onAddStory?: () => void;
 }
 
 const isImage = (url: string | null | undefined): boolean => {
@@ -42,7 +43,7 @@ function getRelativeTime(dateString: string): string {
     return `${diffHours}h ago`;
 }
 
-export function StoryViewer({ initialStoryIndex, stories, onClose }: StoryViewerProps) {
+export function StoryViewer({ initialStoryIndex, stories, onClose, onAddStory }: StoryViewerProps) {
     const { viewStory, deleteStory } = useStories();
     const { user } = useUserData();
     const [currentIndex, setCurrentIndex] = useState(initialStoryIndex);
@@ -177,27 +178,40 @@ export function StoryViewer({ initialStoryIndex, stories, onClose }: StoryViewer
             {/* Close / Action Buttons */}
             <div className="absolute top-8 right-6 z-20 flex items-center gap-2.5">
                 {isMine && (
-                    <button
-                        onClick={async (e) => {
-                            e.stopPropagation();
-                            if (confirm("Are you sure you want to delete this story?")) {
-                                await deleteStory(currentStory.id);
-                                if (stories.length > 1) {
-                                    if (currentIndex === stories.length - 1) {
-                                        setCurrentIndex(prev => prev - 1);
+                    <>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onClose();
+                                if (onAddStory) onAddStory();
+                            }}
+                            className="p-2 hover:scale-110 active:scale-95 transition-transform duration-200 focus:outline-none text-white/80 hover:text-purple-400"
+                            title="Add Story"
+                        >
+                            <Plus className="w-6 h-6 drop-shadow-lg" />
+                        </button>
+                        <button
+                            onClick={async (e) => {
+                                e.stopPropagation();
+                                if (confirm("Are you sure you want to delete this story?")) {
+                                    await deleteStory(currentStory.id);
+                                    if (stories.length > 1) {
+                                        if (currentIndex === stories.length - 1) {
+                                            setCurrentIndex(prev => prev - 1);
+                                        } else {
+                                            setCurrentIndex(prev => Math.min(prev, stories.length - 2));
+                                        }
                                     } else {
-                                        setCurrentIndex(prev => Math.min(prev, stories.length - 2));
+                                        onClose();
                                     }
-                                } else {
-                                    onClose();
                                 }
-                            }
-                        }}
-                        className="p-2 hover:scale-110 active:scale-95 transition-transform duration-200 focus:outline-none text-white/80 hover:text-red-500"
-                        title="Delete Story"
-                    >
-                        <Trash2 className="w-6 h-6 drop-shadow-lg" />
-                    </button>
+                            }}
+                            className="p-2 hover:scale-110 active:scale-95 transition-transform duration-200 focus:outline-none text-white/80 hover:text-red-500"
+                            title="Delete Story"
+                        >
+                            <Trash2 className="w-6 h-6 drop-shadow-lg" />
+                        </button>
+                    </>
                 )}
                 <button onClick={onClose} className="p-2 hover:scale-110 active:scale-95 transition-transform duration-200 focus:outline-none">
                     <X className="w-8 h-8 text-white drop-shadow-lg" />

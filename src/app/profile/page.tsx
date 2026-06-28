@@ -101,11 +101,6 @@ export default function ProfilePage() {
                                     setIsCreateStoryOpen(true);
                                 }
                             }}
-                            onDoubleClick={() => {
-                                if (myStories.length > 0) {
-                                    setIsCreateStoryOpen(true);
-                                }
-                            }}
                             className={`w-20 h-20 md:w-32 md:h-32 rounded-full p-[2px] cursor-pointer hover:scale-105 transition-transform ${myStories.length > 0 ? 'bg-gradient-to-tr from-yellow-500 via-red-500 to-purple-600' : 'bg-zinc-800'}`}
                         >
                             <div className="w-full h-full rounded-full bg-black flex items-center justify-center overflow-hidden border-4 border-black">
@@ -117,14 +112,15 @@ export default function ProfilePage() {
                                 />
                             </div>
                         </div>
-                        {myStories.length === 0 && (
-                            <div
-                                onClick={() => setIsCreateStoryOpen(true)}
-                                className="absolute bottom-0 right-0 bg-purple-600 text-white rounded-full p-1 border-2 border-black hover:scale-110 active:scale-95 transition-transform duration-200 shadow-lg cursor-pointer flex items-center justify-center"
-                            >
-                                <Plus className="w-3.5 h-3.5 md:w-5 h-5" />
-                            </div>
-                        )}
+                        <div
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsCreateStoryOpen(true);
+                            }}
+                            className="absolute bottom-0 right-0 bg-purple-600 text-white rounded-full p-1 border-2 border-black hover:scale-110 active:scale-95 transition-transform duration-200 shadow-lg cursor-pointer flex items-center justify-center z-10"
+                        >
+                            <Plus className="w-3.5 h-3.5 md:w-5 h-5" />
+                        </div>
                     </div>
 
                     {/* Stats - Instagram Style */}
@@ -450,6 +446,7 @@ export default function ProfilePage() {
                     initialStoryIndex={viewingStoryIndex}
                     stories={stories}
                     onClose={() => setViewingStoryIndex(null)}
+                    onAddStory={() => setIsCreateStoryOpen(true)}
                 />
             )}
 

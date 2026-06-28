@@ -87,6 +87,7 @@ export function RecommendedReel() {
                     initialStoryIndex={viewingStoryIndex}
                     stories={stories}
                     onClose={() => setViewingStoryIndex(null)}
+                    onAddStory={() => setIsCreateOpen(true)}
                 />
             )}
         </div>
