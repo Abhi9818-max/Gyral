@@ -191,19 +191,16 @@ export default function WorldPage() {
 
                     {/* Integrated Search Bar inside Hero */}
                     <div className="relative max-w-sm w-full mt-4">
-                        <input
-                            type="text"
-                            placeholder="Search chronicles, houses, or vassals..."
-                            readOnly
-                            tabIndex={-1}
-                            onFocus={(e) => e.currentTarget.blur()}
+                        <div
                             onClick={() => {
                                 sfx.playClick();
                                 haptic.light();
                                 setIsSearchModalOpen(true);
                             }}
-                            className="w-full bg-zinc-900/40 border border-white/5 rounded-2xl py-3 pl-10 pr-4 text-xs text-zinc-300 placeholder-zinc-550 backdrop-blur-md cursor-pointer hover:bg-zinc-900/60 hover:border-white/10 transition-all focus:outline-none focus:ring-0 focus:border-white/5 focus-visible:outline-none focus-visible:ring-0 active:outline-none active:ring-0 select-none"
-                        />
+                            className="w-full bg-zinc-900/40 border border-white/5 rounded-2xl py-3 pl-10 pr-4 text-xs text-zinc-500 backdrop-blur-md cursor-pointer hover:bg-zinc-900/60 hover:border-white/10 transition-all select-none text-left"
+                        >
+                            Search chronicles, houses, or vassals...
+                        </div>
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-555" />
                     </div>
                 </div>
