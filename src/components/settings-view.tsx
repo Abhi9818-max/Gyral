@@ -575,8 +575,16 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                             danger
                             isLast
                             onClick={() => {
-                                if (confirm("SEVERE WARNING: This will permanently delete ALL local data. Proceed with extreme caution?")) {
-                                    localStorage.clear();
+                                if (confirm("WARNING: This will permanently delete your local records, tasks, pacts, notes, and debts. Your profile account and login session will remain untouched. Proceed?")) {
+                                    const keysToRemove = [
+                                        'diogenes-tasks',
+                                        'diogenes-records',
+                                        'diogenes-pacts',
+                                        'diogenes-notes',
+                                        'diogenes-debts',
+                                        'diogenes-nox-balance'
+                                    ];
+                                    keysToRemove.forEach(key => localStorage.removeItem(key));
                                     window.location.reload();
                                 }
                             }}
