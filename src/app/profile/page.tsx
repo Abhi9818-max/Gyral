@@ -101,6 +101,11 @@ export default function ProfilePage() {
                                     setIsCreateStoryOpen(true);
                                 }
                             }}
+                            onDoubleClick={() => {
+                                if (myStories.length > 0) {
+                                    setIsCreateStoryOpen(true);
+                                }
+                            }}
                             className={`w-20 h-20 md:w-32 md:h-32 rounded-full p-[2px] cursor-pointer hover:scale-105 transition-transform ${myStories.length > 0 ? 'bg-gradient-to-tr from-yellow-500 via-red-500 to-purple-600' : 'bg-zinc-800'}`}
                         >
                             <div className="w-full h-full rounded-full bg-black flex items-center justify-center overflow-hidden border-4 border-black">
@@ -148,12 +153,6 @@ export default function ProfilePage() {
                                     className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm font-semibold transition-colors"
                                 >
                                     Edit Profile
-                                </button>
-                                <button
-                                    onClick={() => setIsCreateStoryOpen(true)}
-                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5"
-                                >
-                                    <Plus className="w-4 h-4" /> Add Signal
                                 </button>
                                 <button
                                     onClick={() => router.push('/settings')}
@@ -210,22 +209,16 @@ export default function ProfilePage() {
                 <div className="flex gap-2 mb-6 md:hidden">
                     <button
                         onClick={() => setIsEditProfileOpen(true)}
-                        className="flex-1 px-4 py-2 bg-zinc-800/80 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-zinc-700/80 rounded-lg text-xs font-semibold transition-all active:scale-95"
+                        className="flex-1 px-4 py-2 bg-zinc-800/80 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-zinc-700/80 rounded-lg text-sm font-semibold transition-all active:scale-95"
                     >
-                        Edit Profile
-                    </button>
-                    <button
-                        onClick={() => setIsCreateStoryOpen(true)}
-                        className="flex-1 px-4 py-2 bg-purple-600 border border-purple-500/30 hover:bg-purple-700 rounded-lg text-xs font-semibold transition-all active:scale-95 flex items-center justify-center gap-1"
-                    >
-                        <Plus className="w-3.5 h-3.5" /> Add Signal
+                        Edit profile
                     </button>
                     <button
                         onClick={() => setIsArtifactGalleryOpen(true)}
-                        className="px-3 py-2 bg-zinc-800/80 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-zinc-700/80 rounded-lg transition-all active:scale-95 flex items-center justify-center"
-                        title="Open Vault"
+                        className="flex-1 px-4 py-2 bg-zinc-800/80 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-zinc-700/80 rounded-lg text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
                     >
                         <Box className="w-4 h-4" />
+                        Open Vault
                     </button>
                     <button
                         onClick={() => router.push('/settings')}
