@@ -20,6 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 import { PWAInit } from "@/components/pwa-init";
+import { PWAInstallBanner } from "@/components/pwa-install-banner";
+
 
 export const metadata: Metadata = {
   title: "Gyral — Forge Your Discipline",
@@ -76,6 +78,7 @@ export default function RootLayout({
                   <CapacitorAuthHandler />
                   <FCMHandler />
                   <OnboardingWrapper />
+                  <PWAInstallBanner />
                     {children}
                   <MobileNavWrapper />
                 </PresenceProvider>
