@@ -14,6 +14,15 @@ export function PWAInit() {
 
             window.addEventListener('beforeinstallprompt', handlePrompt);
 
+            // Prevent context menus on images/videos to suppress copy/download/share popup on long press
+            const handleContextMenu = (e: MouseEvent) => {
+                const target = e.target as HTMLElement;
+                if (target && (target.tagName === 'IMG' || target.tagName === 'VIDEO' || target.closest('img') || target.closest('video'))) {
+                    e.preventDefault();
+                }
+            };
+            window.addEventListener('contextmenu', handleContextMenu);
+
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('/sw.js').then(reg => {
@@ -23,6 +32,11 @@ export function PWAInit() {
                     });
                 });
             }
+
+            return () => {
+                window.removeEventListener('beforeinstallprompt', handlePrompt);
+                window.removeEventListener('contextmenu', handleContextMenu);
+            };
         }
     }, []);
     return null;
