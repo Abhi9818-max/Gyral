@@ -17,6 +17,16 @@ self.addEventListener('activate', (event) => {
     event.waitUntil(self.clients.claim());
 });
 
+// Fetch event - REQUIRED by Chrome for PWA installability
+self.addEventListener('fetch', (event) => {
+    // Network-first strategy: try network, fall back to cache
+    event.respondWith(
+        fetch(event.request).catch(() => {
+            return caches.match(event.request);
+        })
+    );
+});
+
 // Push event - receives push notifications from server
 self.addEventListener('push', (event) => {
     console.log('[SW] Push notification received:', event);
