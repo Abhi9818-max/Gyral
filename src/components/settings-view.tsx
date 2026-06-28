@@ -52,6 +52,15 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
     const [year, setYear] = useState('');
     const [soundEnabled, setSoundEnabled] = useState(true);
     const [bucketDefaultPref, setBucketDefaultPref] = useState('last_opened');
+    const [isStandalone, setIsStandalone] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const checkStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                (window.navigator as any).standalone === true;
+            setIsStandalone(checkStandalone);
+        }
+    }, []);
 
     useEffect(() => {
         setSoundEnabled(sfx.isEnabled());
@@ -459,6 +468,40 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                                 })}
                             </div>
                         </div>
+                    </SettingsGroup>
+
+                    <SettingsGroup title="App Package">
+                        {isStandalone ? (
+                            <SettingsItem
+                                icon={Download}
+                                label="App Status"
+                                value="Installed & Active"
+                                isLast
+                            />
+                        ) : isInstallable ? (
+                            <SettingsItem
+                                icon={Download}
+                                label="Install App"
+                                onClick={promptInstall}
+                                value="Install Now"
+                                isLast
+                            />
+                        ) : (
+                            <SettingsItem
+                                icon={Download}
+                                label="How to Install App"
+                                onClick={() => {
+                                    alert(
+                                        "To install Gyral as an App:\n\n" +
+                                        "• On Apple iOS (Safari): Tap the 'Share' icon (square with up arrow) in your browser bar, scroll down, and tap 'Add to Home Screen'.\n\n" +
+                                        "• On Google Android (Chrome): Tap the three-dot menu icon in the top right, and select 'Install app' or 'Add to Home Screen'.\n\n" +
+                                        "• On Desktop (Chrome/Edge/Brave): Click the install icon (computer with down arrow) in the address bar at the top-right."
+                                    );
+                                }}
+                                value="Get Instructions"
+                                isLast
+                            />
+                        )}
                     </SettingsGroup>
                 </div>
 
