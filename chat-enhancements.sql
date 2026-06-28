@@ -21,10 +21,16 @@ CREATE POLICY "Anyone can upload chat media."
   ON storage.objects FOR INSERT
   WITH CHECK ( bucket_id = 'chat-media' AND auth.role() = 'authenticated' );
 
--- 5. Delete old messages trigger function when count > 50
+-- 5. Delete old messages trigger function when count > 50 or older than 5 hours
 CREATE OR REPLACE FUNCTION clean_old_house_chats()
 RETURNS TRIGGER AS $$
 BEGIN
+    -- Delete messages older than 5 hours in the active room
+    DELETE FROM house_chats
+    WHERE room = NEW.room
+      AND created_at < NOW() - INTERVAL '5 hours';
+
+    -- Keep only the latest 50 messages in the active room
     DELETE FROM house_chats
     WHERE id IN (
         SELECT id FROM house_chats

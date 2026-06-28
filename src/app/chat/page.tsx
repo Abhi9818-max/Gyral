@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Globe, Send, ArrowLeft, MessageSquare, Shield, HelpCircle, User, Sparkles, LogIn, Users, Image, X } from 'lucide-react';
+import { Globe, Send, ArrowLeft, MessageSquare, Shield, HelpCircle, User, Sparkles, LogIn, Users, Image, X, Download } from 'lucide-react';
 import { useUserData, DEFAULT_FACTIONS } from '@/context/user-data-context';
 import { createClient } from '@/utils/supabase/client';
 import { getUserAvatar } from '@/utils/avatar-helpers';
@@ -55,6 +55,7 @@ export default function ChatRoomsPage() {
     // Image upload states
     const [selectedImage, setSelectedImage] = useState<{ file: File; url: string } | null>(null);
     const [isUploading, setIsUploading] = useState<boolean>(false);
+    const [activeImageMessage, setActiveImageMessage] = useState<ChatMessage | null>(null);
 
     // Chat data states
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -229,38 +230,47 @@ export default function ChatRoomsPage() {
         }
     }, [activeRoom, user]);
 
+    // Stable presence updater
+    const updateRoomPresence = useCallback(async (room: string | null) => {
+        if (!user) return;
+        try {
+            const { error } = await supabase
+                .from('user_presence')
+                .upsert({
+                    user_id: user.id,
+                    status: 'online',
+                    current_room: room,
+                    last_seen: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'user_id' });
+
+            if (error) {
+                console.error("Error updating active room presence:", error.message);
+            } else if (room) {
+                // Instantly sync participants list after successfully marking presence
+                fetchParticipants();
+            }
+        } catch (err) {
+            console.error("Error updating active room presence:", err);
+        }
+    }, [user, fetchParticipants]);
+
     // Load participants when room changes or user loads
     useEffect(() => {
         fetchParticipants();
     }, [fetchParticipants]);
 
-    // Update current user's active room in user_presence
+    // Update current user's active room in user_presence when room changes (no cleanup reset)
     useEffect(() => {
-        if (!user) return;
-
-        const updateRoomPresence = async (room: string | null) => {
-            try {
-                await supabase
-                    .from('user_presence')
-                    .upsert({
-                        user_id: user.id,
-                        status: 'online',
-                        current_room: room,
-                        last_seen: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'user_id' });
-            } catch (err) {
-                console.error("Error updating active room presence:", err);
-            }
-        };
-
         updateRoomPresence(activeRoom);
+    }, [activeRoom, updateRoomPresence]);
 
+    // Clear active room presence only when chat page component unmounts completely
+    useEffect(() => {
         return () => {
-            // Clear current room on unmount or activeRoom change
             updateRoomPresence(null);
         };
-    }, [activeRoom, user]);
+    }, [updateRoomPresence]);
 
     // Subscribe to presence changes to keep room member list in sync in real-time
     useEffect(() => {
@@ -320,10 +330,12 @@ export default function ChatRoomsPage() {
 
         const loadMessages = async () => {
             try {
+                const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString();
                 const { data, error } = await supabase
                     .from('house_chats')
                     .select('*, profiles:sender_id(id, full_name, username, avatar_url, gender, faction_id)')
                     .eq('room', activeRoom)
+                    .gt('created_at', fiveHoursAgo)
                     .order('created_at', { ascending: true });
 
                 if (error) {
@@ -748,35 +760,71 @@ export default function ChatRoomsPage() {
                                             </div>
 
                                             {/* Chat Bubble Body */}
-                                            <div 
-                                                className={`rounded-2xl break-words leading-relaxed text-[13px] sm:text-sm border shadow-sm ${
-                                                    message.image_url ? 'p-1.5' : 'px-4 py-2.5'
-                                                } ${
-                                                    isMine
-                                                        ? 'bg-gradient-to-tr from-indigo-650 via-indigo-600 to-indigo-500 text-white border-indigo-500/20'
-                                                        : isMentioned
-                                                            ? 'bg-amber-500/10 text-amber-100 border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.15)] animate-[pulse_2s_infinite]'
-                                                            : 'bg-zinc-900/50 text-zinc-100 border-white/5'
-                                                }`}
-                                                style={isMine && currentFaction ? {
-                                                    backgroundImage: `linear-gradient(to top right, ${currentFaction.primaryColor}aa, ${currentFaction.primaryColor}80)`
-                                                } : {}}
-                                            >
-                                                {message.image_url && (
-                                                    <div className="mb-1 overflow-hidden rounded-xl border border-white/5 bg-black/20">
-                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                        <img 
-                                                            src={message.image_url} 
-                                                            alt="Shared photo" 
-                                                            className="max-w-full max-h-64 sm:max-h-72 object-cover rounded-xl cursor-pointer hover:opacity-90 transition-opacity"
-                                                            onClick={() => window.open(message.image_url!, '_blank')}
-                                                        />
-                                                    </div>
-                                                )}
-                                                {message.content && (
-                                                    <div className={message.image_url ? 'px-2 py-1' : ''}>{message.content}</div>
-                                                )}
-                                            </div>
+                                            {message.image_url ? (
+                                                 <div 
+                                                     className={`relative overflow-hidden rounded-2xl border shadow-md max-w-[260px] sm:max-w-[320px] transition-all duration-300 group cursor-pointer hover:shadow-xl ${
+                                                         isMine
+                                                             ? 'border-indigo-500/30 shadow-indigo-950/20'
+                                                             : isMentioned
+                                                                 ? 'border-amber-500/40 shadow-amber-950/20 shadow-[0_0_15px_rgba(245,158,11,0.15)] animate-[pulse_2s_infinite]'
+                                                                 : 'border-white/5 shadow-black/40'
+                                                     }`}
+                                                     style={isMine && currentFaction ? {
+                                                         borderColor: `${currentFaction.primaryColor}40`,
+                                                         backgroundColor: `${currentFaction.primaryColor}10`
+                                                     } : {
+                                                         backgroundColor: 'rgba(24, 24, 27, 0.4)'
+                                                     }}
+                                                     onClick={() => {
+                                                         sfx.playClick();
+                                                         haptic.light();
+                                                         setActiveImageMessage(message);
+                                                     }}
+                                                 >
+                                                     {/* Image container */}
+                                                     <div className="relative overflow-hidden w-full bg-black/10 flex items-center justify-center min-h-[140px] sm:min-h-[180px]">
+                                                         {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                         <img 
+                                                             src={message.image_url} 
+                                                             alt="Shared photo" 
+                                                             className="w-full h-auto max-h-[240px] sm:max-h-[300px] object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                                                         />
+                                                         {/* Premium hover overlay */}
+                                                         <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                                             <span className="px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-white text-[11px] font-semibold shadow-lg flex items-center gap-1.5 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                                                                 <Sparkles className="w-3 h-3 text-amber-400" /> Expand Image
+                                                             </span>
+                                                         </div>
+                                                     </div>
+
+                                                     {/* Text content under image (if any) */}
+                                                     {message.content && (
+                                                         <div 
+                                                             className="px-3 py-2.5 text-[13px] sm:text-sm border-t leading-relaxed break-words text-zinc-200 border-white/5"
+                                                             style={isMine && currentFaction ? {
+                                                                 backgroundImage: `linear-gradient(to top right, ${currentFaction.primaryColor}22, ${currentFaction.primaryColor}11)`
+                                                             } : {}}
+                                                         >
+                                                             {message.content}
+                                                         </div>
+                                                     )}
+                                                 </div>
+                                             ) : (
+                                                 <div 
+                                                     className={`rounded-2xl break-words leading-relaxed text-[13px] sm:text-sm border shadow-sm px-4 py-2.5 ${
+                                                         isMine
+                                                             ? 'bg-gradient-to-tr from-indigo-650 via-indigo-600 to-indigo-500 text-white border-indigo-500/20'
+                                                             : isMentioned
+                                                                 ? 'bg-amber-500/10 text-amber-100 border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.15)] animate-[pulse_2s_infinite]'
+                                                                 : 'bg-zinc-900/50 text-zinc-100 border-white/5'
+                                                     }`}
+                                                     style={isMine && currentFaction ? {
+                                                         backgroundImage: `linear-gradient(to top right, ${currentFaction.primaryColor}aa, ${currentFaction.primaryColor}80)`
+                                                     } : {}}
+                                                 >
+                                                     {message.content}
+                                                 </div>
+                                             )}
 
                                             {/* Timestamp */}
                                             <span className={`text-[9px] text-zinc-600 font-mono select-none ${isMine ? 'text-right' : ''}`}>
@@ -1021,6 +1069,102 @@ export default function ChatRoomsPage() {
                                 </div>
                             </motion.div>
                         </div>
+                    )}
+                </AnimatePresence>
+
+                {/* Lightbox Modal */}
+                <AnimatePresence>
+                    {activeImageMessage && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl p-4 sm:p-6"
+                            onClick={() => {
+                                sfx.playClick();
+                                haptic.light();
+                                setActiveImageMessage(null);
+                            }}
+                        >
+                            {/* Close Button */}
+                            <button
+                                className="absolute top-4 right-4 z-50 p-3 rounded-full bg-zinc-900/80 border border-white/10 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all shadow-lg flex items-center justify-center cursor-pointer"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    sfx.playClick();
+                                    haptic.light();
+                                    setActiveImageMessage(null);
+                                }}
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+
+                            {/* Download Button */}
+                            <a
+                                href={activeImageMessage.image_url!}
+                                download={`chat-image-${activeImageMessage.id}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="absolute top-4 right-20 z-50 p-3 rounded-full bg-zinc-900/80 border border-white/10 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all shadow-lg flex items-center justify-center cursor-pointer"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    sfx.playClick();
+                                    haptic.light();
+                                }}
+                            >
+                                <Download className="w-5 h-5" />
+                            </a>
+
+                            {/* Image Container */}
+                            <motion.div
+                                initial={{ scale: 0.95, y: 15 }}
+                                animate={{ scale: 1, y: 0 }}
+                                exit={{ scale: 0.95, y: 15 }}
+                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                className="relative max-w-5xl max-h-[70vh] w-full flex items-center justify-center"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={activeImageMessage.image_url!}
+                                    alt="Lightbox view"
+                                    className="max-w-full max-h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/10"
+                                />
+                            </motion.div>
+
+                            {/* Image Info / Caption Footer */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 15 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 15 }}
+                                className="mt-6 flex items-start gap-3 max-w-lg w-full bg-zinc-900/80 border border-white/10 backdrop-blur-md px-5 py-4 rounded-2xl shadow-2xl"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-zinc-950 shrink-0">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={getUserAvatar(activeImageMessage.profiles?.avatar_url, activeImageMessage.profiles?.gender, activeImageMessage.profiles?.id)}
+                                        alt="Sender"
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="font-bold text-sm text-white truncate">
+                                            {activeImageMessage.profiles?.full_name || 'Vassal'}
+                                        </span>
+                                        <span className="text-[10px] text-zinc-500 font-mono">
+                                            {new Date(activeImageMessage.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                                        </span>
+                                    </div>
+                                    {activeImageMessage.content ? (
+                                        <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed mt-1 break-words">{activeImageMessage.content}</p>
+                                    ) : (
+                                        <p className="text-[11px] italic text-zinc-500 mt-1">Shared a photo</p>
+                                    )}
+                                </div>
+                            </motion.div>
+                        </motion.div>
                     )}
                 </AnimatePresence>
 
