@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useRef } from 'react';
-import { X, Send, Image as ImageIcon, Video } from 'lucide-react';
+import { X, Send, Image as ImageIcon } from 'lucide-react';
 import { useStories } from '@/context/stories-context';
-import { VideoUploadModal } from './video-upload-modal';
 
 interface CreateStoryModalProps {
     isOpen: boolean;
@@ -14,21 +13,11 @@ export function CreateStoryModal({ isOpen, onClose }: CreateStoryModalProps) {
     const { addStory } = useStories();
     const [text, setText] = useState('');
     const [isPosting, setIsPosting] = useState(false);
-    const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
-    const [selectedVideo, setSelectedVideo] = useState<{ file: File, url: string } | null>(null);
     const [selectedImage, setSelectedImage] = useState<{ file: File, url: string } | null>(null);
     
     const imageInputRef = useRef<HTMLInputElement>(null);
 
     if (!isOpen) return null;
-
-    const handleVideoSelected = (file: File, url: string) => {
-        if (selectedVideo?.url) URL.revokeObjectURL(selectedVideo.url);
-        if (selectedImage?.url) URL.revokeObjectURL(selectedImage.url);
-        setSelectedVideo({ file, url });
-        setSelectedImage(null);
-        setIsVideoModalOpen(false);
-    };
 
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -37,26 +26,22 @@ export function CreateStoryModal({ isOpen, onClose }: CreateStoryModalProps) {
             alert('Please select an image file');
             return;
         }
-        if (selectedVideo?.url) URL.revokeObjectURL(selectedVideo.url);
         if (selectedImage?.url) URL.revokeObjectURL(selectedImage.url);
         setSelectedImage({ file, url: URL.createObjectURL(file) });
-        setSelectedVideo(null);
     };
 
     const handleClose = () => {
-        if (selectedVideo?.url) URL.revokeObjectURL(selectedVideo.url);
         if (selectedImage?.url) URL.revokeObjectURL(selectedImage.url);
-        setSelectedVideo(null);
         setSelectedImage(null);
         setText('');
         onClose();
     };
 
     const handleSubmit = async () => {
-        if (!text.trim() && !selectedVideo && !selectedImage) return;
+        if (!text.trim() && !selectedImage) return;
         setIsPosting(true);
         try {
-            const mediaFile = selectedVideo?.file || selectedImage?.file;
+            const mediaFile = selectedImage?.file;
             const success = await addStory(text, mediaFile);
             if (success) {
                 handleClose();
@@ -84,23 +69,6 @@ export function CreateStoryModal({ isOpen, onClose }: CreateStoryModalProps) {
                             <X className="w-5 h-5" />
                         </button>
                     </div>
-
-                    {/* Video Preview */}
-                    {selectedVideo && (
-                        <div className="mb-4 relative group">
-                            <video
-                                src={selectedVideo.url}
-                                controls
-                                className="w-full rounded-xl max-h-64 object-cover"
-                            />
-                            <button
-                                onClick={() => setSelectedVideo(null)}
-                                className="absolute top-2 right-2 p-2 bg-black/70 rounded-full hover:bg-black transition-colors"
-                            >
-                                <X className="w-4 h-4 text-white" />
-                            </button>
-                        </div>
-                    )}
 
                     {/* Image Preview */}
                     {selectedImage && (
@@ -130,13 +98,6 @@ export function CreateStoryModal({ isOpen, onClose }: CreateStoryModalProps) {
                         />
                         <div className="absolute bottom-3 right-3 flex items-center gap-2">
                             <button
-                                onClick={() => setIsVideoModalOpen(true)}
-                                className="p-2 rounded-full bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
-                                title="Add Video"
-                            >
-                                <Video className="w-4 h-4" />
-                            </button>
-                            <button
                                 onClick={() => imageInputRef.current?.click()}
                                 className="p-2 rounded-full bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
                                 title="Add Image"
@@ -158,10 +119,10 @@ export function CreateStoryModal({ isOpen, onClose }: CreateStoryModalProps) {
                     <div className="mt-4 flex justify-end">
                         <button
                             onClick={handleSubmit}
-                            disabled={(!text.trim() && !selectedVideo && !selectedImage) || isPosting}
+                            disabled={(!text.trim() && !selectedImage) || isPosting}
                             className={`
                                 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-all
-                                ${(!text.trim() && !selectedVideo && !selectedImage) || isPosting
+                                ${(!text.trim() && !selectedImage) || isPosting
                                     ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                                     : 'bg-white text-black hover:bg-zinc-200 shadow-lg shadow-white/10'
                                 }
@@ -177,12 +138,6 @@ export function CreateStoryModal({ isOpen, onClose }: CreateStoryModalProps) {
 
                 </div>
             </div>
-
-            <VideoUploadModal
-                isOpen={isVideoModalOpen}
-                onClose={() => setIsVideoModalOpen(false)}
-                onVideoSelected={handleVideoSelected}
-            />
         </>
     );
 }

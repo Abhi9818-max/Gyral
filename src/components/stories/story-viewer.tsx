@@ -5,6 +5,7 @@ import { X, Eye } from 'lucide-react';
 import { useStories, Story } from '@/context/stories-context';
 import { useUserData } from '@/context/user-data-context';
 import { createClient } from '@/utils/supabase/client';
+import { getUserAvatar } from '@/utils/avatar-helpers';
 
 interface StoryViewerProps {
     initialStoryIndex: number;
@@ -25,6 +26,19 @@ const isImage = (url: string | null | undefined): boolean => {
         url.includes('image')
     );
 };
+
+function getRelativeTime(dateString: string): string {
+    const now = new Date();
+    const created = new Date(dateString);
+    const diffMs = now.getTime() - created.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return created.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
 
 export function StoryViewer({ initialStoryIndex, stories, onClose }: StoryViewerProps) {
     const { viewStory } = useStories();
@@ -136,6 +150,26 @@ export function StoryViewer({ initialStoryIndex, stories, onClose }: StoryViewer
                         />
                     </div>
                 ))}
+            </div>
+
+            {/* Author Header */}
+            <div className="absolute top-8 left-6 z-20 flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-zinc-900 flex-shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={getUserAvatar(currentStory.profiles?.avatar_url, null, currentStory.user_id)}
+                        alt="Author"
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+                <div className="flex flex-col text-left">
+                    <span className="text-white text-xs font-bold leading-none drop-shadow-md">
+                        {currentStory.profiles?.full_name || currentStory.profiles?.username || 'Vassal'}
+                    </span>
+                    <span className="text-white/70 text-[9px] font-mono leading-none mt-0.5 drop-shadow-md">
+                        {currentStory.profiles?.username ? `@${currentStory.profiles.username} • ` : ''}{getRelativeTime(currentStory.created_at)}
+                    </span>
+                </div>
             </div>
 
             {/* Close Button */}
