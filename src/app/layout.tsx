@@ -25,10 +25,21 @@ export const metadata: Metadata = {
   title: "Gyral — Forge Your Discipline",
   description: "A cognitive architecture and habit formation system. Track habits, conquer goals, and hold yourself accountable with an AI mentor by your side.",
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Gyral",
+  },
   icons: {
-    icon: '/icons/icon-192.png',
+    icon: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
     shortcut: '/icons/icon-192.png',
-    apple: '/icons/icon-512.png',
+    apple: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
   }
 };
 
