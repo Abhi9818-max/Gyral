@@ -2,13 +2,13 @@ importScripts('https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.10.0/firebase-messaging-compat.js');
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCRdoslXdwCkyqgthqX4xiBZ45hl2yS87E",
-    authDomain: "gyral-a3744.firebaseapp.com",
-    projectId: "gyral-a3744",
-    storageBucket: "gyral-a3744.firebasestorage.app",
-    messagingSenderId: "270216970249",
-    appId: "1:270216970249:web:1be84d95c8f90e532e78d8",
-    measurementId: "G-5ERBE98CVV"
+    apiKey: "AIzaSyBFXAw_8nO5buOVCIjSFF4I-HybzEUnEO8",
+    authDomain: "gyral-1d6da.firebaseapp.com",
+    projectId: "gyral-1d6da",
+    storageBucket: "gyral-1d6da.firebasestorage.app",
+    messagingSenderId: "658071753393",
+    appId: "1:658071753393:web:439e878a522cd52d08c890",
+    measurementId: "G-E8C43WHR9P"
 };
 
 firebase.initializeApp(firebaseConfig);
