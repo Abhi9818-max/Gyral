@@ -84,6 +84,19 @@ export default function RootLayout({
           </ToastProvider>
         </UserDataProvider>
         <Script
+          id="pwa-install-capture"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.addEventListener('beforeinstallprompt', function(e) {
+                e.preventDefault();
+                window.deferredPrompt = e;
+                window.dispatchEvent(new Event('deferred-prompt-available'));
+              });
+            `,
+          }}
+        />
+        <Script
           id="register-sw"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
