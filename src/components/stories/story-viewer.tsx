@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { X, Eye } from 'lucide-react';
+import { X, Eye, Trash2 } from 'lucide-react';
 import { useStories, Story } from '@/context/stories-context';
 import { useUserData } from '@/context/user-data-context';
 import { createClient } from '@/utils/supabase/client';
@@ -34,14 +34,16 @@ function getRelativeTime(dateString: string): string {
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return created.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const formattedTime = created.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+
+    if (diffMins < 60) {
+        return formattedTime;
+    }
+    return `${diffHours}h ago`;
 }
 
 export function StoryViewer({ initialStoryIndex, stories, onClose }: StoryViewerProps) {
-    const { viewStory } = useStories();
+    const { viewStory, deleteStory } = useStories();
     const { user } = useUserData();
     const [currentIndex, setCurrentIndex] = useState(initialStoryIndex);
     const [viewers, setViewers] = useState<{ name: string, viewed_at: string }[]>([]);
@@ -172,8 +174,31 @@ export function StoryViewer({ initialStoryIndex, stories, onClose }: StoryViewer
                 </div>
             </div>
 
-            {/* Close Button */}
-            <div className="absolute top-8 right-6 z-20 flex items-center gap-4">
+            {/* Close / Action Buttons */}
+            <div className="absolute top-8 right-6 z-20 flex items-center gap-2.5">
+                {isMine && (
+                    <button
+                        onClick={async (e) => {
+                            e.stopPropagation();
+                            if (confirm("Are you sure you want to delete this story?")) {
+                                await deleteStory(currentStory.id);
+                                if (stories.length > 1) {
+                                    if (currentIndex === stories.length - 1) {
+                                        setCurrentIndex(prev => prev - 1);
+                                    } else {
+                                        setCurrentIndex(prev => Math.min(prev, stories.length - 2));
+                                    }
+                                } else {
+                                    onClose();
+                                }
+                            }
+                        }}
+                        className="p-2 hover:scale-110 active:scale-95 transition-transform duration-200 focus:outline-none text-white/80 hover:text-red-500"
+                        title="Delete Story"
+                    >
+                        <Trash2 className="w-6 h-6 drop-shadow-lg" />
+                    </button>
+                )}
                 <button onClick={onClose} className="p-2 hover:scale-110 active:scale-95 transition-transform duration-200 focus:outline-none">
                     <X className="w-8 h-8 text-white drop-shadow-lg" />
                 </button>
