@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
                         body: messageBody,
                     },
                     data: {
-                        url: url || '/notifications',
+                        url: url || '/',
                         tag: tag || 'notification',
                         timestamp: Date.now().toString(),
                     },

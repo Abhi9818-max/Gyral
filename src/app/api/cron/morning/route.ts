@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/utils/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
 import { adminMessaging } from '@/lib/firebase-admin';
+import { createClient } from '@/utils/supabase/server';
 
 const STOIC_QUOTES = [
     "The sun rises. What will you conquer today?",
@@ -27,13 +28,22 @@ export async function GET(req: NextRequest) {
     return sendMorningNotifications();
 }
 
-// Also allow POST for manual testing (protected by the same secret)
+// Also allow POST for manual testing (protected by the same secret OR a valid user session)
 export async function POST(req: NextRequest) {
     const authHeader = req.headers.get('authorization');
     const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
 
     if (!isCron) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        try {
+            const supabase = await createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+            }
+        } catch (err) {
+            console.error('[Morning Cron] Auth check failed:', err);
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
     }
 
     return sendMorningNotifications();

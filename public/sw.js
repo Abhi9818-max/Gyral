@@ -70,7 +70,7 @@ self.addEventListener('notificationclick', (event) => {
 
     event.notification.close();
 
-    const urlToOpen = event.notification.data?.url || '/notifications';
+    const urlToOpen = event.notification.data?.url || '/';
 
     const promiseChain = clients.matchAll({
         type: 'window',
