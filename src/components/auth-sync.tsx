@@ -30,10 +30,8 @@ export function AuthSync() {
                         console.error("Auth Sync Error:", error);
                     } else {
                         console.log("Auth Sync Success: Session set from URL.");
-                        // Clear the hash to keep the URL clean
-                        window.history.replaceState(null, "", window.location.pathname);
-                        // Refresh to ensure all server components re-render with the new session
-                        router.refresh();
+                        // Redirect to dashboard
+                        window.location.href = '/dashboard';
                     }
                 } catch (e) {
                     console.error("Unexpected error during Auth Sync:", e);
