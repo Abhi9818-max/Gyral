@@ -126,17 +126,7 @@ export default function ProfilePage() {
                                 />
                             </div>
                         </div>
-                        {myStories.length === 0 && (
-                            <div
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsCreateStoryOpen(true);
-                                }}
-                                className="absolute bottom-0 right-0 bg-purple-600 text-white rounded-full p-1 border-2 border-black hover:scale-110 active:scale-95 transition-transform duration-200 shadow-lg cursor-pointer flex items-center justify-center z-10"
-                            >
-                                <Plus className="w-3.5 h-3.5 md:w-5 h-5" />
-                            </div>
-                        )}
+
                     </div>
 
                     {/* Stats - Instagram Style */}
