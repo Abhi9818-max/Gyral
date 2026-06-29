@@ -406,6 +406,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const [isLoaded, setIsLoaded] = useState(false);
     const [activeFilterTaskId, setActiveFilterTaskId] = useState<string | null>(null);
     const [defaultFilterTaskId, setDefaultFilterTaskIdState] = useState<string | null>(null);
+    const [profileStreakMode, setProfileStreakModeState] = useState<'pinned' | 'combined'>('pinned');
 
     // Stats
     const [consistencyScore, setConsistencyScore] = useState(0);
@@ -437,11 +438,72 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
     const supabase = createClient();
 
+    const [loadedUserId, setLoadedUserId] = useState<string | null>(null);
+
+    const resetStates = () => {
+        setTasks([]);
+        setRecords({});
+        setPacts({});
+        setDailyPacts([]);
+        setNotes([]);
+        setBirthDate(null);
+        setProfile(null);
+        setUnlockedArtifacts([]);
+        setDisplayedArtifactId(null);
+        setNavPreferences(['world', 'bank', 'watch']);
+        setDebts([]);
+        setVows([]);
+        setInvestments([]);
+        setCurrentFaction(null);
+        setIsExiled(false);
+        setExiledUntil(null);
+        setNoxBalance(0);
+        setOnboardingCompleted(false);
+        setLoadedUserId(null);
+    };
+
     // --- INITIAL DATA LOADING & AUTH SYNC ---
     const loadData = async (currentUser: User | null) => {
         setIsLoaded(false);
 
         if (currentUser) {
+            // Load user-specific localStorage cache immediately for instant UI render
+            const suffix = `-${currentUser.id}`;
+            const savedTasks = localStorage.getItem(`diogenes-tasks${suffix}`);
+            const savedRecords = localStorage.getItem(`diogenes-records${suffix}`);
+            const savedPacts = localStorage.getItem(`diogenes-pacts${suffix}`);
+            const savedNotes = localStorage.getItem(`diogenes-notes${suffix}`);
+            const savedBirthDate = localStorage.getItem(`diogenes-birth-date${suffix}`);
+            const savedShowStats = localStorage.getItem(`diogenes-show-stats${suffix}`);
+            const savedTheme = localStorage.getItem(`diogenes-theme${suffix}`);
+            const savedLang = localStorage.getItem(`diogenes-lang${suffix}`);
+            const savedNav = localStorage.getItem(`diogenes-nav-prefs${suffix}`);
+            const savedFaction = localStorage.getItem(`diogenes-current-faction${suffix}`);
+            const savedNox = localStorage.getItem(`diogenes-nox-balance${suffix}`);
+            const savedDebts = localStorage.getItem(`diogenes-debts${suffix}`);
+            const savedMementoMode = localStorage.getItem(`diogenes-memento-mode${suffix}`);
+            const savedProfileStreakMode = localStorage.getItem(`diogenes-profile-streak-mode${suffix}`);
+            const savedDefaultFilter = localStorage.getItem(`diogenes-default-filter${suffix}`);
+
+            if (savedTasks) try { setTasks(JSON.parse(savedTasks)); } catch (e) { console.error(e); }
+            if (savedRecords) try { setRecords(JSON.parse(savedRecords)); } catch (e) { console.error(e); }
+            if (savedPacts) try { setPacts(JSON.parse(savedPacts)); } catch (e) { console.error(e); }
+            if (savedNotes) try { setNotes(JSON.parse(savedNotes)); } catch (e) { console.error(e); }
+            if (savedBirthDate) setBirthDate(savedBirthDate);
+            if (savedShowStats) try { setShowStatsCard(JSON.parse(savedShowStats)); } catch (e) { console.error(e); }
+            if (savedTheme) setThemeState(savedTheme);
+            if (savedLang) setLanguageState(savedLang);
+            if (savedNav) try { setNavPreferences(JSON.parse(savedNav)); } catch (e) { console.error(e); }
+            if (savedFaction) try { setCurrentFaction(JSON.parse(savedFaction)); } catch (e) { console.error(e); }
+            if (savedNox) setNoxBalance(parseInt(savedNox) || 0);
+            if (savedDebts) try { setDebts(JSON.parse(savedDebts)); } catch (e) { console.error(e); }
+            if (savedMementoMode) setMementoViewMode(savedMementoMode as 'life' | 'year');
+            if (savedProfileStreakMode) setProfileStreakModeState(savedProfileStreakMode as 'pinned' | 'combined');
+            if (savedDefaultFilter) {
+                setDefaultFilterTaskIdState(savedDefaultFilter);
+                setActiveFilterTaskId(savedDefaultFilter);
+            }
+
             try {
                 const [
                     tasksRes,
@@ -786,6 +848,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }
 
         setIsLoaded(true);
+        setLoadedUserId(currentUser?.id || 'guest');
     };
 
     const syncCloudData = async () => {
@@ -808,7 +871,12 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             if (active) {
                 const currentUser = session?.user ?? null;
                 setUser(currentUser);
-                loadData(currentUser);
+                if (currentUser) {
+                    loadData(currentUser);
+                } else {
+                    resetStates();
+                    loadData(null);
+                }
             }
         });
 
@@ -849,22 +917,28 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         });
     }, [todayStr, user, dailyPacts]);
 
-    // --- LOCAL STORAGE BACKUP (Only if Guest) ---
+    // --- LOCAL STORAGE BACKUP ---
     useEffect(() => {
-        if (isLoaded && !user) {
-            localStorage.setItem('diogenes-tasks', JSON.stringify(tasks));
-            localStorage.setItem('diogenes-records', JSON.stringify(records));
-            localStorage.setItem('diogenes-pacts', JSON.stringify(pacts));
-            localStorage.setItem('diogenes-notes', JSON.stringify(notes));
-            if (birthDate) localStorage.setItem('diogenes-birth-date', birthDate);
-            localStorage.setItem('diogenes-show-stats', JSON.stringify(showStatsCard));
-            localStorage.setItem('diogenes-theme', theme);
-            localStorage.setItem('diogenes-lang', language);
-            localStorage.setItem('diogenes-nav-prefs', JSON.stringify(navPreferences));
-            localStorage.setItem('diogenes-nox-balance', noxBalance.toString());
-            localStorage.setItem('diogenes-debts', JSON.stringify(debts));
+        const currentUserId = user?.id || 'guest';
+        if (isLoaded && loadedUserId === currentUserId) {
+            const suffix = user ? `-${user.id}` : '';
+            localStorage.setItem(`diogenes-tasks${suffix}`, JSON.stringify(tasks));
+            localStorage.setItem(`diogenes-records${suffix}`, JSON.stringify(records));
+            localStorage.setItem(`diogenes-pacts${suffix}`, JSON.stringify(pacts));
+            localStorage.setItem(`diogenes-notes${suffix}`, JSON.stringify(notes));
+            if (birthDate) localStorage.setItem(`diogenes-birth-date${suffix}`, birthDate);
+            localStorage.setItem(`diogenes-show-stats${suffix}`, JSON.stringify(showStatsCard));
+            localStorage.setItem(`diogenes-theme${suffix}`, theme);
+            localStorage.setItem(`diogenes-lang${suffix}`, language);
+            localStorage.setItem(`diogenes-nav-prefs${suffix}`, JSON.stringify(navPreferences));
+            localStorage.setItem(`diogenes-nox-balance${suffix}`, noxBalance.toString());
+            localStorage.setItem(`diogenes-debts${suffix}`, JSON.stringify(debts));
+            localStorage.setItem(`diogenes-current-faction${suffix}`, currentFaction ? JSON.stringify(currentFaction) : '');
+            localStorage.setItem(`diogenes-memento-mode${suffix}`, mementoViewMode);
+            localStorage.setItem(`diogenes-profile-streak-mode${suffix}`, profileStreakMode);
+            localStorage.setItem(`diogenes-default-filter${suffix}`, defaultFilterTaskId || '');
         }
-    }, [tasks, records, pacts, notes, birthDate, isLoaded, user, showStatsCard, theme, language, navPreferences, noxBalance, debts]);
+    }, [tasks, records, pacts, notes, birthDate, isLoaded, user, loadedUserId, showStatsCard, theme, language, navPreferences, noxBalance, debts, currentFaction, mementoViewMode, profileStreakMode, defaultFilterTaskId]);
 
     // --- THEME APPLICATION ---
     useEffect(() => {
@@ -1045,6 +1119,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const updateNoxBalanceInDb = async (newBalance: number) => {
+        const suffix = user ? `-${user.id}` : '';
         if (!user) {
             localStorage.setItem('diogenes-nox-balance', newBalance.toString());
             return;
@@ -1054,11 +1129,11 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
             const { error } = await supabase.from('profiles').update({ nox_balance: newBalance }).eq('id', user.id);
             if (error) {
                 console.warn("Failed to save Nox balance to database (likely column not added yet). Saving to local storage.", error.message);
-                localStorage.setItem('diogenes-nox-balance', newBalance.toString());
+                localStorage.setItem(`diogenes-nox-balance${suffix}`, newBalance.toString());
             }
         } catch (e) {
             console.error("Error updating nox balance in database:", e);
-            localStorage.setItem('diogenes-nox-balance', newBalance.toString());
+            localStorage.setItem(`diogenes-nox-balance${suffix}`, newBalance.toString());
         }
     };
 
@@ -1648,7 +1723,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const toggleStatsCard = async () => {
         const newValue = !showStatsCard;
         setShowStatsCard(newValue);
-        localStorage.setItem('diogenes-show-stats', JSON.stringify(newValue));
+        const suffix = user ? `-${user.id}` : '';
+        localStorage.setItem(`diogenes-show-stats${suffix}`, JSON.stringify(newValue));
         if (user) await supabase.from('user_settings').upsert({ user_id: user.id, show_stats_card: newValue });
     };
 
@@ -1795,7 +1871,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                     }
                 }
             }
-            localStorage.setItem('diogenes-current-faction', JSON.stringify(faction));
+            const suffix = user ? `-${user.id}` : '';
+            localStorage.setItem(`diogenes-current-faction${suffix}`, JSON.stringify(faction));
         }
     };
 
@@ -1879,7 +1956,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const toggleMementoViewMode = () => {
         setMementoViewMode(prev => {
             const next = prev === 'life' ? 'year' : 'life';
-            localStorage.setItem('diogenes-memento-mode', next);
+            const suffix = user ? `-${user.id}` : '';
+            localStorage.setItem(`diogenes-memento-mode${suffix}`, next);
             return next;
         });
     };
@@ -2046,7 +2124,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const [newlyUnlockedArtifacts, setNewlyUnlockedArtifacts] = useState<string[]>([]);
     const clearNewlyUnlocked = () => setNewlyUnlockedArtifacts([]);
 
-    const [profileStreakMode, setProfileStreakModeState] = useState<'pinned' | 'combined'>('pinned');
+
 
     const setProfileStreakMode = async (mode: 'pinned' | 'combined') => {
         setProfileStreakModeState(mode);

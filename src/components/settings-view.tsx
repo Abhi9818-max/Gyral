@@ -593,13 +593,18 @@ export function SettingsView({ isModal = false }: SettingsViewProps) {
                             isLast
                             onClick={() => {
                                 if (confirm("WARNING: This will permanently delete your local records, tasks, pacts, notes, and debts. Your profile account and login session will remain untouched. Proceed?")) {
+                                    const suffix = user ? `-${user.id}` : '';
                                     const keysToRemove = [
-                                        'diogenes-tasks',
-                                        'diogenes-records',
-                                        'diogenes-pacts',
-                                        'diogenes-notes',
-                                        'diogenes-debts',
-                                        'diogenes-nox-balance'
+                                        `diogenes-tasks${suffix}`,
+                                        `diogenes-records${suffix}`,
+                                        `diogenes-pacts${suffix}`,
+                                        `diogenes-notes${suffix}`,
+                                        `diogenes-debts${suffix}`,
+                                        `diogenes-nox-balance${suffix}`,
+                                        `diogenes-current-faction${suffix}`,
+                                        `diogenes-memento-mode${suffix}`,
+                                        `diogenes-profile-streak-mode${suffix}`,
+                                        `diogenes-default-filter${suffix}`
                                     ];
                                     keysToRemove.forEach(key => localStorage.removeItem(key));
                                     window.location.reload();

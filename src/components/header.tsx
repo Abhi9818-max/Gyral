@@ -348,7 +348,6 @@ export function Header() {
                   });
                 }
                 
-                localStorage.clear();
                 router.push('/login');
               });
             }}

@@ -84,7 +84,6 @@ export default function ProfilePage() {
             });
         }
         
-        localStorage.clear();
         router.push('/login');
     };
 
