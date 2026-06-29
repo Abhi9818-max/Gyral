@@ -3,7 +3,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 
 import { createClient } from '@/utils/supabase/server'
 
@@ -63,10 +63,15 @@ export async function signup(formData: FormData) {
 
 export async function signInWithGoogle() {
     const supabase = await createClient()
+    const headersList = await headers()
+    const host = headersList.get('host') || 'gyral.vercel.app'
+    const protocol = host.includes('localhost') ? 'http' : 'https'
+    const origin = `${protocol}://${host}`
+
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `https://gyral.vercel.app/auth/callback`,
+            redirectTo: `${origin}/auth/callback`,
             queryParams: {
                 access_type: 'offline',
                 prompt: 'consent',
