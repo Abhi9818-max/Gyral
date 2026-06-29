@@ -50,6 +50,7 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests and chrome-extension / API calls
   if (request.method !== 'GET') return;
   if (request.url.includes('/api/')) return;
+  if (request.url.includes('/auth/')) return;
   if (request.url.includes('supabase')) return;
   if (request.url.includes('googleapis')) return;
   if (request.url.startsWith('chrome-extension://')) return;
@@ -84,7 +85,10 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => cachedResponse); // Network failure: fall back to cache
+        .catch((err) => {
+          if (cachedResponse) return cachedResponse;
+          throw err;
+        });
 
       return cachedResponse || fetchPromise;
     })
