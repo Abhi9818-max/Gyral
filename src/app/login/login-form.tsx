@@ -12,6 +12,7 @@ export function LoginForm({
     error?: string;
 }) {
     const [isCapacitor, setIsCapacitor] = useState(false);
+    const [isWebView, setIsWebView] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(initialError);
 
@@ -20,6 +21,21 @@ export function LoginForm({
         if (cap?.isNativePlatform?.()) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsCapacitor(true);
+        }
+
+        const ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '';
+        const isWebViewUA = 
+            ua.includes('wv') || 
+            ua.includes('webview') || 
+            ua.includes('gonative') || 
+            ua.includes('median') ||
+            (ua.includes('android') && ua.includes('version/'));
+        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const isNativeApp = typeof window !== 'undefined' && !!((window as any).gonative || (window as any).median || (window as any).Capacitor);
+        
+        if (isWebViewUA || isNativeApp) {
+            setIsWebView(true);
         }
     }, []);
 
@@ -94,6 +110,13 @@ export function LoginForm({
             {error && (
                 <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg text-center backdrop-blur-sm">
                     {error}
+                </div>
+            )}
+
+            {isWebView && (
+                <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-xs leading-relaxed backdrop-blur-sm">
+                    <span className="font-bold block mb-1">⚠️ Wrapper App WebView Detected</span>
+                    For a seamless experience inside wrapper apps (like Median.co), please sign in using your <strong>Email and Password</strong>. Google Sign-In requires opening Chrome, which cannot pass cookies back to your app, leaving you logged out.
                 </div>
             )}
 
