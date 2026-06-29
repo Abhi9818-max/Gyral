@@ -1,26 +1,70 @@
 {
-  "name": "Gyral",
+  "name": "Gyral — Forge Your Discipline",
   "short_name": "Gyral",
-  "description": "Your life, intentionally designed.",
-  "start_url": "/",
+  "description": "A cognitive architecture and habit formation system. Track habits, conquer goals, and hold yourself accountable with an AI mentor by your side.",
+  "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#6366f1",
   "orientation": "portrait-primary",
   "scope": "/",
+  "id": "/",
   "gcm_sender_id": "103953800507",
+  "categories": ["productivity", "lifestyle", "health"],
   "icons": [
     {
-      "src": "/icon-192x192.png",
+      "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/icon-512x512.png",
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-dashboard.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard — your daily command center"
+    },
+    {
+      "src": "/screenshot-profile.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Profile — track your streaks and stats"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Daily Pact",
+      "short_name": "Pact",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icons/pact-shortcut.png", "sizes": "512x512" }]
     }
   ]
 }
