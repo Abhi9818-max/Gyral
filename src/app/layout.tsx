@@ -57,6 +57,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               window.addEventListener('beforeinstallprompt', (e) => {
+                console.log("[PWA] beforeinstallprompt captured successfully");
                 e.preventDefault();
                 window.deferredPrompt = e;
                 window.dispatchEvent(new Event('deferred-prompt-available'));
