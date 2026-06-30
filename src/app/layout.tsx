@@ -53,6 +53,17 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                window.deferredPrompt = e;
+                window.dispatchEvent(new Event('deferred-prompt-available'));
+              });
+            `,
+          }}
+        />
         <PWAInit />
         <UserDataProvider>
           <ToastProvider>
