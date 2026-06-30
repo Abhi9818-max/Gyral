@@ -54,6 +54,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <script
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `
               window.addEventListener('beforeinstallprompt', (e) => {
