@@ -33,6 +33,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#000000",
+  colorScheme: "dark",
 };
 
 import { ExileOverlay } from "@/components/global/exile-overlay";

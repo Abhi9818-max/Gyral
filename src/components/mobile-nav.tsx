@@ -30,8 +30,12 @@ export function MobileNav() {
     const [isWatchModalOpen, setIsWatchModalOpen] = useState(false);
     const [isPactsModalOpen, setIsPactsModalOpen] = useState(false);
 
+    // Fallback nav preferences if loading or empty
+    const defaultNavKeys: NavItemKey[] = ['world', 'bank', 'watch'];
+    const currentNavPrefs = (navPreferences && navPreferences.length > 0) ? navPreferences : defaultNavKeys;
+
     // Get the actual nav items based on preferences
-    const activeNavItems = navPreferences
+    const activeNavItems = currentNavPrefs
         .map(key => ALL_NAV_ITEMS.find(item => item.key === key))
         .filter(Boolean) as typeof ALL_NAV_ITEMS;
 
@@ -63,14 +67,6 @@ export function MobileNav() {
     const hasIncompletePacts = todaysPacts.some(p => !p.isCompleted);
 
     if (hideNav) return null;
-
-    if (!isLoaded) {
-        return (
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-white/10 z-[60] pb-safe">
-                <div className="h-16" />
-            </nav>
-        );
-    }
 
     return (
         <>
