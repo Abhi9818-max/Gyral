@@ -8,7 +8,13 @@ function ErrorContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const error = searchParams.get("error");
-    const [isSyncing, setIsSyncing] = useState(true);
+    const [isSyncing, setIsSyncing] = useState(() => {
+        // Only show syncing state if we have hash tokens to process
+        if (typeof window !== 'undefined') {
+            return window.location.hash.includes('access_token');
+        }
+        return false;
+    });
 
     useEffect(() => {
         const hasHashToken = typeof window !== 'undefined' && 
@@ -16,7 +22,17 @@ function ErrorContent() {
         
         if (!hasHashToken) {
             setIsSyncing(false);
+            return;
         }
+
+        // AuthSync (mounted in root layout) will handle the tokens.
+        // Set a timeout fallback so we never get stuck forever.
+        const timeout = setTimeout(() => {
+            console.warn("[AuthError] Sync timeout — falling back to error display.");
+            setIsSyncing(false);
+        }, 5000);
+
+        return () => clearTimeout(timeout);
     }, []);
 
     if (isSyncing) {

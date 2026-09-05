@@ -1,46 +1,60 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { useRouter } from "next/navigation";
 
 export function AuthSync() {
-    const router = useRouter();
+    const hasRun = useRef(false);
 
     useEffect(() => {
+        if (hasRun.current) return;
+
         const handleAuthSync = async () => {
             // Check for tokens in the hash
             const hash = window.location.hash;
             if (!hash) return;
 
-            const params = new URLSearchParams(hash.substring(1)); // Remove the leading '#'
+            const params = new URLSearchParams(hash.substring(1));
             const accessToken = params.get("access_token");
             const refreshToken = params.get("refresh_token");
 
-            if (accessToken && refreshToken) {
-                const supabase = createClient();
+            if (!accessToken || !refreshToken) return;
 
-                try {
-                    const { error } = await supabase.auth.setSession({
-                        access_token: accessToken,
-                        refresh_token: refreshToken,
-                    });
+            // Prevent double-processing
+            hasRun.current = true;
 
-                    if (error) {
-                        console.error("Auth Sync Error:", error);
-                    } else {
-                        console.log("Auth Sync Success: Session set from URL.");
-                        // Redirect to dashboard
-                        window.location.href = '/dashboard';
-                    }
-                } catch (e) {
-                    console.error("Unexpected error during Auth Sync:", e);
+            // Clear hash fragment immediately to prevent re-processing on re-renders
+            if (window.history.replaceState) {
+                window.history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+
+            console.log("[AuthSync] Found tokens in URL hash, setting session...");
+
+            const supabase = createClient();
+
+            try {
+                const { error } = await supabase.auth.setSession({
+                    access_token: accessToken,
+                    refresh_token: refreshToken,
+                });
+
+                if (error) {
+                    console.error("[AuthSync] setSession error:", error);
+                    // Redirect to login with error
+                    window.location.href = '/login?error=' + encodeURIComponent('Session sync failed. Please try again.');
+                    return;
                 }
+
+                console.log("[AuthSync] Session set successfully! Redirecting to dashboard...");
+                window.location.href = '/dashboard';
+            } catch (e) {
+                console.error("[AuthSync] Unexpected error:", e);
+                window.location.href = '/login?error=' + encodeURIComponent('Authentication failed. Please try again.');
             }
         };
 
         handleAuthSync();
-    }, [router]);
+    }, []);
 
-    return null; // This component renders nothing
+    return null;
 }

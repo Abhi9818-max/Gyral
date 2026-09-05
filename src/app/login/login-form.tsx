@@ -102,15 +102,29 @@ export function LoginForm({
         setLoading(true);
         setError(undefined);
         try {
+            // Use implicit flow to avoid PKCE code_verifier mismatch.
+            // PKCE stores code_verifier in localStorage but the server callback
+            // uses @supabase/ssr which looks for it in cookies — causing the
+            // exchange to fail silently. Implicit flow returns tokens directly
+            // in the URL hash, which AuthSync picks up.
             const supabase = createSupabaseClient(
                 process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                {
+                    auth: {
+                        flowType: "implicit",
+                        autoRefreshToken: false,
+                        persistSession: false,
+                    },
+                }
             );
             const origin = typeof window !== 'undefined' ? window.location.origin : 'https://gyral.vercel.app';
             const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    redirectTo: `${origin}/auth/callback`,
+                    // Redirect back to the app root — AuthSync will pick up the
+                    // access_token and refresh_token from the URL hash fragment.
+                    redirectTo: `${origin}/`,
                     queryParams: {
                         access_type: "offline",
                         prompt: "consent",
