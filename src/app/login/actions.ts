@@ -33,7 +33,7 @@ export async function login(formData: FormData) {
     cookieStore.delete('gyral-guest-mode')
 
     revalidatePath('/', 'layout')
-    redirect('/')
+    redirect('/dashboard')
 }
 
 export async function signup(formData: FormData) {
@@ -98,5 +98,5 @@ export async function continueAsGuest() {
         path: '/',
     })
 
-    redirect('/')
+    redirect('/dashboard')
 }

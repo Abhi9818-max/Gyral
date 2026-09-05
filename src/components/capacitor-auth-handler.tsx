@@ -67,8 +67,8 @@ export function CapacitorAuthHandler() {
                                 if (error) {
                                     console.error("[CapacitorAuth] setSession error:", error);
                                 } else {
-                                    console.log("[CapacitorAuth] Session set! Reloading...");
-                                    window.location.href = "/";
+                                     console.log("[CapacitorAuth] Session set! Reloading...");
+                                    window.location.href = "/dashboard";
                                 }
                                 isHandling.current = false;
                                 return;
@@ -87,7 +87,7 @@ export function CapacitorAuthHandler() {
                                 console.error("[CapacitorAuth] Code exchange error:", error);
                             } else if (data.session) {
                                 console.log("[CapacitorAuth] Code exchanged! Reloading...");
-                                window.location.href = "/";
+                                window.location.href = "/dashboard";
                             }
                             isHandling.current = false;
                             return;

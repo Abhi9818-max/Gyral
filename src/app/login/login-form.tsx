@@ -122,9 +122,9 @@ export function LoginForm({
             const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    // Redirect back to the app root — AuthSync will pick up the
+                    // Redirect back to dashboard — AuthSync will pick up the
                     // access_token and refresh_token from the URL hash fragment.
-                    redirectTo: `${origin}/`,
+                    redirectTo: `${origin}/dashboard`,
                     queryParams: {
                         access_type: "offline",
                         prompt: "consent",

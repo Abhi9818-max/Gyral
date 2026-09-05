@@ -55,8 +55,8 @@ export async function updateSession(request: NextRequest) {
         pathname.startsWith('/compliance') ||
         pathname.includes('.')
 
-    // If authenticated user visits the landing page, redirect to dashboard
-    if (user && pathname === '/') {
+    // If authenticated user or guest visits the landing page or login page, redirect to dashboard
+    if ((user || isGuest) && (pathname === '/' || pathname.startsWith('/login'))) {
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'
         return NextResponse.redirect(url)
