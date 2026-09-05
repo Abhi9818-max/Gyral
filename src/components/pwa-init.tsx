@@ -4,6 +4,15 @@ import { useEffect } from 'react';
 export function PWAInit() {
     useEffect(() => {
         if (typeof window !== 'undefined') {
+            // Enforce pitch black status bar / theme color across browser & webview
+            let metaTheme = document.querySelector('meta[name="theme-color"]');
+            if (!metaTheme) {
+                metaTheme = document.createElement('meta');
+                metaTheme.setAttribute('name', 'theme-color');
+                document.head.appendChild(metaTheme);
+            }
+            metaTheme.setAttribute('content', '#000000');
+
             // Prevent context menus on images/videos to suppress copy/download/share popup on long press
             const handleContextMenu = (e: MouseEvent) => {
                 const target = e.target as HTMLElement;
