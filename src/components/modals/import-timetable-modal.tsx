@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useUserData } from "@/context/user-data-context";
 import { useToday } from "@/hooks/use-today";
 import {
@@ -20,7 +20,10 @@ import {
     Repeat,
     HelpCircle,
     Clock,
-    TrendingUp
+    TrendingUp,
+    Trash2,
+    History,
+    AlertTriangle
 } from "lucide-react";
 
 interface ImportTimetableModalProps {
@@ -38,6 +41,17 @@ interface ParsedTimetableData {
     fullTimetableNote: string;
 }
 
+export interface ImportLog {
+    id: string;
+    title: string;
+    duration?: string;
+    importedAt: string;
+    noteId?: string;
+    pactTexts: string[];
+    taskNames: string[];
+    goalTitles: string[];
+}
+
 const UNIVERSAL_AI_PROMPT = `Great! Now please organize and format the entire routine and advice we just discussed into a structured, progressive timetable for my Gyral discipline system.
 
 Requirements:
@@ -51,11 +65,28 @@ Requirements:
 Make it clear, structured, and easy to copy so I can paste it directly into Gyral.`;
 
 export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalProps) {
-    const { addPact, addDailyPact, addTask, addLifeEvent, addNote } = useUserData();
+    const {
+        pacts,
+        dailyPacts,
+        tasks,
+        notes,
+        lifeEvents,
+        addPact,
+        deletePact,
+        addDailyPact,
+        deleteDailyPact,
+        addTask,
+        deleteTask,
+        addLifeEvent,
+        deleteLifeEvent,
+        addNote,
+        deleteNote
+    } = useUserData();
+
     const todayStr = useToday();
 
-    // Step state: 'INPUT' | 'PREVIEW' | 'SUCCESS'
-    const [step, setStep] = useState<'INPUT' | 'PREVIEW' | 'SUCCESS'>('INPUT');
+    // Step state: 'INPUT' | 'PREVIEW' | 'SUCCESS' | 'HISTORY'
+    const [step, setStep] = useState<'INPUT' | 'PREVIEW' | 'SUCCESS' | 'HISTORY'>('INPUT');
 
     // Input state
     const [rawText, setRawText] = useState("");
@@ -74,7 +105,25 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
     const [selectedGoals, setSelectedGoals] = useState<boolean[]>([]);
     const [includeNote, setIncludeNote] = useState(true);
 
+    // History / Logs state
+    const [importLogs, setImportLogs] = useState<ImportLog[]>([]);
+    const [deletingLogId, setDeletingLogId] = useState<string | null>(null);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Load import logs from localStorage when modal opens
+    useEffect(() => {
+        if (isOpen && typeof window !== "undefined") {
+            try {
+                const stored = localStorage.getItem('gyral_ai_import_logs');
+                if (stored) {
+                    setImportLogs(JSON.parse(stored));
+                }
+            } catch (e) {
+                console.error("[ImportLogs] Failed to parse logs:", e);
+            }
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -158,11 +207,16 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
 
         setIsLoading(true);
         try {
+            const importId = crypto.randomUUID();
+            const importedPactTexts: string[] = [];
+            const importedTaskNames: string[] = [];
+            const importedGoalTitles: string[] = [];
+
             // 1. Add selected Pacts (Vows)
             parsedData.pacts.forEach((pactText, idx) => {
                 if (selectedPacts[idx] && pactText.trim()) {
                     const cleanPact = pactText.trim();
-                    // If recurring is enabled, save to dailyPacts template so it appears on ALL days automatically!
+                    importedPactTexts.push(cleanPact);
                     if (makePactsRecurring) {
                         addDailyPact(cleanPact);
                     }
@@ -174,29 +228,56 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
             const taskColors = ["#3b82f6", "#10b981", "#8b5cf6", "#ec4899", "#f59e0b"];
             parsedData.tasks.forEach((taskName, idx) => {
                 if (selectedTasks[idx] && taskName.trim()) {
+                    const cleanTask = taskName.trim();
+                    importedTaskNames.push(cleanTask);
                     const color = taskColors[idx % taskColors.length];
-                    addTask(taskName.trim(), color);
+                    addTask(cleanTask, color);
                 }
             });
 
             // 3. Add selected Goals
             parsedData.goals.forEach((goalText, idx) => {
                 if (selectedGoals[idx] && goalText.trim()) {
+                    const cleanGoal = goalText.trim();
+                    importedGoalTitles.push(cleanGoal);
                     addLifeEvent({
                         event_date: todayStr,
-                        title: goalText.trim(),
+                        title: cleanGoal,
                         description: `Extracted from AI Routine: ${parsedData.title} (${parsedData.duration || 'Progressive'})`,
                         type: 'GOAL'
                     });
                 }
             });
 
-            // 4. Save formatted Markdown timetable note
+            // 4. Save formatted Markdown timetable note with embedded importId tag
+            let createdNoteId: string | undefined;
             if (includeNote && parsedData.fullTimetableNote) {
-                await addNote(
+                const noteContent = `<!-- GYRAL_AI_IMPORT:${importId} -->\n` + parsedData.fullTimetableNote;
+                const newNote = await addNote(
                     parsedData.title || "AI Timetable & Routine",
-                    parsedData.fullTimetableNote
+                    noteContent
                 );
+                if (newNote && newNote.id) {
+                    createdNoteId = newNote.id;
+                }
+            }
+
+            // 5. Save log to localStorage
+            const newLog: ImportLog = {
+                id: importId,
+                title: parsedData.title || "AI Timetable & Routine",
+                duration: parsedData.duration,
+                importedAt: new Date().toISOString(),
+                noteId: createdNoteId,
+                pactTexts: importedPactTexts,
+                taskNames: importedTaskNames,
+                goalTitles: importedGoalTitles
+            };
+
+            const updatedLogs = [newLog, ...importLogs];
+            setImportLogs(updatedLogs);
+            if (typeof window !== "undefined") {
+                localStorage.setItem('gyral_ai_import_logs', JSON.stringify(updatedLogs));
             }
 
             setStep('SUCCESS');
@@ -205,6 +286,64 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
             setError("Failed to import items into Gyral.");
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    // Purge / Delete an Import Log Completely
+    const handleDeleteImportLog = async (log: ImportLog) => {
+        setDeletingLogId(log.id);
+        try {
+            // 1. Delete associated Note
+            if (log.noteId) {
+                await deleteNote(log.noteId);
+            }
+            // Fallback: search notes for GYRAL_AI_IMPORT tag matching log.id or title
+            const matchingNote = notes.find(n => n.content.includes(`GYRAL_AI_IMPORT:${log.id}`) || (log.title && n.title === log.title));
+            if (matchingNote && matchingNote.id !== log.noteId) {
+                await deleteNote(matchingNote.id);
+            }
+
+            // 2. Delete associated Daily Pacts
+            dailyPacts.forEach(dp => {
+                if (log.pactTexts.includes(dp.text)) {
+                    deleteDailyPact(dp.id);
+                }
+            });
+
+            // 3. Delete date-specific Pacts across dates
+            Object.entries(pacts).forEach(([dateStr, datePactsList]) => {
+                datePactsList.forEach(p => {
+                    if (log.pactTexts.includes(p.text)) {
+                        deletePact(p.id, dateStr);
+                    }
+                });
+            });
+
+            // 4. Delete associated Tasks
+            tasks.forEach(t => {
+                if (log.taskNames.includes(t.name)) {
+                    deleteTask(t.id);
+                }
+            });
+
+            // 5. Delete associated Life Events / Goals
+            lifeEvents.forEach(le => {
+                if (log.goalTitles.includes(le.title)) {
+                    deleteLifeEvent(le.id);
+                }
+            });
+
+            // 6. Remove log entry from localStorage and state
+            const updatedLogs = importLogs.filter(l => l.id !== log.id);
+            setImportLogs(updatedLogs);
+            if (typeof window !== "undefined") {
+                localStorage.setItem('gyral_ai_import_logs', JSON.stringify(updatedLogs));
+            }
+        } catch (err: any) {
+            console.error("[Delete import log error]:", err);
+            setError("Failed to completely remove all imported items.");
+        } finally {
+            setDeletingLogId(null);
         }
     };
 
@@ -225,7 +364,7 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
             {/* Modal Container */}
             <div className="relative w-full max-w-2xl bg-[#09090b] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_rgba(0,0,0,0.9)] max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
+                <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 bg-accent/10 border border-accent/20 rounded-2xl text-accent">
                             <Sparkles className="w-5 h-5 animate-pulse" />
@@ -235,7 +374,7 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                                 AI Timetable & Routine Importer
                             </h2>
                             <p className="text-xs text-zinc-400">
-                                Import gym schedules, habits & timetables from ChatGPT / Claude
+                                Import gym schedules & timetables from ChatGPT / Claude
                             </p>
                         </div>
                     </div>
@@ -244,6 +383,35 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                         className="p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
                     >
                         <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* Step Switcher Tabs (New Import vs Manage & Delete Imports) */}
+                <div className="flex items-center gap-2 mb-6 bg-white/5 p-1 rounded-2xl border border-white/10">
+                    <button
+                        type="button"
+                        onClick={() => { if (step !== 'PREVIEW') setStep('INPUT'); }}
+                        className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                            step === 'INPUT' || step === 'PREVIEW' || step === 'SUCCESS'
+                                ? 'bg-accent text-black shadow-md'
+                                : 'text-zinc-400 hover:text-white'
+                        }`}
+                    >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        Import Timetable
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => setStep('HISTORY')}
+                        className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                            step === 'HISTORY'
+                                ? 'bg-accent text-black shadow-md'
+                                : 'text-zinc-400 hover:text-white'
+                        }`}
+                    >
+                        <History className="w-3.5 h-3.5" />
+                        Manage & Delete Logs ({importLogs.length})
                     </button>
                 </div>
 
@@ -626,7 +794,13 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                         <p className="text-sm text-zinc-400 max-w-md">
                             Your timetable items have been auto-populated into your <strong>Pacts</strong>, <strong>Habit Trackers</strong>, <strong>Goals</strong>, and <strong>Notes</strong>.
                         </p>
-                        <div className="pt-6">
+                        <div className="pt-6 flex gap-4">
+                            <button
+                                onClick={() => setStep('HISTORY')}
+                                className="px-6 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-2xl transition-all"
+                            >
+                                View / Manage Imports
+                            </button>
                             <button
                                 onClick={onClose}
                                 className="px-8 py-3.5 bg-accent hover:bg-accent/90 text-black font-bold rounded-2xl transition-all shadow-lg"
@@ -634,6 +808,94 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                                 Return to Dashboard
                             </button>
                         </div>
+                    </div>
+                )}
+
+                {/* STEP 4: HISTORY / DELETE IMPORT LOGS VIEW */}
+                {step === 'HISTORY' && (
+                    <div className="space-y-4 overflow-y-auto pr-1 max-h-[65vh]">
+                        <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                            <div>
+                                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Past Imported Timetables</h3>
+                                <p className="text-xs text-zinc-400">Purge an import log to remove all its associated pacts, notes, and items</p>
+                            </div>
+                            <button
+                                onClick={() => setStep('INPUT')}
+                                className="text-xs text-accent hover:underline font-mono"
+                            >
+                                + New Import
+                            </button>
+                        </div>
+
+                        {importLogs.length === 0 ? (
+                            <div className="py-12 text-center text-zinc-500 space-y-2">
+                                <History className="w-10 h-10 mx-auto opacity-30" />
+                                <p className="text-sm font-medium">No past import logs found.</p>
+                                <p className="text-xs text-zinc-600">Imported AI timetables will be listed here with one-click purge options.</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {importLogs.map((log) => (
+                                    <div
+                                        key={log.id}
+                                        className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-3 hover:border-white/20 transition-all"
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <h4 className="text-sm font-bold text-white">{log.title}</h4>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] font-mono text-zinc-400">
+                                                        {new Date(log.importedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                    {log.duration && (
+                                                        <span className="text-[10px] font-mono px-2 py-0.5 bg-accent/10 text-accent rounded-full border border-accent/20">
+                                                            {log.duration}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                onClick={() => handleDeleteImportLog(log)}
+                                                disabled={deletingLogId === log.id}
+                                                className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 hover:text-red-300 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50"
+                                            >
+                                                {deletingLogId === log.id ? (
+                                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                ) : (
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                )}
+                                                Delete Log & Purge All
+                                            </button>
+                                        </div>
+
+                                        {/* Items Summary Chips */}
+                                        <div className="flex flex-wrap gap-2 pt-1 border-t border-white/5">
+                                            {log.pactTexts.length > 0 && (
+                                                <span className="text-[10px] font-mono bg-white/5 text-zinc-300 px-2.5 py-1 rounded-lg border border-white/5">
+                                                    ⚔️ {log.pactTexts.length} Pacts
+                                                </span>
+                                            )}
+                                            {log.taskNames.length > 0 && (
+                                                <span className="text-[10px] font-mono bg-blue-500/10 text-blue-300 px-2.5 py-1 rounded-lg border border-blue-500/20">
+                                                    ⚡ {log.taskNames.length} Habit Trackers
+                                                </span>
+                                            )}
+                                            {log.goalTitles.length > 0 && (
+                                                <span className="text-[10px] font-mono bg-purple-500/10 text-purple-300 px-2.5 py-1 rounded-lg border border-purple-500/20">
+                                                    🎯 {log.goalTitles.length} Goals
+                                                </span>
+                                            )}
+                                            {log.noteId && (
+                                                <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+                                                    📝 Reference Note
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
