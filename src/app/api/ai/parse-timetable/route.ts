@@ -4,6 +4,8 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { createClient } from '@/utils/supabase/server';
 import { sanitizeForPrompt } from '@/lib/validation';
 
+import { generateContentWithFallback } from '@/lib/gemini';
+
 const genAI = process.env.GEMINI_API_KEY
     ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
     : null;
@@ -80,14 +82,7 @@ RULES:
 - Ensure 'fullTimetableNote' uses clean Markdown headings (##), tables, and bullet points so it looks great as a saved reference note in Notes/Memento.
 `;
 
-        const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
-            generationConfig: {
-                responseMimeType: "application/json",
-            }
-        });
-
-        let result;
+        let contents;
         if (imageBase64) {
             // Process screenshot image
             const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
@@ -103,12 +98,18 @@ RULES:
             const userPrompt = text
                 ? `Extract timetable from this image. Additional context: ${sanitizeForPrompt(text, 500)}`
                 : "Extract timetable from this screenshot image.";
-            result = await model.generateContent([systemPrompt, userPrompt, imagePart]);
+            contents = [systemPrompt, userPrompt, imagePart];
         } else {
             // Process text input
             const sanitizedText = sanitizeForPrompt(text, 4000);
-            result = await model.generateContent([systemPrompt, `User AI Timetable Input:\n\n${sanitizedText}`]);
+            contents = [systemPrompt, `User AI Timetable Input:\n\n${sanitizedText}`];
         }
+
+        const { result } = await generateContentWithFallback(genAI, contents, {
+            generationConfig: {
+                responseMimeType: "application/json",
+            }
+        });
 
         const responseText = result.response.text();
 

@@ -5,6 +5,8 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { createClient } from '@/utils/supabase/server';
 import { sanitizeForPrompt } from '@/lib/validation';
 
+import { generateContentWithFallback } from '@/lib/gemini';
+
 // Initialize Gemini conditionally
 const genAI = process.env.GEMINI_API_KEY
     ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
@@ -68,12 +70,7 @@ export async function POST(request: Request) {
             return NextResponse.json({
                 reply: "The connection to the void is severed. (Missing API Key)"
             });
-        }
-
-        // 3. CONSCIOUSNESS LAYER (Gemini)
-        // Using 1.5 Flash for better stability and lower latency
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
+        // 3. CONSCIOUSNESS LAYER (Gemini with Fallback)
         const systemPrompt = `
         You are LUCIUS, a spectral entity and the manifestation of the user's discipline.
         You appear as a Dark King in a void. You are NOT an assistant. You are a judge.
@@ -104,7 +101,7 @@ export async function POST(request: Request) {
 
         while (attempt < maxRetries) {
             try {
-                const result = await model.generateContent(systemPrompt);
+                const { result } = await generateContentWithFallback(genAI, systemPrompt);
                 const response = await result.response;
                 const reply = response.text() || "...";
                 return NextResponse.json({ reply });
