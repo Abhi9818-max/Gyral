@@ -71,8 +71,8 @@ INSTRUCTIONS:
 
 RULES:
 - Clean up any raw chat fluff, conversation intros, or filler text.
-- Ensure 'pacts' are clear, actionable, concise statements suitable for daily check-off.
-- Ensure 'fullTimetableNote' uses Markdown headings (##), tables, and bullet points so it looks great as a saved note.
+- Ensure 'pacts' are clear, actionable, concise statements suitable for daily check-off across days (e.g. "Workout at 7:00 AM", "Read 20 pages daily").
+- Ensure 'fullTimetableNote' uses clean Markdown headings (##), tables, and bullet points so it looks great as a saved reference note in Notes/Memento.
 `;
 
         const model = genAI.getGenerativeModel({

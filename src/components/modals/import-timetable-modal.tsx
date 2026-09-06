@@ -15,7 +15,10 @@ import {
     Image as ImageIcon,
     Loader2,
     RefreshCw,
-    CheckCircle2
+    CheckCircle2,
+    Copy,
+    Repeat,
+    HelpCircle
 } from "lucide-react";
 
 interface ImportTimetableModalProps {
@@ -31,8 +34,18 @@ interface ParsedTimetableData {
     fullTimetableNote: string;
 }
 
+const MASTER_AI_PROMPT = `Act as an elite discipline mentor and strength coach. Create a structured, highly organized weekly and daily timetable for me covering my Gym workouts, Reading habits, Hydration, and Long-Term Goals. 
+
+Please format your response with:
+1. Daily Habits / Vows (e.g. 7:00 AM Gym Workout, Read 20 pages before bed, No sugar after 8 PM).
+2. Core Habit Trackers (e.g. Strength Training, Hydration 3L, Evening Reflection).
+3. Target Milestones & Long-Term Goals (e.g. Bench press 100kg in 3 months).
+4. A complete time-blocked daily schedule from morning to night.
+
+Make it clean, clear, and actionable so I can feed it directly into my Gyral discipline system.`;
+
 export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalProps) {
-    const { addPact, addTask, addLifeEvent, addNote } = useUserData();
+    const { addPact, addDailyPact, addTask, addLifeEvent, addNote } = useUserData();
     const todayStr = useToday();
 
     // Step state: 'INPUT' | 'PREVIEW' | 'SUCCESS'
@@ -44,10 +57,13 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
     const [imageFileName, setImageFileName] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [copiedPrompt, setCopiedPrompt] = useState(false);
+    const [showPromptHelp, setShowPromptHelp] = useState(false);
 
     // Parsed data state
     const [parsedData, setParsedData] = useState<ParsedTimetableData | null>(null);
     const [selectedPacts, setSelectedPacts] = useState<boolean[]>([]);
+    const [makePactsRecurring, setMakePactsRecurring] = useState(true); // Auto-present across all days!
     const [selectedTasks, setSelectedTasks] = useState<boolean[]>([]);
     const [selectedGoals, setSelectedGoals] = useState<boolean[]>([]);
     const [includeNote, setIncludeNote] = useState(true);
@@ -55,6 +71,13 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     if (!isOpen) return null;
+
+    // Copy Prompt Helper
+    const handleCopyPrompt = () => {
+        navigator.clipboard.writeText(MASTER_AI_PROMPT);
+        setCopiedPrompt(true);
+        setTimeout(() => setCopiedPrompt(false), 2500);
+    };
 
     // Handle File / Screenshot Selection
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,7 +155,12 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
             // 1. Add selected Pacts (Vows)
             parsedData.pacts.forEach((pactText, idx) => {
                 if (selectedPacts[idx] && pactText.trim()) {
-                    addPact(pactText.trim(), todayStr);
+                    const cleanPact = pactText.trim();
+                    // If recurring is enabled, save to dailyPacts template so it appears on ALL days automatically!
+                    if (makePactsRecurring) {
+                        addDailyPact(cleanPact);
+                    }
+                    addPact(cleanPact, todayStr);
                 }
             });
 
@@ -226,6 +254,51 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                 {/* STEP 1: INPUT VIEW */}
                 {step === 'INPUT' && (
                     <div className="space-y-6 overflow-y-auto pr-1">
+                        {/* Copy Master AI Prompt Helper Box */}
+                        <div className="bg-accent/5 border border-accent/20 rounded-2xl p-4 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-accent font-bold text-xs uppercase tracking-wider">
+                                    <Sparkles className="w-4 h-4" />
+                                    Copy Master AI Prompt for ChatGPT / Claude
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPromptHelp(!showPromptHelp)}
+                                    className="text-xs text-zinc-400 hover:text-white flex items-center gap-1"
+                                >
+                                    <HelpCircle className="w-3.5 h-3.5" />
+                                    {showPromptHelp ? "Hide Prompt" : "Show Prompt"}
+                                </button>
+                            </div>
+                            <p className="text-xs text-zinc-300">
+                                Paste this prompt into ChatGPT, Claude, or Gemini to get a perfectly organized timetable ready for Gyral!
+                            </p>
+                            
+                            {showPromptHelp && (
+                                <div className="bg-black/50 border border-white/10 rounded-xl p-3 text-xs font-mono text-zinc-300 leading-relaxed max-h-36 overflow-y-auto select-all">
+                                    {MASTER_AI_PROMPT}
+                                </div>
+                            )}
+
+                            <button
+                                type="button"
+                                onClick={handleCopyPrompt}
+                                className="w-full bg-accent/10 hover:bg-accent/20 border border-accent/30 text-accent font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-2"
+                            >
+                                {copiedPrompt ? (
+                                    <>
+                                        <Check className="w-4 h-4 text-emerald-400" />
+                                        <span className="text-emerald-400">Copied to Clipboard! Paste into ChatGPT / Claude</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Copy className="w-4 h-4" />
+                                        Copy Master Prompt to Clipboard
+                                    </>
+                                )}
+                            </button>
+                        </div>
+
                         {/* Textarea Input */}
                         <div className="space-y-2">
                             <label className="text-xs uppercase tracking-widest text-zinc-400 font-mono flex items-center gap-2">
@@ -236,7 +309,7 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                                 value={rawText}
                                 onChange={(e) => setRawText(e.target.value)}
                                 placeholder="Paste your AI-generated timetable here... (e.g. '7:00 AM - Gym Workout: Heavy Push Day, 8:30 AM - Breakfast, 9:00 PM - Read 20 pages...')"
-                                className="w-full h-36 bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/40 transition-all font-mono resize-none"
+                                className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/40 transition-all font-mono resize-none"
                             />
                         </div>
 
@@ -246,7 +319,7 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                                 <ImageIcon className="w-4 h-4 text-purple-400" />
                                 Or Upload Screenshot of AI Timetable
                             </label>
-                            <div className="relative border border-dashed border-white/15 hover:border-accent/40 rounded-2xl p-6 text-center transition-all bg-white/[0.02] hover:bg-white/[0.04] group">
+                            <div className="relative border border-dashed border-white/15 hover:border-accent/40 rounded-2xl p-5 text-center transition-all bg-white/[0.02] hover:bg-white/[0.04] group">
                                 <input
                                     type="file"
                                     ref={fileInputRef}
@@ -270,7 +343,7 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center gap-2">
-                                        <Upload className="w-8 h-8 text-zinc-500 group-hover:text-accent transition-colors" />
+                                        <Upload className="w-7 h-7 text-zinc-500 group-hover:text-accent transition-colors" />
                                         <p className="text-sm text-zinc-300 font-medium">Click or drag screenshot to upload</p>
                                         <p className="text-xs text-zinc-500">Supports PNG, JPG, WEBP</p>
                                     </div>
@@ -279,7 +352,7 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                         </div>
 
                         {/* Submit Parse Button */}
-                        <div className="pt-4">
+                        <div className="pt-2">
                             <button
                                 onClick={handleParse}
                                 disabled={isLoading}
@@ -310,7 +383,7 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                             <h3 className="text-lg font-bold text-white">{parsedData.title}</h3>
                         </div>
 
-                        {/* Category 1: Pacts */}
+                        {/* Category 1: Pacts with Multi-Day / Recurring Toggle */}
                         {parsedData.pacts.length > 0 && (
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
@@ -328,6 +401,24 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                                         Toggle All
                                     </button>
                                 </div>
+
+                                {/* Recurring / Multi-Day Option Card */}
+                                <label className="flex items-center justify-between p-3.5 bg-accent/5 border border-accent/20 rounded-xl cursor-pointer hover:bg-accent/10 transition-all">
+                                    <div className="flex items-center gap-2.5">
+                                        <Repeat className="w-4 h-4 text-accent" />
+                                        <div>
+                                            <span className="text-xs font-bold text-white block">Make Pacts Recurring Daily (Appears across all days)</span>
+                                            <span className="text-[11px] text-zinc-400">Pacts will automatically populate on every day for 6+ months</span>
+                                        </div>
+                                    </div>
+                                    <input
+                                        type="checkbox"
+                                        checked={makePactsRecurring}
+                                        onChange={(e) => setMakePactsRecurring(e.target.checked)}
+                                        className="w-4 h-4 rounded border-white/20 bg-black text-accent focus:ring-accent"
+                                    />
+                                </label>
+
                                 <div className="space-y-2">
                                     {parsedData.pacts.map((pact, idx) => (
                                         <label
