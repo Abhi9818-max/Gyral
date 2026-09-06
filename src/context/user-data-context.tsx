@@ -277,7 +277,7 @@ interface UserDataContextType {
 
     // Notes
     notes: Note[];
-    addNote: () => Promise<void>;
+    addNote: (title?: string, content?: string) => Promise<Note | void>;
     updateNote: (id: string, updates: Partial<Note>) => Promise<void>;
     deleteNote: (id: string) => Promise<void>;
 
@@ -1686,9 +1686,12 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const addNote = async () => {
+    const addNote = async (title?: string, content?: string) => {
         const newNote: Note = {
-            id: crypto.randomUUID(), title: 'Untitled Note', content: '', updatedAt: new Date().toISOString()
+            id: crypto.randomUUID(),
+            title: title || 'Untitled Note',
+            content: content || '',
+            updatedAt: new Date().toISOString()
         };
         setNotes(prev => [newNote, ...prev]);
         if (user) {
@@ -1696,6 +1699,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                 id: newNote.id, user_id: user.id, title: newNote.title, content: newNote.content, updated_at: newNote.updatedAt
             });
         }
+        return newNote;
     };
 
     const updateNote = async (id: string, updates: Partial<Note>) => {

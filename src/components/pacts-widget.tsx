@@ -2,14 +2,16 @@
 
 import { useUserData } from '@/context/user-data-context';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Dumbbell, BookOpen, Droplet, Carrot, Circle, Check, Zap, Brain, Moon, Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
+import { Dumbbell, BookOpen, Droplet, Carrot, Circle, Check, Zap, Brain, Moon, Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight, MoreVertical, Sparkles } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useToday } from '@/hooks/use-today';
+import { ImportTimetableModal } from '@/components/modals/import-timetable-modal';
 
 export function PactWidget() {
     const { pacts, addPact, togglePact, deletePact, shiftPact, addDailyPact, dailyPacts, deleteDailyPact } = useUserData();
     const [newPactText, setNewPactText] = useState('');
     const [isAdding, setIsAdding] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
 
     const todayStr = useToday();
@@ -104,6 +106,16 @@ export function PactWidget() {
                                 <CalendarIcon className="w-5 h-5" />
                             </button>
                         </div>
+
+                        {/* AI Routine Import Button */}
+                        <button
+                            onClick={() => setIsImportModalOpen(true)}
+                            className="px-3 h-10 bg-accent/10 hover:bg-accent/20 text-accent rounded-full flex items-center justify-center gap-1.5 transition-all border border-accent/20 hover:border-accent/40 font-mono text-xs font-bold"
+                            title="Import AI Timetable / Routine"
+                        >
+                            <Sparkles className="w-4 h-4 animate-pulse" />
+                            <span className="hidden sm:inline">AI Import</span>
+                        </button>
 
                         {/* Add Button (Only if not already adding and list exists) */}
                         {!showInput && (
@@ -310,6 +322,12 @@ export function PactWidget() {
                     )}
                 </div>
             </div>
+
+            {/* AI Timetable Import Modal */}
+            <ImportTimetableModal
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+            />
         </div>
     );
 }

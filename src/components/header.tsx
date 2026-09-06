@@ -24,6 +24,7 @@ import { FactionPickerModal } from './modals/faction-picker-modal';
 import { StoreModal } from './modals/store-modal';
 
 import { InvestmentModal } from './modals/investment-modal';
+import { ImportTimetableModal } from './modals/import-timetable-modal';
 
 export function Header() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -36,6 +37,7 @@ export function Header() {
   const [isFactionModalOpen, setIsFactionModalOpen] = useState(false);
   const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
   const [isStoreModalOpen, setIsStoreModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { consistencyScore, currentStreak, streakStatus, streakTier, streakStrength, activeFilterTaskId, tasks, currentFaction, user, profile, noxBalance } = useUserData();
   const { unreadCount, friendRequestCount } = useMessageNotifications();
@@ -206,6 +208,10 @@ export function Header() {
                       <span>📜</span>
                       <span class="text-white font-medium">Pacts</span>
                     </button>
+                    <button id="import-timetable-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-accent/10 hover:bg-accent/20 border border-accent/20 hover:border-accent/40 transition-all text-left">
+                      <span>✨</span>
+                      <span class="text-accent font-medium">Import AI Timetable</span>
+                    </button>
                     <button id="watch-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                       <span class="text-slate-400">🛡️</span>
                       <span class="text-white font-medium">The Watch</span>
@@ -297,6 +303,10 @@ export function Header() {
                 closeMenu();
                 setIsPactsModalOpen(true);
               });
+              document.getElementById('import-timetable-btn')?.addEventListener('click', () => {
+                closeMenu();
+                setIsImportModalOpen(true);
+              });
               document.getElementById('watch-btn')?.addEventListener('click', () => {
                 closeMenu();
                 setIsWatchModalOpen(true);
@@ -385,6 +395,7 @@ export function Header() {
       <FactionPickerModal isOpen={isFactionModalOpen} onClose={() => setIsFactionModalOpen(false)} />
       <InvestmentModal isOpen={isInvestmentModalOpen} onClose={() => setIsInvestmentModalOpen(false)} />
       <StoreModal isOpen={isStoreModalOpen} onClose={() => setIsStoreModalOpen(false)} />
+      <ImportTimetableModal isOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} />
     </>
   );
 }
