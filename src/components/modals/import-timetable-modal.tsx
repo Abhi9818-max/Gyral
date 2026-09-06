@@ -34,15 +34,15 @@ interface ParsedTimetableData {
     fullTimetableNote: string;
 }
 
-const MASTER_AI_PROMPT = `Act as an elite discipline mentor and strength coach. Create a structured, highly organized weekly and daily timetable for me covering my Gym workouts, Reading habits, Hydration, and Long-Term Goals. 
+const UNIVERSAL_AI_PROMPT = `Great! Now please organize and format the entire routine and advice we just discussed into a structured timetable for my Gyral discipline system.
 
-Please format your response with:
-1. Daily Habits / Vows (e.g. 7:00 AM Gym Workout, Read 20 pages before bed, No sugar after 8 PM).
-2. Core Habit Trackers (e.g. Strength Training, Hydration 3L, Evening Reflection).
-3. Target Milestones & Long-Term Goals (e.g. Bench press 100kg in 3 months).
-4. A complete time-blocked daily schedule from morning to night.
+Please format your response clearly as:
+1. Daily Habits & Pacts: (Specific daily action items with time blocks if applicable, e.g. 7:00 AM Gym Workout, Read 20 pages before bed, No sugar after 8 PM)
+2. Core Habit Trackers: (Key habits and metrics to track daily, e.g. Strength Training, Hydration 3L, Reflection)
+3. Goals & Milestones: (Long-term targets we discussed)
+4. Full Timetable: (A clean, time-blocked daily/weekly schedule from morning to night formatted with bullet points)
 
-Make it clean, clear, and actionable so I can feed it directly into my Gyral discipline system.`;
+Make it clear, structured, and easy to copy so I can paste it directly into Gyral.`;
 
 export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalProps) {
     const { addPact, addDailyPact, addTask, addLifeEvent, addNote } = useUserData();
@@ -74,7 +74,7 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
 
     // Copy Prompt Helper
     const handleCopyPrompt = () => {
-        navigator.clipboard.writeText(MASTER_AI_PROMPT);
+        navigator.clipboard.writeText(UNIVERSAL_AI_PROMPT);
         setCopiedPrompt(true);
         setTimeout(() => setCopiedPrompt(false), 2500);
     };
@@ -254,12 +254,12 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                 {/* STEP 1: INPUT VIEW */}
                 {step === 'INPUT' && (
                     <div className="space-y-6 overflow-y-auto pr-1">
-                        {/* Copy Master AI Prompt Helper Box */}
+                        {/* Copy Universal AI Follow-Up Prompt Box */}
                         <div className="bg-accent/5 border border-accent/20 rounded-2xl p-4 space-y-3">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2 text-accent font-bold text-xs uppercase tracking-wider">
                                     <Sparkles className="w-4 h-4" />
-                                    Copy Master AI Prompt for ChatGPT / Claude
+                                    Universal AI Follow-Up Prompt
                                 </div>
                                 <button
                                     type="button"
@@ -271,12 +271,12 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                                 </button>
                             </div>
                             <p className="text-xs text-zinc-300">
-                                Paste this prompt into ChatGPT, Claude, or Gemini to get a perfectly organized timetable ready for Gyral!
+                                Already chatting with ChatGPT, Claude, or Gemini? Copy and paste this prompt at the end of your conversation to instantly format your routine for Gyral!
                             </p>
                             
                             {showPromptHelp && (
                                 <div className="bg-black/50 border border-white/10 rounded-xl p-3 text-xs font-mono text-zinc-300 leading-relaxed max-h-36 overflow-y-auto select-all">
-                                    {MASTER_AI_PROMPT}
+                                    {UNIVERSAL_AI_PROMPT}
                                 </div>
                             )}
 
@@ -288,12 +288,12 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                                 {copiedPrompt ? (
                                     <>
                                         <Check className="w-4 h-4 text-emerald-400" />
-                                        <span className="text-emerald-400">Copied to Clipboard! Paste into ChatGPT / Claude</span>
+                                        <span className="text-emerald-400">Copied to Clipboard! Paste into your ChatGPT/Claude chat</span>
                                     </>
                                 ) : (
                                     <>
                                         <Copy className="w-4 h-4" />
-                                        Copy Master Prompt to Clipboard
+                                        Copy Follow-Up Prompt to Clipboard
                                     </>
                                 )}
                             </button>
