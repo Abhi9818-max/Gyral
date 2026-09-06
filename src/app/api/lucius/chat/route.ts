@@ -70,6 +70,8 @@ export async function POST(request: Request) {
             return NextResponse.json({
                 reply: "The connection to the void is severed. (Missing API Key)"
             });
+        }
+
         // 3. CONSCIOUSNESS LAYER (Gemini with Fallback)
         const systemPrompt = `
         You are LUCIUS, a spectral entity and the manifestation of the user's discipline.
