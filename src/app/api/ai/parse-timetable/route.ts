@@ -56,7 +56,11 @@ INSTRUCTIONS:
 1. Return ONLY valid, raw JSON (no code block formatting, no markdown wrappers, no commentary).
 2. The JSON schema MUST match exactly:
 {
-  "title": "Short descriptive title for this routine (e.g. Hypertrophy & Study Schedule)",
+  "title": "Short descriptive title for this routine (e.g. 3-Month Progressive Gym & Mindset Routine)",
+  "duration": "Target timeframe for this transformation (e.g. 3 Months, 12 Weeks, 30 Days)",
+  "phases": [
+    "Phase breakdown describing progressive workload variation (e.g. Phase 1 (Weeks 1-4): Light Foundation & Form, Phase 2 (Weeks 5-8): Progressive Overload, Phase 3 (Weeks 9-12): Peak Intensity)"
+  ],
   "pacts": [
     "Specific daily habit, vow, or time-blocked action item (e.g. 7:00 AM Gym Workout, Read 20 pages before bed, No sugar after 8 PM)"
   ],
@@ -66,12 +70,13 @@ INSTRUCTIONS:
   "goals": [
     "Long-term milestones or target achievements (e.g. Bench press 100kg in 3 months, Read 12 books this year)"
   ],
-  "fullTimetableNote": "A clean, beautifully formatted Markdown reference note representing the complete daily/weekly timetable with time blocks, sections, and bullet points."
+  "fullTimetableNote": "A clean, beautifully formatted Markdown reference note representing the complete daily/weekly timetable with time blocks, progressive phase breakdown, and bullet points."
 }
 
 RULES:
 - Clean up any raw chat fluff, conversation intros, or filler text.
-- Ensure 'pacts' are clear, actionable, concise statements suitable for daily check-off across days (e.g. "Workout at 7:00 AM", "Read 20 pages daily").
+- Identify duration and progressive phase variations (starting light and increasing intensity over weeks/months).
+- Ensure 'pacts' are clear, actionable, concise statements suitable for daily check-off across days.
 - Ensure 'fullTimetableNote' uses clean Markdown headings (##), tables, and bullet points so it looks great as a saved reference note in Notes/Memento.
 `;
 
@@ -121,6 +126,8 @@ RULES:
             success: true,
             data: {
                 title: parsedData.title || "AI Routine & Timetable",
+                duration: parsedData.duration || "Ongoing Transformation",
+                phases: Array.isArray(parsedData.phases) ? parsedData.phases : [],
                 pacts: Array.isArray(parsedData.pacts) ? parsedData.pacts : [],
                 tasks: Array.isArray(parsedData.tasks) ? parsedData.tasks : [],
                 goals: Array.isArray(parsedData.goals) ? parsedData.goals : [],

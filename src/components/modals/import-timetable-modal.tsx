@@ -18,7 +18,9 @@ import {
     CheckCircle2,
     Copy,
     Repeat,
-    HelpCircle
+    HelpCircle,
+    Clock,
+    TrendingUp
 } from "lucide-react";
 
 interface ImportTimetableModalProps {
@@ -28,19 +30,23 @@ interface ImportTimetableModalProps {
 
 interface ParsedTimetableData {
     title: string;
+    duration?: string;
+    phases?: string[];
     pacts: string[];
     tasks: string[];
     goals: string[];
     fullTimetableNote: string;
 }
 
-const UNIVERSAL_AI_PROMPT = `Great! Now please organize and format the entire routine and advice we just discussed into a structured timetable for my Gyral discipline system.
+const UNIVERSAL_AI_PROMPT = `Great! Now please organize and format the entire routine and advice we just discussed into a structured, progressive timetable for my Gyral discipline system.
 
-Please format your response clearly as:
-1. Daily Habits & Pacts: (Specific daily action items with time blocks if applicable, e.g. 7:00 AM Gym Workout, Read 20 pages before bed, No sugar after 8 PM)
-2. Core Habit Trackers: (Key habits and metrics to track daily, e.g. Strength Training, Hydration 3L, Reflection)
-3. Goals & Milestones: (Long-term targets we discussed)
-4. Full Timetable: (A clean, time-blocked daily/weekly schedule from morning to night formatted with bullet points)
+Requirements:
+1. Target Timeframe & Duration: Specify a realistic total duration (e.g. 3 Months, 12 Weeks, 30 Days) to see drastic results and noticeable transformation.
+2. Progressive Phased Variation: Break the plan down into progressive phases so intensity scales over time (e.g. Phase 1: Light Foundation/Form start, Phase 2: Moderate intensity, Phase 3: Advanced peak). Do NOT recommend a flat, static workload for 8 months.
+3. Daily Habits & Pacts: Actionable daily items with time blocks (e.g. 7:00 AM Gym Workout, Read 20 pages before bed, No sugar after 8 PM).
+4. Core Habit Trackers: Key habits and metrics to track daily.
+5. Target Goals & Milestones: Realistic transformation achievements.
+6. Full Timetable: A clean, time-blocked daily & weekly schedule from morning to night formatted with bullet points.
 
 Make it clear, structured, and easy to copy so I can paste it directly into Gyral.`;
 
@@ -179,7 +185,7 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                     addLifeEvent({
                         event_date: todayStr,
                         title: goalText.trim(),
-                        description: `Extracted from AI Routine: ${parsedData.title}`,
+                        description: `Extracted from AI Routine: ${parsedData.title} (${parsedData.duration || 'Progressive'})`,
                         type: 'GOAL'
                     });
                 }
@@ -377,10 +383,33 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                 {/* STEP 2: PREVIEW & CUSTOMIZATION VIEW */}
                 {step === 'PREVIEW' && parsedData && (
                     <div className="space-y-6 overflow-y-auto pr-1 max-h-[65vh]">
-                        {/* Title Card */}
-                        <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-                            <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-mono block mb-1">Detected Routine Title</span>
+                        {/* Title & Progressive Timeframe Card */}
+                        <div className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-3">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-mono">Detected Routine Title</span>
+                                {parsedData.duration && (
+                                    <span className="text-xs font-mono font-bold text-accent px-2.5 py-1 bg-accent/10 border border-accent/20 rounded-full flex items-center gap-1.5">
+                                        <Clock className="w-3.5 h-3.5" />
+                                        {parsedData.duration}
+                                    </span>
+                                )}
+                            </div>
                             <h3 className="text-lg font-bold text-white">{parsedData.title}</h3>
+
+                            {/* Progressive Phases Breakdown */}
+                            {parsedData.phases && parsedData.phases.length > 0 && (
+                                <div className="pt-3 border-t border-white/10 space-y-2">
+                                    <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-mono block">Progressive Workload Scaling</span>
+                                    <div className="space-y-1.5">
+                                        {parsedData.phases.map((phase, pIdx) => (
+                                            <div key={pIdx} className="text-xs text-zinc-300 flex items-start gap-2 bg-white/5 p-2.5 rounded-xl border border-white/5">
+                                                <TrendingUp className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                                                <span className="font-mono">{phase}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Category 1: Pacts with Multi-Day / Recurring Toggle */}
@@ -408,7 +437,7 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                                         <Repeat className="w-4 h-4 text-accent" />
                                         <div>
                                             <span className="text-xs font-bold text-white block">Make Pacts Recurring Daily (Appears across all days)</span>
-                                            <span className="text-[11px] text-zinc-400">Pacts will automatically populate on every day for 6+ months</span>
+                                            <span className="text-[11px] text-zinc-400">Pacts will automatically populate on every day for your timeframe</span>
                                         </div>
                                     </div>
                                     <input
