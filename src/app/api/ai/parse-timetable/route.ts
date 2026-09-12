@@ -10,6 +10,38 @@ const genAI = process.env.GEMINI_API_KEY
     ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
     : null;
 
+function formatCompactDuration(rawDuration?: string): string {
+    if (!rawDuration) return "Progressive";
+    const str = rawDuration.trim();
+    if (!str) return "Progressive";
+
+    // 1. If months are mentioned anywhere (e.g. "12 Weeks ( 3 Month )", "3 Months", "3 mths") -> Primary: Months Only
+    const monthNumMatch = str.match(/(\d+)\s*(?:month|mth|mo)s?/i);
+    if (monthNumMatch) {
+        const num = monthNumMatch[1];
+        return `${num} Month${parseInt(num, 10) > 1 ? 's' : ''}`;
+    }
+
+    // 2. Secondary: If weeks are mentioned (e.g. "12 weeks") -> Weeks Only
+    const weekNumMatch = str.match(/(\d+)\s*(?:week|wk)s?/i);
+    if (weekNumMatch) {
+        const num = weekNumMatch[1];
+        return `${num} Week${parseInt(num, 10) > 1 ? 's' : ''}`;
+    }
+
+    // 3. Tertiary: If days are mentioned (e.g. "30 days") -> Days Only
+    const dayNumMatch = str.match(/(\d+)\s*(?:day|d)s?/i);
+    if (dayNumMatch) {
+        const num = dayNumMatch[1];
+        return `${num} Day${parseInt(num, 10) > 1 ? 's' : ''}`;
+    }
+
+    // 4. Fallback clean up
+    const cleanFirstPart = str.split(/[(,]/)[0].trim();
+    if (cleanFirstPart.length <= 15) return cleanFirstPart;
+    return cleanFirstPart.substring(0, 15);
+}
+
 export async function POST(req: NextRequest) {
     try {
         const supabase = await createClient();
@@ -59,7 +91,7 @@ INSTRUCTIONS:
 2. The JSON schema MUST match exactly:
 {
   "title": "Short descriptive title for this routine (e.g. 3-Month Progressive Gym & Mindset Routine)",
-  "duration": "Target timeframe for this transformation (e.g. 3 Months, 12 Weeks, 30 Days)",
+  "duration": "Target timeframe for this transformation (e.g. 3 Months)",
   "phases": [
     "Phase breakdown describing progressive workload variation (e.g. Phase 1 (Weeks 1-4): Light Foundation & Form, Phase 2 (Weeks 5-8): Progressive Overload, Phase 3 (Weeks 9-12): Peak Intensity)"
   ],
@@ -76,6 +108,7 @@ INSTRUCTIONS:
 }
 
 RULES:
+- DURATION RULE: Keep 'duration' extremely compact. If months are mentioned (e.g. 3 Months), USE MONTHS ONLY (e.g. '3 Months'). If months are not mentioned but weeks are, USE WEEKS ONLY (e.g. '12 Weeks'). Never combine both like '12 Weeks (3 Months)'!
 - Clean up any raw chat fluff, conversation intros, or filler text.
 - Identify duration and progressive phase variations (starting light and increasing intensity over weeks/months).
 - Ensure 'pacts' are clear, actionable, concise statements suitable for daily check-off across days.
@@ -127,7 +160,7 @@ RULES:
             success: true,
             data: {
                 title: parsedData.title || "AI Routine & Timetable",
-                duration: parsedData.duration || "Ongoing Transformation",
+                duration: formatCompactDuration(parsedData.duration),
                 phases: Array.isArray(parsedData.phases) ? parsedData.phases : [],
                 pacts: Array.isArray(parsedData.pacts) ? parsedData.pacts : [],
                 tasks: Array.isArray(parsedData.tasks) ? parsedData.tasks : [],

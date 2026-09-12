@@ -29,6 +29,38 @@ import {
     ArrowRight
 } from "lucide-react";
 
+function formatCompactDuration(rawDuration?: string): string {
+    if (!rawDuration) return "Progressive";
+    const str = rawDuration.trim();
+    if (!str) return "Progressive";
+
+    // 1. Primary: If months are mentioned anywhere (e.g. "12 Weeks ( 3 Month )", "3 Months", "3 mths") -> Months Only
+    const monthNumMatch = str.match(/(\d+)\s*(?:month|mth|mo)s?/i);
+    if (monthNumMatch) {
+        const num = monthNumMatch[1];
+        return `${num} Month${parseInt(num, 10) > 1 ? 's' : ''}`;
+    }
+
+    // 2. Secondary: If weeks are mentioned (e.g. "12 weeks") -> Weeks Only
+    const weekNumMatch = str.match(/(\d+)\s*(?:week|wk)s?/i);
+    if (weekNumMatch) {
+        const num = weekNumMatch[1];
+        return `${num} Week${parseInt(num, 10) > 1 ? 's' : ''}`;
+    }
+
+    // 3. Tertiary: If days are mentioned (e.g. "30 days") -> Days Only
+    const dayNumMatch = str.match(/(\d+)\s*(?:day|d)s?/i);
+    if (dayNumMatch) {
+        const num = dayNumMatch[1];
+        return `${num} Day${parseInt(num, 10) > 1 ? 's' : ''}`;
+    }
+
+    // 4. Fallback clean up
+    const cleanFirstPart = str.split(/[(,]/)[0].trim();
+    if (cleanFirstPart.length <= 15) return cleanFirstPart;
+    return cleanFirstPart.substring(0, 15);
+}
+
 interface ParsedTimetableData {
     title: string;
     duration?: string;
@@ -442,7 +474,7 @@ export default function ImportTimetablePage() {
                         <div className="flex flex-wrap items-center gap-6">
                             <div className="flex items-center gap-2">
                                 <span className="text-zinc-400">Target Timeframe:</span>
-                                <span className="font-semibold text-white px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20">{parsedData?.duration || "3 Months"}</span>
+                                <span className="font-semibold text-white px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20">{formatCompactDuration(parsedData?.duration)}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="text-zinc-400">Daily Pacts:</span>
@@ -648,7 +680,7 @@ export default function ImportTimetablePage() {
                                         {parsedData.duration && (
                                             <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 border border-white/30 text-white text-xs font-mono font-semibold backdrop-blur-xl shadow-sm">
                                                 <Clock className="w-3.5 h-3.5 text-rose-300" />
-                                                <span>Timeframe: {parsedData.duration}</span>
+                                                <span>Timeframe: {formatCompactDuration(parsedData.duration)}</span>
                                             </div>
                                         )}
                                     </div>
@@ -909,7 +941,7 @@ export default function ImportTimetablePage() {
                                                     <h4 className="text-sm font-bold text-white tracking-wide">{log.title}</h4>
                                                     {log.duration && (
                                                         <span className="px-2.5 py-0.5 rounded-full bg-white/15 border border-white/25 text-[10px] font-mono text-zinc-200">
-                                                            {log.duration}
+                                                            {formatCompactDuration(log.duration)}
                                                         </span>
                                                     )}
                                                 </div>
