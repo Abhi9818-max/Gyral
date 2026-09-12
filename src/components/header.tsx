@@ -147,19 +147,7 @@ export function Header() {
           >
             <Coins className="w-3.5 h-3.5 text-amber-500 animate-[pulse_2s_infinite]" />
             <span className="text-xs md:text-sm font-bold font-mono text-amber-400">
-              {noxBalance} Nox
-            </span>
           </div>
-
-          {/* AI Timetable Import Button - Clean Native Header Pill */}
-          <button
-            onClick={() => setIsImportModalOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-white/20 text-zinc-300 hover:text-white transition-all cursor-pointer group select-none"
-            title="Import AI Timetable from ChatGPT / Claude"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400 group-hover:rotate-12 transition-transform" />
-            <span className="text-xs md:text-sm font-medium">AI Import</span>
-          </button>
 
           {/* Universal Menu Button */}
           <button
@@ -315,7 +303,7 @@ export function Header() {
               });
               document.getElementById('import-timetable-btn')?.addEventListener('click', () => {
                 closeMenu();
-                setIsImportModalOpen(true);
+                router.push('/import-timetable');
               });
               document.getElementById('watch-btn')?.addEventListener('click', () => {
                 closeMenu();

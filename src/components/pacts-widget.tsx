@@ -4,10 +4,11 @@ import { useUserData } from '@/context/user-data-context';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Dumbbell, BookOpen, Droplet, Carrot, Circle, Check, Zap, Brain, Moon, Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight, MoreVertical, Sparkles } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useToday } from '@/hooks/use-today';
-import { ImportTimetableModal } from '@/components/modals/import-timetable-modal';
 
 export function PactWidget() {
+    const router = useRouter();
     const { pacts, addPact, togglePact, deletePact, shiftPact, addDailyPact, dailyPacts, deleteDailyPact } = useUserData();
     const [newPactText, setNewPactText] = useState('');
     const [isAdding, setIsAdding] = useState(false);
@@ -109,7 +110,7 @@ export function PactWidget() {
 
                         {/* AI Routine Import Button */}
                         <button
-                            onClick={() => setIsImportModalOpen(true)}
+                            onClick={() => router.push('/import-timetable')}
                             className="px-3 h-10 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white rounded-full flex items-center justify-center gap-1.5 transition-all border border-white/10 hover:border-white/20 text-xs font-medium"
                             title="Import AI Timetable from ChatGPT / Claude"
                         >
