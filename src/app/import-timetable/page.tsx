@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Header } from "@/components/header";
 import { useUserData } from "@/context/user-data-context";
 import { useToday } from "@/hooks/use-today";
 import {
@@ -27,7 +26,9 @@ import {
     Trash2,
     History,
     AlertTriangle,
-    ArrowRight
+    ArrowRight,
+    X,
+    LogOut
 } from "lucide-react";
 
 function formatCompactDuration(rawDuration?: string): string {
@@ -398,10 +399,8 @@ export default function ImportTimetablePage() {
                 <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] rounded-full bg-gradient-to-t from-purple-700/25 via-rose-600/20 to-indigo-600/20 blur-[150px]" />
             </div>
 
-            <Header />
-
-            <main className="flex-1 p-4 md:p-8 pt-20 md:pt-24 max-w-5xl mx-auto w-full space-y-7 pb-16 relative z-10">
-                {/* Top Pill Bar Navigation (Integrated Native Section Tabs) */}
+            <main className="flex-1 p-4 md:p-8 pt-6 md:pt-10 max-w-5xl mx-auto w-full space-y-7 pb-16 relative z-10">
+                {/* Top Pill Bar Navigation & Exit Button */}
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-1.5 bg-white/10 border border-white/25 p-1 rounded-full backdrop-blur-2xl shadow-lg">
                         <button
@@ -418,6 +417,14 @@ export default function ImportTimetablePage() {
                             <History className="w-3.5 h-3.5" />
                             <span>History ({importLogs.length})</span>
                         </button>
+                        <Link
+                            href="/dashboard"
+                            title="Exit to Dashboard"
+                            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-rose-300 hover:text-white bg-rose-500/15 hover:bg-rose-500/30 border border-rose-400/30 transition-all ml-1 shadow-sm group"
+                        >
+                            <X className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-200" />
+                            <span>Exit</span>
+                        </Link>
                     </div>
                 </div>
 

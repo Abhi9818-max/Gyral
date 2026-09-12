@@ -45,7 +45,7 @@ export function Header() {
 
   // Smart Header Logic
   const pathname = usePathname();
-  const isHome = pathname === '/dashboard' || pathname === '/import-timetable';
+  const isHome = pathname === '/dashboard';
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
 
