@@ -265,8 +265,20 @@ export function AiImportBottomSheet() {
                             </div>
                         )}
 
+                        {/* Check Previous Imports Link Button */}
+                        <button
+                            onClick={() => {
+                                setIsOpen(false);
+                                router.push('/import-timetable?tab=history');
+                            }}
+                            className="w-full py-2.5 rounded-2xl bg-white/[0.08] hover:bg-white/15 border border-white/25 text-purple-200 text-xs font-semibold backdrop-blur-xl flex items-center justify-center gap-2 transition-all shadow-md group"
+                        >
+                            <History className="w-4 h-4 text-purple-300 group-hover:rotate-[-20deg] transition-transform" />
+                            <span>Check Previous AI Imports & Purge Logs</span>
+                        </button>
+
                         {/* Bottom Buttons */}
-                        <div className="flex items-center gap-3 pt-2">
+                        <div className="flex items-center gap-3 pt-1">
                             <button
                                 onClick={() => setIsOpen(false)}
                                 className="w-1/3 py-3.5 rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/25 text-zinc-200 font-semibold text-xs hover:bg-white/20 hover:text-white transition-all shadow-md"

@@ -114,6 +114,11 @@ export default function ImportTimetablePage() {
     useEffect(() => {
         if (typeof window !== "undefined") {
             try {
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('tab') === 'history') {
+                    setActiveTab('HISTORY');
+                }
+
                 const stored = localStorage.getItem('gyral_ai_import_logs');
                 if (stored) {
                     setImportLogs(JSON.parse(stored));
@@ -433,19 +438,29 @@ export default function ImportTimetablePage() {
                     </div>
 
                     {/* Stats Bar (Matching Image 1 Practice Days / Total Time) */}
-                    <div className="pt-4 border-t border-white/15 flex flex-wrap items-center gap-6 text-xs text-zinc-200 relative z-10 font-sans">
-                        <div className="flex items-center gap-2">
-                            <span className="text-zinc-400">Target Timeframe:</span>
-                            <span className="font-semibold text-white px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20">{parsedData?.duration || "3 Months"}</span>
+                    <div className="pt-4 border-t border-white/15 flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-200 relative z-10 font-sans">
+                        <div className="flex flex-wrap items-center gap-6">
+                            <div className="flex items-center gap-2">
+                                <span className="text-zinc-400">Target Timeframe:</span>
+                                <span className="font-semibold text-white px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20">{parsedData?.duration || "3 Months"}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-zinc-400">Daily Pacts:</span>
+                                <span className="font-semibold text-white px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20">{parsedData?.pacts.length || 0} Action Items</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-zinc-400">Habit Trackers:</span>
+                                <span className="font-semibold text-white px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20">{parsedData?.tasks.length || 0} Trackers</span>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-zinc-400">Daily Pacts:</span>
-                            <span className="font-semibold text-white px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20">{parsedData?.pacts.length || 0} Action Items</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-zinc-400">Habit Trackers:</span>
-                            <span className="font-semibold text-white px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20">{parsedData?.tasks.length || 0} Trackers</span>
-                        </div>
+
+                        <button
+                            onClick={() => setActiveTab('HISTORY')}
+                            className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/25 text-purple-200 border border-purple-400/40 font-semibold flex items-center gap-2 backdrop-blur-xl transition-all shadow-md"
+                        >
+                            <History className="w-3.5 h-3.5 text-purple-300" />
+                            <span>Manage & Purge Past Logs ({importLogs.length})</span>
+                        </button>
                     </div>
                 </div>
 
