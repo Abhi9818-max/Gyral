@@ -21,11 +21,11 @@ const UNIVERSAL_AI_PROMPT = `Great! Now please organize and format the entire ro
 
 Requirements:
 1. Target Timeframe & Duration: Specify a realistic total duration (e.g. 3 Months, 12 Weeks, 30 Days) to see drastic results and noticeable transformation.
-2. Progressive Phased Variation: Break the plan down into progressive phases so intensity scales over time.
-3. Daily Habits & Pacts: Actionable daily items with time blocks.
-4. Core Habit Trackers: Key habits and metrics to track daily.
+2. Progressive Phased Variation: Break the plan down into accurate progressive phases (e.g. Phase 1: Light Foundation, Phase 2: Moderate Overload, Phase 3: Advanced Peak) so workload scales over time.
+3. Daily Habits & Pacts: Actionable daily items (each entry should ideally be 4-5 words; keep them concise so daily items do not look tricky or complex to read).
+4. Core Habit Trackers: Key habits and metrics to track daily. Avoid repeating identical entries between pacts and habit trackers unless strictly necessary.
 5. Target Goals & Milestones: Realistic transformation achievements.
-6. Full Timetable: Clean daily & weekly schedule formatted with bullet points.`;
+6. Full Timetable & Category Notes: A clean, time-blocked daily & weekly schedule formatted with bullet points and detailed category breakdowns so I can open Notes and read every detail.`;
 
 export function AiImportBottomSheet() {
     const router = useRouter();

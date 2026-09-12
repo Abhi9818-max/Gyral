@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import { useUserData } from "@/context/user-data-context";
 import { useToday } from "@/hooks/use-today";
@@ -86,15 +87,14 @@ const UNIVERSAL_AI_PROMPT = `Great! Now please organize and format the entire ro
 
 Requirements:
 1. Target Timeframe & Duration: Specify a realistic total duration (e.g. 3 Months, 12 Weeks, 30 Days) to see drastic results and noticeable transformation.
-2. Progressive Phased Variation: Break the plan down into progressive phases so intensity scales over time (e.g. Phase 1: Light Foundation/Form start, Phase 2: Moderate intensity, Phase 3: Advanced peak). Do NOT recommend a flat, static workload for 8 months.
-3. Daily Habits & Pacts: Actionable daily items with time blocks (e.g. 7:00 AM Gym Workout, Read 20 pages before bed, No sugar after 8 PM).
-4. Core Habit Trackers: Key habits and metrics to track daily.
+2. Progressive Phased Variation: Break the plan down into accurate progressive phases (e.g. Phase 1: Light Foundation, Phase 2: Moderate Overload, Phase 3: Advanced Peak) so workload scales over time.
+3. Daily Habits & Pacts: Actionable daily items (each entry should ideally be 4-5 words; keep them concise so daily items do not look tricky or complex to read).
+4. Core Habit Trackers: Key habits and metrics to track daily. Avoid repeating identical entries between pacts and habit trackers unless strictly necessary.
 5. Target Goals & Milestones: Realistic transformation achievements.
-6. Full Timetable: A clean, time-blocked daily & weekly schedule from morning to night formatted with bullet points.
-
-Make it clear, structured, and easy to copy so I can paste it directly into Gyral.`;
+6. Full Timetable & Category Notes: A clean, time-blocked daily & weekly schedule formatted with bullet points and detailed category breakdowns so I can open Notes and read every detail.`;
 
 export default function ImportTimetablePage() {
+    const router = useRouter();
     const {
         pacts,
         dailyPacts,
@@ -840,19 +840,20 @@ export default function ImportTimetablePage() {
                                     )}
                                 </div>
 
-                                {/* Floating Glass Bottom Action Bar (Reference Image 2 & 3 Floating Action Bar) */}
-                                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-xl bg-zinc-950/80 border border-white/35 rounded-full px-6 py-3.5 shadow-[0_20px_60px_rgba(0,0,0,0.9),inset_0_1.5px_2px_rgba(255,255,255,0.5)] backdrop-blur-3xl flex items-center justify-between gap-4 z-50">
+                                {/* Inline Non-Overlapping Action Bar */}
+                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-white/20">
                                     <button
-                                        onClick={() => setStep('INPUT')}
-                                        className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white text-xs font-medium transition-all backdrop-blur-md"
+                                        onClick={() => router.push('/dashboard')}
+                                        className="w-full sm:w-auto px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-zinc-200 hover:text-white text-xs font-semibold backdrop-blur-xl transition-all shadow-md flex items-center justify-center gap-2"
                                     >
-                                        Back
+                                        <ChevronLeft className="w-4 h-4" />
+                                        <span>Back to Main Dashboard</span>
                                     </button>
 
                                     <button
                                         onClick={handleImport}
                                         disabled={isLoading}
-                                        className="px-7 py-2.5 rounded-full bg-white text-black font-bold text-xs shadow-[0_0_30px_rgba(255,255,255,0.5)] hover:bg-zinc-100 flex items-center gap-2 transition-all"
+                                        className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white text-black hover:bg-zinc-100 font-bold text-xs shadow-[0_0_35px_rgba(255,255,255,0.45)] disabled:opacity-50 flex items-center justify-center gap-2.5 transition-all"
                                     >
                                         {isLoading ? (
                                             <>
@@ -862,7 +863,7 @@ export default function ImportTimetablePage() {
                                         ) : (
                                             <>
                                                 <CheckCircle2 className="w-4 h-4 text-black" />
-                                                <span>Confirm & Seal Routine</span>
+                                                <span>Confirm & Seal Routine into Gyral</span>
                                             </>
                                         )}
                                     </button>

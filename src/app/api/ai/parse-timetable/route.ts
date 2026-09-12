@@ -109,10 +109,10 @@ INSTRUCTIONS:
 
 RULES:
 - DURATION RULE: Keep 'duration' extremely compact. If months are mentioned (e.g. 3 Months), USE MONTHS ONLY (e.g. '3 Months'). If months are not mentioned but weeks are, USE WEEKS ONLY (e.g. '12 Weeks'). Never combine both like '12 Weeks (3 Months)'!
-- Clean up any raw chat fluff, conversation intros, or filler text.
-- Identify duration and progressive phase variations (starting light and increasing intensity over weeks/months).
-- Ensure 'pacts' are clear, actionable, concise statements suitable for daily check-off across days.
-- Ensure 'fullTimetableNote' uses clean Markdown headings (##), tables, and bullet points so it looks great as a saved reference note in Notes/Memento.
+- PACTS LENGTH RULE: Each entry in 'pacts' MUST be concise (ideally 4-5 words per item). Avoid long, complex sentences so daily check-off items do not look tricky or overwhelming to read.
+- NO DUPLICATIONS RULE: Avoid duplicating the exact same entries between 'pacts' and 'tasks' (habit trackers). Keep pacts as time-blocked vows and habit trackers as distinct daily metrics.
+- ACCURATE PROGRESSIVE PHASES RULE: Provide accurate progressive workload phase breakdowns (scaling intensity over weeks/months). Make sure phase descriptions are clear and actionable.
+- DETAILED CATEGORY NOTES RULE: In 'fullTimetableNote', organize clean, detailed Markdown headings (##) and sections for each category (Phases, Daily Schedule, Habit Trackers, Goals) so the user can open Notes and read every detail in full depth.
 `;
 
         let contents;
