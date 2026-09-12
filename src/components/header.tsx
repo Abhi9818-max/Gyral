@@ -147,6 +147,8 @@ export function Header() {
           >
             <Coins className="w-3.5 h-3.5 text-amber-500 animate-[pulse_2s_infinite]" />
             <span className="text-xs md:text-sm font-bold font-mono text-amber-400">
+              {noxBalance} Nox
+            </span>
           </div>
 
           {/* Universal Menu Button */}
