@@ -152,9 +152,9 @@ export function AiImportBottomSheet() {
 
             {/* Ultra-Glassy Ethereal Floating Bottom Sheet */}
             <div className="relative z-[101] w-full max-w-lg bg-zinc-950/45 border-t border-x border-white/35 rounded-t-[40px] p-6 pb-8 shadow-[0_-25px_90px_rgba(0,0,0,0.9),inset_0_2px_3px_rgba(255,255,255,0.5)] backdrop-blur-3xl animate-in slide-in-from-bottom duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden">
-                {/* Ambient Fluid Gradient Blobs (Reference Image 2 Liquid Aura) */}
-                <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-gradient-to-tr from-rose-600/30 via-red-500/20 to-indigo-600/30 blur-3xl pointer-events-none animate-pulse" />
-                <div className="absolute -bottom-20 -right-20 w-64 h-64 rounded-full bg-gradient-to-br from-purple-600/30 via-indigo-500/25 to-pink-500/20 blur-3xl pointer-events-none" />
+                {/* Ambient Fluid Gradient Blobs (Matching Deep Purple & Indigo Aura) */}
+                <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-gradient-to-tr from-purple-600/35 via-indigo-500/25 to-violet-600/30 blur-3xl pointer-events-none animate-pulse" />
+                <div className="absolute -bottom-20 -right-20 w-64 h-64 rounded-full bg-gradient-to-br from-purple-600/35 via-indigo-600/30 to-violet-500/25 blur-3xl pointer-events-none" />
 
                 {/* Specular Diagonal Glass Reflection Sheen */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/[0.04] to-transparent pointer-events-none rounded-t-[40px]" />
@@ -168,7 +168,7 @@ export function AiImportBottomSheet() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/10 border border-white/25 text-[10px] font-mono text-zinc-200 uppercase font-semibold backdrop-blur-md mb-1">
-                                    <Sparkles className="w-3 h-3 text-rose-400" />
+                                    <Sparkles className="w-3 h-3 text-purple-300" />
                                     <span>AI Importer • Multimodal</span>
                                 </div>
                                 <h2 className="text-2xl font-bold tracking-tight text-white font-sans drop-shadow">
@@ -197,7 +197,7 @@ export function AiImportBottomSheet() {
                             />
 
                             <div className="w-12 h-12 rounded-full bg-white/15 border border-white/40 text-white flex items-center justify-center mx-auto shadow-[inset_0_1px_3px_rgba(255,255,255,0.6)] backdrop-blur-xl relative z-10 group-hover:scale-105 transition-transform">
-                                <Paperclip className="w-5 h-5 text-rose-200" />
+                                <Paperclip className="w-5 h-5 text-purple-200" />
                             </div>
 
                             <div className="space-y-0.5 relative z-10">
@@ -216,7 +216,7 @@ export function AiImportBottomSheet() {
                         {/* Text Input Area */}
                         <div className="space-y-1.5">
                             <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-                                <FileText className="w-3.5 h-3.5 text-rose-400" />
+                                <FileText className="w-3.5 h-3.5 text-purple-300" />
                                 Or Paste Routine Text
                             </label>
                             <textarea
@@ -232,7 +232,7 @@ export function AiImportBottomSheet() {
                             {imageFileName && (
                                 <div className="p-3.5 rounded-2xl bg-white/[0.06] backdrop-blur-2xl border border-white/25 flex items-center justify-between text-xs text-zinc-200 shadow-md">
                                     <div className="flex items-center gap-2.5">
-                                        <Paperclip className="w-4 h-4 text-rose-300" />
+                                        <Paperclip className="w-4 h-4 text-purple-300" />
                                         <span className="font-mono text-zinc-200 truncate max-w-[200px]">{imageFileName}</span>
                                     </div>
                                     <div className="w-5 h-5 rounded-full bg-emerald-500/25 text-emerald-400 border border-emerald-400/50 flex items-center justify-center">
@@ -243,7 +243,7 @@ export function AiImportBottomSheet() {
 
                             <div className="p-3.5 rounded-2xl bg-white/[0.06] backdrop-blur-2xl border border-white/25 flex items-center justify-between text-xs text-zinc-200 shadow-md">
                                 <div className="flex items-center gap-2.5 min-w-0">
-                                    <Sparkles className="w-4 h-4 text-rose-400 shrink-0" />
+                                    <Sparkles className="w-4 h-4 text-purple-300 shrink-0" />
                                     <span className="font-semibold text-white tracking-wide truncate">Universal Copy Prompt</span>
                                 </div>
                                 <button
