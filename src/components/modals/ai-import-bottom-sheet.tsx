@@ -1,0 +1,351 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+    X,
+    Paperclip,
+    Check,
+    Upload,
+    Sparkles,
+    Loader2,
+    FileText,
+    Image as ImageIcon,
+    Copy,
+    ArrowRight,
+    AlertTriangle
+} from "lucide-react";
+
+const UNIVERSAL_AI_PROMPT = `Great! Now please organize and format the entire routine and advice we just discussed into a structured, progressive timetable for my Gyral discipline system.
+
+Requirements:
+1. Target Timeframe & Duration: Specify a realistic total duration (e.g. 3 Months, 12 Weeks, 30 Days) to see drastic results and noticeable transformation.
+2. Progressive Phased Variation: Break the plan down into progressive phases so intensity scales over time.
+3. Daily Habits & Pacts: Actionable daily items with time blocks.
+4. Core Habit Trackers: Key habits and metrics to track daily.
+5. Target Goals & Milestones: Realistic transformation achievements.
+6. Full Timetable: Clean daily & weekly schedule formatted with bullet points.`;
+
+export function AiImportBottomSheet() {
+    const router = useRouter();
+    const [isOpen, setIsOpen] = useState(false);
+    const [step, setStep] = useState<'INPUT' | 'EXTRACTING' | 'SUCCESS'>('INPUT');
+
+    // Input state
+    const [rawText, setRawText] = useState("");
+    const [imageBase64, setImageBase64] = useState<string | null>(null);
+    const [imageFileName, setImageFileName] = useState<string | null>(null);
+    const [copiedPrompt, setCopiedPrompt] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // Extraction Animation State (Image 2 style)
+    const [progress, setProgress] = useState(0);
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Global Event Listener to open bottom sheet from anywhere
+    useEffect(() => {
+        const handleOpen = () => {
+            setIsOpen(true);
+            setStep('INPUT');
+            setProgress(0);
+            setError(null);
+        };
+        window.addEventListener('openAiImportBottomSheet', handleOpen);
+        return () => window.removeEventListener('openAiImportBottomSheet', handleOpen);
+    }, []);
+
+    if (!isOpen) return null;
+
+    const handleCopyPrompt = () => {
+        navigator.clipboard.writeText(UNIVERSAL_AI_PROMPT);
+        setCopiedPrompt(true);
+        setTimeout(() => setCopiedPrompt(false), 2000);
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+            setError("Please select an image file (PNG, JPG, WEBP)");
+            return;
+        }
+
+        setImageFileName(file.name);
+        setError(null);
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            setImageBase64(event.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleStartExtraction = async () => {
+        if (!rawText.trim() && !imageBase64) {
+            setError("Please paste routine text or select a screenshot.");
+            return;
+        }
+
+        setError(null);
+        setStep('EXTRACTING');
+        setProgress(15);
+
+        // Progress simulation animation for glossy loader
+        const interval = setInterval(() => {
+            setProgress((prev) => {
+                if (prev >= 90) {
+                    clearInterval(interval);
+                    return 90;
+                }
+                return prev + Math.floor(Math.random() * 15) + 5;
+            });
+        }, 300);
+
+        try {
+            const res = await fetch("/api/ai/parse-timetable", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    text: rawText.trim() || undefined,
+                    imageBase64: imageBase64 || undefined
+                })
+            });
+
+            const json = await res.json();
+            clearInterval(interval);
+
+            if (!res.ok || json.error) {
+                throw new Error(json.error || "Extraction failed");
+            }
+
+            setProgress(100);
+            // Store parsed result in sessionStorage so /import-timetable page loads it seamlessly
+            if (typeof window !== "undefined") {
+                sessionStorage.setItem('gyral_ai_temp_parsed', JSON.stringify(json.data));
+            }
+
+            setTimeout(() => {
+                setStep('SUCCESS');
+            }, 500);
+
+        } catch (err: any) {
+            clearInterval(interval);
+            console.error("[Extraction error]:", err);
+            setError(err.message || "Failed to extract routine data.");
+            setStep('INPUT');
+        }
+    };
+
+    const handleViewData = () => {
+        setIsOpen(false);
+        router.push('/import-timetable');
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center">
+            {/* Backdrop Overlay */}
+            <div
+                onClick={() => setIsOpen(false)}
+                className="fixed inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-300"
+            />
+
+            {/* Floating Mobile Bottom Sheet (Matched 100% to User Images 1 & 2) */}
+            <div className="relative z-[101] w-full max-w-lg bg-zinc-950 border-t border-x border-white/15 rounded-t-[36px] p-6 pb-8 shadow-[0_-10px_60px_rgba(0,0,0,0.9)] backdrop-blur-3xl animate-in slide-in-from-bottom duration-300 overflow-hidden">
+                {/* Drag handle pill */}
+                <div className="w-12 h-1.5 rounded-full bg-white/20 mx-auto mb-6" />
+
+                {/* PHASE 1: INPUT & UPLOAD SHEET (IMAGE 1 STYLING) */}
+                {step === 'INPUT' && (
+                    <div className="space-y-5">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-2xl font-bold tracking-tight text-white/90 font-sans">
+                                Upload a file to start
+                            </h2>
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Central Glassmorphic Card (Exact Image 1 Box) */}
+                        <div className="relative rounded-3xl border border-white/20 bg-zinc-900/80 backdrop-blur-2xl p-6 text-center shadow-[0_0_40px_rgba(255,255,255,0.05),inset_0_1px_1px_rgba(255,255,255,0.2)] space-y-3">
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                accept="image/*"
+                                className="hidden"
+                            />
+
+                            <div className="w-10 h-10 rounded-full bg-black/60 border border-white/20 text-white flex items-center justify-center mx-auto shadow-inner">
+                                <Paperclip className="w-4 h-4" />
+                            </div>
+
+                            <div className="space-y-0.5">
+                                <h3 className="text-sm font-bold text-white">Add files or paste text</h3>
+                                <p className="text-xs text-zinc-400">or browse screenshot, 4 MB max</p>
+                            </div>
+
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="px-5 py-2 rounded-full bg-zinc-800/90 hover:bg-zinc-700/90 border border-white/20 text-white text-xs font-semibold shadow-lg transition-all"
+                            >
+                                Select files
+                            </button>
+                        </div>
+
+                        {/* Text Input Area */}
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                                <FileText className="w-3.5 h-3.5 text-indigo-400" />
+                                Or Paste Routine Text
+                            </label>
+                            <textarea
+                                value={rawText}
+                                onChange={(e) => setRawText(e.target.value)}
+                                placeholder="Paste routine text from ChatGPT, Claude, or DeepSeek..."
+                                className="w-full h-20 bg-zinc-900/80 border border-white/10 rounded-2xl p-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none"
+                            />
+                        </div>
+
+                        {/* Attached Files & Prompt Items (Image 1 Item List) */}
+                        <div className="space-y-2">
+                            {imageFileName && (
+                                <div className="p-3 rounded-2xl bg-zinc-900/90 border border-white/10 flex items-center justify-between text-xs text-zinc-200">
+                                    <div className="flex items-center gap-2.5">
+                                        <Paperclip className="w-4 h-4 text-zinc-400" />
+                                        <span className="font-mono text-zinc-300 truncate max-w-[200px]">{imageFileName}</span>
+                                    </div>
+                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center">
+                                        <Check className="w-3 h-3 stroke-[3]" />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="p-3 rounded-2xl bg-zinc-900/90 border border-white/10 flex items-center justify-between text-xs text-zinc-200">
+                                <div className="flex items-center gap-2.5">
+                                    <Sparkles className="w-4 h-4 text-indigo-400" />
+                                    <span className="font-mono text-zinc-300">Universal_AI_Prompt.txt</span>
+                                </div>
+                                <button
+                                    onClick={handleCopyPrompt}
+                                    className="px-3 py-1 rounded-full bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 text-[11px] font-semibold transition-colors flex items-center gap-1"
+                                >
+                                    {copiedPrompt ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                    <span>{copiedPrompt ? "Copied!" : "Copy Prompt"}</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {error && (
+                            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4 shrink-0" />
+                                <span>{error}</span>
+                            </div>
+                        )}
+
+                        {/* Bottom Buttons (Matching Image 1: Cancel / Continue) */}
+                        <div className="flex items-center gap-3 pt-2">
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="w-1/3 py-3 rounded-2xl bg-zinc-900 border border-white/10 text-zinc-400 font-medium text-xs hover:text-white transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleStartExtraction}
+                                className="w-2/3 py-3 rounded-2xl bg-white text-black font-bold text-xs shadow-xl hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <span>Continue</span>
+                                <ArrowRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* PHASE 2: ANIMATED EXTRACTION FLOATING CARD WITH NEON AURA (IMAGE 2 STYLING) */}
+                {step === 'EXTRACTING' && (
+                    <div className="relative py-4 space-y-6">
+                        {/* Glowing Indigo/Purple Neon Aura Arc (Exact Image 2 Effect) */}
+                        <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-80 h-32 rounded-full bg-gradient-to-t from-indigo-600 via-indigo-500 to-purple-600 opacity-60 blur-3xl pointer-events-none animate-pulse" />
+
+                        <div className="flex items-start justify-between relative z-10">
+                            <div className="flex items-center gap-4">
+                                {/* Translucent File Icon with [TEXT] / [IMAGE] Badge (Image 2) */}
+                                <div className="relative w-16 h-20 rounded-2xl bg-gradient-to-br from-indigo-950/80 via-zinc-900 to-purple-950/60 border border-indigo-400/30 flex items-center justify-center shadow-xl">
+                                    <FileText className="w-8 h-8 text-indigo-300" />
+                                    <div className="absolute -left-2 bottom-4 px-1.5 py-0.5 rounded-md bg-zinc-900 border border-white/20 text-[9px] font-mono font-bold text-white shadow">
+                                        {imageBase64 ? "IMAGE" : "TEXT"}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 className="text-base font-bold text-white font-sans tracking-wide">
+                                        {imageFileName || "Routine_Extract.txt"}
+                                    </h3>
+                                    <p className="text-xs font-mono text-zinc-400 mt-1">
+                                        {rawText ? `${rawText.length} chars` : "Multimodal Image OCR"}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-zinc-400 hover:text-white transition-colors relative z-20"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Glowing Animated Progress Bar (Exact Image 2 Bar) */}
+                        <div className="relative z-10 space-y-2">
+                            <div className="h-12 rounded-2xl bg-zinc-900/90 border border-white/10 px-4 flex items-center justify-between relative overflow-hidden backdrop-blur-xl">
+                                <div className="flex items-center gap-2.5 relative z-10 text-xs font-medium text-white">
+                                    <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+                                    <span>Extracting Routine...</span>
+                                </div>
+                                <span className="text-xs font-mono font-bold text-white relative z-10">
+                                    {progress}%
+                                </span>
+
+                                {/* Glowing White Lead Edge Progress Line */}
+                                <div
+                                    className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-indigo-500 via-indigo-300 to-white rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,1)]"
+                                    style={{ width: `${progress}%` }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* PHASE 3: COMPLETION & VIEW DATA ACTION */}
+                {step === 'SUCCESS' && (
+                    <div className="py-4 text-center space-y-5 relative z-10">
+                        <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                            <Check className="w-7 h-7 stroke-[3]" />
+                        </div>
+
+                        <div className="space-y-1">
+                            <h3 className="text-xl font-bold text-white">Routine Extracted Successfully!</h3>
+                            <p className="text-xs text-zinc-400">
+                                Structured data is ready to seal into your Gyral discipline system.
+                            </p>
+                        </div>
+
+                        <button
+                            onClick={handleViewData}
+                            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all"
+                        >
+                            <Sparkles className="w-4 h-4" />
+                            <span>View & Seal Routine Data</span>
+                            <ArrowRight className="w-4 h-4" />
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}

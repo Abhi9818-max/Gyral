@@ -305,7 +305,7 @@ export function Header() {
               });
               document.getElementById('import-timetable-btn')?.addEventListener('click', () => {
                 closeMenu();
-                router.push('/import-timetable');
+                window.dispatchEvent(new CustomEvent('openAiImportBottomSheet'));
               });
               document.getElementById('watch-btn')?.addEventListener('click', () => {
                 closeMenu();

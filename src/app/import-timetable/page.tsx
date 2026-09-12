@@ -110,7 +110,7 @@ export default function ImportTimetablePage() {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Load import logs from localStorage
+    // Load import logs from localStorage and check temp parsed routine from bottom sheet
     useEffect(() => {
         if (typeof window !== "undefined") {
             try {
@@ -118,8 +118,20 @@ export default function ImportTimetablePage() {
                 if (stored) {
                     setImportLogs(JSON.parse(stored));
                 }
+
+                const temp = sessionStorage.getItem('gyral_ai_temp_parsed');
+                if (temp) {
+                    const data: ParsedTimetableData = JSON.parse(temp);
+                    setParsedData(data);
+                    setSelectedPacts(new Array(data.pacts.length).fill(true));
+                    setSelectedTasks(new Array(data.tasks.length).fill(true));
+                    setSelectedGoals(new Array(data.goals.length).fill(true));
+                    setIncludeNote(true);
+                    setStep('PREVIEW');
+                    sessionStorage.removeItem('gyral_ai_temp_parsed');
+                }
             } catch (e) {
-                console.error("[ImportLogs] Failed to parse logs:", e);
+                console.error("[ImportLogs] Failed to parse logs or temp routine:", e);
             }
         }
     }, []);

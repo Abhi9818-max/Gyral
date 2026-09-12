@@ -42,6 +42,7 @@ import { AuthSync } from "@/components/auth-sync";
 import { CapacitorAuthHandler } from "@/components/capacitor-auth-handler";
 
 import { FCMHandler } from "@/components/fcm-handler";
+import { AiImportBottomSheet } from "@/components/modals/ai-import-bottom-sheet";
 
 export default function RootLayout({
   children,
@@ -78,6 +79,7 @@ export default function RootLayout({
                   <CapacitorAuthHandler />
                   <FCMHandler />
                   <OnboardingWrapper />
+                  <AiImportBottomSheet />
                     {children}
                   <MobileNavWrapper />
                 </PresenceProvider>

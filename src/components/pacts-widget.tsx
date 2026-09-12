@@ -109,7 +109,7 @@ export function PactWidget() {
 
                         {/* AI Routine Import Button */}
                         <button
-                            onClick={() => router.push('/import-timetable')}
+                            onClick={() => window.dispatchEvent(new CustomEvent('openAiImportBottomSheet'))}
                             className="px-3 h-10 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white rounded-full flex items-center justify-center gap-1.5 transition-all border border-white/10 hover:border-white/20 text-xs font-medium"
                             title="Import AI Timetable from ChatGPT / Claude"
                         >
