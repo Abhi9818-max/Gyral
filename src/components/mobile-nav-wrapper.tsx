@@ -8,8 +8,8 @@ export function MobileNavWrapper() {
     const pathname = usePathname();
     const { user } = useUserData();
 
-    // Always hide navigation on login/signup/auth pages
-    if (pathname?.startsWith('/login') || pathname?.startsWith('/signup') || pathname?.startsWith('/auth')) {
+    // Always hide navigation on login/signup/auth/import-timetable pages
+    if (pathname?.startsWith('/login') || pathname?.startsWith('/signup') || pathname?.startsWith('/auth') || pathname?.startsWith('/import-timetable')) {
         return null;
     }
 

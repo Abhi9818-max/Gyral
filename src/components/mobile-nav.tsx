@@ -55,8 +55,10 @@ export function MobileNav() {
         return pathname.startsWith(href);
     };
 
-    // Hide nav on full-screen pages like notes editor
-    const hideNav = pathname.startsWith('/notes');
+    // Hide nav on full-screen pages like notes editor and AI import page
+    const hideNav = pathname.startsWith('/notes') || pathname.startsWith('/import-timetable');
+
+    if (hideNav) return null;
 
     const avatarSrc = user?.id
         ? getUserAvatar(profile?.avatar_url, profile?.gender, user.id)

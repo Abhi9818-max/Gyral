@@ -400,18 +400,9 @@ export default function ImportTimetablePage() {
 
             <Header />
 
-            <main className="flex-1 p-4 md:p-8 pt-24 md:pt-28 max-w-5xl mx-auto w-full space-y-7 pb-28 relative z-10">
-                {/* Top Header & Pill Navigation */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <Link
-                        href="/dashboard"
-                        className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl transition-all group shrink-0 w-fit"
-                    >
-                        <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-                        <span>Back to Dashboard</span>
-                    </Link>
-
-                    {/* Pill Bar Tabs (Reference Image 2 Filter Pills) */}
+            <main className="flex-1 p-4 md:p-8 pt-20 md:pt-24 max-w-5xl mx-auto w-full space-y-7 pb-16 relative z-10">
+                {/* Top Pill Bar Navigation (Integrated Native Section Tabs) */}
+                <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-1.5 bg-white/10 border border-white/25 p-1 rounded-full backdrop-blur-2xl shadow-lg">
                         <button
                             onClick={() => setActiveTab('SYNTHESIZER')}
