@@ -12,7 +12,6 @@ export function PactWidget() {
     const { pacts, addPact, togglePact, deletePact, shiftPact, addDailyPact, dailyPacts, deleteDailyPact } = useUserData();
     const [newPactText, setNewPactText] = useState('');
     const [isAdding, setIsAdding] = useState(false);
-    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
 
     const todayStr = useToday();
@@ -322,13 +321,6 @@ export function PactWidget() {
                         </div>
                     )}
                 </div>
-            </div>
-
-            {/* AI Timetable Import Modal */}
-            <ImportTimetableModal
-                isOpen={isImportModalOpen}
-                onClose={() => setIsImportModalOpen(false)}
-            />
         </div>
     );
 }
