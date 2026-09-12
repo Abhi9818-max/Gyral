@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUserData } from "@/context/user-data-context";
 import { useToday } from "@/hooks/use-today";
+import { createClient } from "@/utils/supabase/client";
 import {
     ChevronLeft,
     Sparkles,
@@ -97,6 +98,7 @@ Requirements:
 export default function ImportTimetablePage() {
     const router = useRouter();
     const {
+        user,
         pacts,
         dailyPacts,
         tasks,
@@ -339,45 +341,76 @@ export default function ImportTimetablePage() {
     // Purge / Delete an Import Log Completely
     const handleDeleteImportLog = async (log: ImportLog) => {
         setDeletingLogId(log.id);
+        const supabase = createClient();
+
         try {
+            // 1. Purge Notes
             if (log.noteId) {
                 await deleteNote(log.noteId);
             }
-            const taggedNote = notes.find(n => n.content?.includes(`GYRAL_AI_IMPORT:${log.id}`));
-            if (taggedNote && taggedNote.id !== log.noteId) {
-                await deleteNote(taggedNote.id);
+            const taggedNotes = notes.filter(n => n.content?.includes(`GYRAL_AI_IMPORT:${log.id}`));
+            for (const n of taggedNotes) {
+                if (n.id !== log.noteId) {
+                    await deleteNote(n.id);
+                }
             }
 
+            // 2. Purge Daily Pacts & Pacts
             if (log.pactTexts && log.pactTexts.length > 0) {
-                log.pactTexts.forEach(pactText => {
-                    deleteDailyPact(pactText);
+                for (const pactText of log.pactTexts) {
+                    const cleanText = pactText.trim();
+                    if (!cleanText) continue;
+
+                    // Delete daily pact from context state & DB
+                    await deleteDailyPact(cleanText);
+
+                    // Delete dated pacts from context state
                     Object.keys(pacts).forEach(date => {
-                        const matchingPact = pacts[date]?.find(p => p.text.trim().toLowerCase() === pactText.trim().toLowerCase());
-                        if (matchingPact) {
-                            deletePact(matchingPact.id, date);
-                        }
+                        const matchingPacts = pacts[date]?.filter(p => p.text.trim().toLowerCase() === cleanText.toLowerCase()) || [];
+                        matchingPacts.forEach(p => {
+                            deletePact(p.id, date);
+                        });
                     });
-                });
+
+                    // Direct DB delete fallback for thorough purge
+                    if (user) {
+                        await supabase.from('daily_pacts').delete().eq('user_id', user.id).ilike('text', cleanText);
+                        await supabase.from('pacts').delete().eq('user_id', user.id).ilike('text', cleanText);
+                    }
+                }
             }
 
+            // 3. Purge Habit Tasks
             if (log.taskNames && log.taskNames.length > 0) {
-                log.taskNames.forEach(tName => {
-                    const matchingTask = tasks.find(t => t.name.trim().toLowerCase() === tName.trim().toLowerCase());
-                    if (matchingTask) {
-                        deleteTask(matchingTask.id);
+                for (const tName of log.taskNames) {
+                    const cleanName = tName.trim();
+                    if (!cleanName) continue;
+                    const matchingTasks = tasks.filter(t => t.name.trim().toLowerCase() === cleanName.toLowerCase());
+                    for (const t of matchingTasks) {
+                        await deleteTask(t.id);
                     }
-                });
+                    if (user) {
+                        await supabase.from('tasks').delete().eq('user_id', user.id).ilike('name', cleanName);
+                    }
+                }
             }
 
+            // 4. Purge Goals
             if (log.goalTitles && log.goalTitles.length > 0) {
-                log.goalTitles.forEach(gTitle => {
-                    const matchingGoal = lifeEvents.find(e => e.title.trim().toLowerCase() === gTitle.trim().toLowerCase());
-                    if (matchingGoal) {
-                        deleteLifeEvent(matchingGoal.id);
+                for (const gTitle of log.goalTitles) {
+                    const cleanTitle = gTitle.trim();
+                    if (!cleanTitle) continue;
+                    const matchingGoals = lifeEvents.filter(e => e.title.trim().toLowerCase() === cleanTitle.toLowerCase());
+                    for (const g of matchingGoals) {
+                        await deleteLifeEvent(g.id);
                     }
-                });
+                    if (user) {
+                        await supabase.from('life_events').delete().eq('user_id', user.id).ilike('title', cleanTitle);
+                    }
+                }
             }
 
+            // 5. Update local state & localStorage log history
             const updatedLogs = importLogs.filter(item => item.id !== log.id);
             setImportLogs(updatedLogs);
             if (typeof window !== "undefined") {

@@ -244,6 +244,9 @@ export function PactWidget() {
 
                                         <button
                                             onClick={() => {
+                                                if (matchedDailyPact) {
+                                                    deleteDailyPact(matchedDailyPact.id);
+                                                }
                                                 deletePact(pact.id, selectedDate);
                                                 setDeleteCandidateId(null);
                                             }}

@@ -1679,10 +1679,21 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const deleteDailyPact = async (id: string) => {
-        setDailyPacts(prev => prev.filter(dp => dp.id !== id));
+    const deleteDailyPact = async (idOrText: string) => {
+        const cleanTarget = idOrText.trim().toLowerCase();
+        const targetPact = dailyPacts.find(dp => dp.id === idOrText || dp.text.trim().toLowerCase() === cleanTarget);
+        const targetId = targetPact?.id;
+        const targetText = targetPact?.text || idOrText;
+
+        setDailyPacts(prev => prev.filter(dp => dp.id !== idOrText && dp.id !== targetId && dp.text.trim().toLowerCase() !== cleanTarget));
+
         if (user) {
-            await supabase.from('daily_pacts').delete().eq('id', id);
+            if (targetId) {
+                await supabase.from('daily_pacts').delete().eq('id', targetId);
+            }
+            if (targetText) {
+                await supabase.from('daily_pacts').delete().ilike('text', targetText.trim());
+            }
         }
     };
 
