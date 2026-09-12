@@ -147,31 +147,37 @@ export function AiImportBottomSheet() {
             {/* Backdrop Overlay */}
             <div
                 onClick={() => setIsOpen(false)}
-                className="fixed inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-300"
+                className="fixed inset-0 bg-black/85 backdrop-blur-xl animate-in fade-in duration-300"
             />
 
             {/* Floating Mobile Bottom Sheet (Matched 100% to User Images 1 & 2) */}
-            <div className="relative z-[101] w-full max-w-lg bg-zinc-950 border-t border-x border-white/15 rounded-t-[36px] p-6 pb-8 shadow-[0_-10px_60px_rgba(0,0,0,0.9)] backdrop-blur-3xl animate-in slide-in-from-bottom duration-300 overflow-hidden">
+            <div className="relative z-[101] w-full max-w-lg bg-zinc-950/90 border-t border-x border-white/20 rounded-t-[36px] p-6 pb-8 shadow-[0_-15px_70px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.25)] backdrop-blur-3xl animate-in slide-in-from-bottom duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden">
+                {/* Specular Diagonal Reflection Sheen */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/0 to-transparent pointer-events-none rounded-t-[36px]" />
+
                 {/* Drag handle pill */}
-                <div className="w-12 h-1.5 rounded-full bg-white/20 mx-auto mb-6" />
+                <div className="w-12 h-1.5 rounded-full bg-white/25 mx-auto mb-6 relative z-10" />
 
                 {/* PHASE 1: INPUT & UPLOAD SHEET (IMAGE 1 STYLING) */}
                 {step === 'INPUT' && (
-                    <div className="space-y-5">
+                    <div className="space-y-5 relative z-10">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-2xl font-bold tracking-tight text-white/90 font-sans">
+                            <h2 className="text-2xl font-bold tracking-tight text-white/95 font-sans">
                                 Upload a file to start
                             </h2>
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
-                        {/* Central Glassmorphic Card (Exact Image 1 Box) */}
-                        <div className="relative rounded-3xl border border-white/20 bg-zinc-900/80 backdrop-blur-2xl p-6 text-center shadow-[0_0_40px_rgba(255,255,255,0.05),inset_0_1px_1px_rgba(255,255,255,0.2)] space-y-3">
+                        {/* Central Glossy Translucent Card (Exact Image 1 Box with Specular Reflection) */}
+                        <div className="relative rounded-[28px] border border-white/25 bg-zinc-900/80 backdrop-blur-3xl p-7 text-center shadow-[0_0_50px_rgba(255,255,255,0.08),inset_0_1px_2px_rgba(255,255,255,0.35)] space-y-3 overflow-hidden group">
+                            {/* Inner Specular Gloss Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/5 to-transparent pointer-events-none rounded-[28px]" />
+
                             <input
                                 type="file"
                                 ref={fileInputRef}
@@ -180,18 +186,18 @@ export function AiImportBottomSheet() {
                                 className="hidden"
                             />
 
-                            <div className="w-10 h-10 rounded-full bg-black/60 border border-white/20 text-white flex items-center justify-center mx-auto shadow-inner">
+                            <div className="w-11 h-11 rounded-full bg-black/70 border border-white/25 text-white flex items-center justify-center mx-auto shadow-[inset_0_1px_3px_rgba(255,255,255,0.3)] relative z-10">
                                 <Paperclip className="w-4 h-4" />
                             </div>
 
-                            <div className="space-y-0.5">
-                                <h3 className="text-sm font-bold text-white">Add files or paste text</h3>
-                                <p className="text-xs text-zinc-400">or browse screenshot, 4 MB max</p>
+                            <div className="space-y-0.5 relative z-10">
+                                <h3 className="text-sm font-bold text-white tracking-wide">Add files to upload</h3>
+                                <p className="text-xs text-zinc-400">or browse, 4 MB max</p>
                             </div>
 
                             <button
                                 onClick={() => fileInputRef.current?.click()}
-                                className="px-5 py-2 rounded-full bg-zinc-800/90 hover:bg-zinc-700/90 border border-white/20 text-white text-xs font-semibold shadow-lg transition-all"
+                                className="px-6 py-2.5 rounded-full bg-zinc-800/90 hover:bg-zinc-700/90 border border-white/25 text-white text-xs font-semibold shadow-xl transition-all relative z-10"
                             >
                                 Select files
                             </button>
