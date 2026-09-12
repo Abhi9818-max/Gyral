@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { LayoutDashboard, Users, Shield, ScrollText, ClipboardList, Flag, Settings, Plus, Flame, Globe, Ghost, Skull, Coins, Menu, X, Search, MessageCircle, Bell, Sword, Home, User, Brain, Trophy } from 'lucide-react';
+import { LayoutDashboard, Users, Shield, ScrollText, ClipboardList, Flag, Settings, Plus, Flame, Globe, Ghost, Skull, Coins, Menu, X, Search, MessageCircle, Bell, Sword, Home, User, Brain, Trophy, Sparkles } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { createClient } from '@/utils/supabase/client';
@@ -150,6 +150,16 @@ export function Header() {
               {noxBalance} Nox
             </span>
           </div>
+
+          {/* AI Timetable Import Button - Always Visible */}
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 md:px-3.5 py-1.5 rounded-full bg-indigo-500/10 hover:bg-indigo-500/25 border border-indigo-500/30 hover:border-indigo-500/60 text-indigo-300 hover:text-indigo-100 transition-all cursor-pointer shadow-[0_0_15px_rgba(99,102,241,0.25)] font-mono text-xs font-bold"
+            title="Import AI Timetable from ChatGPT / Claude"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
+            <span className="hidden sm:inline">AI Import</span>
+          </button>
 
           {/* Universal Menu Button */}
           <button
