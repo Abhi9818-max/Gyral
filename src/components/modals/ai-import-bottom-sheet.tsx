@@ -231,17 +231,17 @@ export function AiImportBottomSheet() {
                                 </div>
                             )}
 
-                            <div className="p-3 rounded-2xl bg-zinc-900/90 border border-white/10 flex items-center justify-between text-xs text-zinc-200">
-                                <div className="flex items-center gap-2.5">
-                                    <Sparkles className="w-4 h-4 text-indigo-400" />
-                                    <span className="font-mono text-zinc-300">Universal_AI_Prompt.txt</span>
+                            <div className="p-3.5 rounded-2xl bg-zinc-900/90 border border-white/10 flex items-center justify-between text-xs text-zinc-200">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                    <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
+                                    <span className="font-medium text-zinc-200 tracking-wide truncate">Universal Copy Prompt</span>
                                 </div>
                                 <button
                                     onClick={handleCopyPrompt}
-                                    className="px-3 py-1 rounded-full bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 text-[11px] font-semibold transition-colors flex items-center gap-1"
+                                    className="px-3.5 py-1.5 rounded-full bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0"
                                 >
-                                    {copiedPrompt ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                                    <span>{copiedPrompt ? "Copied!" : "Copy Prompt"}</span>
+                                    {copiedPrompt ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                                    <span>{copiedPrompt ? "Copied!" : "Copy"}</span>
                                 </button>
                             </div>
                         </div>
