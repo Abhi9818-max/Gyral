@@ -107,16 +107,6 @@ export function PactWidget() {
                             </button>
                         </div>
 
-                        {/* AI Routine Import Button */}
-                        <button
-                            onClick={() => window.dispatchEvent(new CustomEvent('openAiImportBottomSheet'))}
-                            className="px-3 h-10 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white rounded-full flex items-center justify-center gap-1.5 transition-all border border-white/10 hover:border-white/20 text-xs font-medium"
-                            title="Import AI Timetable from ChatGPT / Claude"
-                        >
-                            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                            <span className="hidden sm:inline">Import AI Timetable</span>
-                        </button>
-
                         {/* Add Button (Only if not already adding and list exists) */}
                         {!showInput && (
                             <button
