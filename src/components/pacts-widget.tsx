@@ -321,6 +321,7 @@ export function PactWidget() {
                         </div>
                     )}
                 </div>
+            </div>
         </div>
     );
 }
