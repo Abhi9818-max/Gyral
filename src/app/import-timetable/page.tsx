@@ -420,10 +420,10 @@ export default function ImportTimetablePage() {
                         <Link
                             href="/dashboard"
                             title="Exit to Dashboard"
-                            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-rose-300 hover:text-white bg-rose-500/15 hover:bg-rose-500/30 border border-rose-400/30 transition-all ml-1 shadow-sm group"
+                            aria-label="Exit to Dashboard"
+                            className="w-7 h-7 rounded-full bg-rose-500/20 hover:bg-rose-500/40 border border-rose-400/40 flex items-center justify-center text-rose-200 hover:text-white transition-all ml-1 shadow-sm group shrink-0"
                         >
                             <X className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-200" />
-                            <span>Exit</span>
                         </Link>
                     </div>
                 </div>
@@ -437,7 +437,7 @@ export default function ImportTimetablePage() {
                         <div className="space-y-2.5 max-w-2xl">
                             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 border border-white/30 text-white text-xs font-mono font-semibold backdrop-blur-xl shadow-sm">
                                 <Sparkles className="w-3.5 h-3.5 text-rose-300 animate-pulse" />
-                                <span>Multi-Modal AI Discipline Engine</span>
+                                <span>Multi-Modal AI Engine</span>
                             </div>
 
                             <h1 className="text-3xl md:text-5xl font-serif tracking-tight text-white font-normal drop-shadow-md">
