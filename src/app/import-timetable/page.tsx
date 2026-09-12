@@ -36,25 +36,25 @@ function formatCompactDuration(rawDuration?: string): string {
     const str = rawDuration.trim();
     if (!str) return "Progressive";
 
-    // 1. Primary: If months are mentioned anywhere (e.g. "12 Weeks ( 3 Month )", "3 Months", "3 mths") -> Months Only
+    // 1. Primary: If months are mentioned anywhere (e.g. "12 Weeks ( 3 Month )", "3 Months", "3 mths") -> M Only
     const monthNumMatch = str.match(/(\d+)\s*(?:month|mth|mo)s?/i);
     if (monthNumMatch) {
         const num = monthNumMatch[1];
-        return `${num} Month${parseInt(num, 10) > 1 ? 's' : ''}`;
+        return `${num} M`;
     }
 
     // 2. Secondary: If weeks are mentioned (e.g. "12 weeks") -> Weeks Only
     const weekNumMatch = str.match(/(\d+)\s*(?:week|wk)s?/i);
     if (weekNumMatch) {
         const num = weekNumMatch[1];
-        return `${num} Week${parseInt(num, 10) > 1 ? 's' : ''}`;
+        return `${num} Weeks`;
     }
 
     // 3. Tertiary: If days are mentioned (e.g. "30 days") -> Days Only
     const dayNumMatch = str.match(/(\d+)\s*(?:day|d)s?/i);
     if (dayNumMatch) {
         const num = dayNumMatch[1];
-        return `${num} Day${parseInt(num, 10) > 1 ? 's' : ''}`;
+        return `${num} Days`;
     }
 
     // 4. Fallback clean up
@@ -508,7 +508,7 @@ export default function ImportTimetablePage() {
                                             </div>
                                             <div>
                                                 <h3 className="text-base font-bold text-white tracking-wide">
-                                                    Universal AI Follow-Up Prompt
+                                                    Universal AI Prompt
                                                 </h3>
                                                 <p className="text-xs text-zinc-300">
                                                     Copy & paste this prompt into ChatGPT or Claude to format any routine.
