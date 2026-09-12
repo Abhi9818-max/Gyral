@@ -144,39 +144,39 @@ export function AiImportBottomSheet() {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-end justify-center">
-            {/* Backdrop Overlay */}
+            {/* Backdrop Overlay with dynamic light blur */}
             <div
                 onClick={() => setIsOpen(false)}
-                className="fixed inset-0 bg-black/85 backdrop-blur-xl animate-in fade-in duration-300"
+                className="fixed inset-0 bg-black/45 backdrop-blur-md animate-in fade-in duration-300"
             />
 
-            {/* Floating Mobile Bottom Sheet (Matched 100% to User Images 1 & 2) */}
-            <div className="relative z-[101] w-full max-w-lg bg-zinc-950/90 border-t border-x border-white/20 rounded-t-[36px] p-6 pb-8 shadow-[0_-15px_70px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.25)] backdrop-blur-3xl animate-in slide-in-from-bottom duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden">
+            {/* Ultra-Glassy Translucent Mobile Bottom Sheet */}
+            <div className="relative z-[101] w-full max-w-lg bg-zinc-950/50 border-t border-x border-white/30 rounded-t-[36px] p-6 pb-8 shadow-[0_-20px_80px_rgba(0,0,0,0.85),inset_0_1.5px_2px_rgba(255,255,255,0.4)] backdrop-blur-3xl animate-in slide-in-from-bottom duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden">
                 {/* Specular Diagonal Reflection Sheen */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/0 to-transparent pointer-events-none rounded-t-[36px]" />
+                <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-white/[0.03] to-transparent pointer-events-none rounded-t-[36px]" />
 
                 {/* Drag handle pill */}
-                <div className="w-12 h-1.5 rounded-full bg-white/25 mx-auto mb-6 relative z-10" />
+                <div className="w-12 h-1.5 rounded-full bg-white/30 mx-auto mb-6 relative z-10 shadow-[0_1px_2px_rgba(255,255,255,0.4)]" />
 
                 {/* PHASE 1: INPUT & UPLOAD SHEET (IMAGE 1 STYLING) */}
                 {step === 'INPUT' && (
                     <div className="space-y-5 relative z-10">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-2xl font-bold tracking-tight text-white/95 font-sans">
+                            <h2 className="text-2xl font-bold tracking-tight text-white font-sans drop-shadow-sm">
                                 Upload a file to start
                             </h2>
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 flex items-center justify-center text-zinc-300 hover:text-white transition-colors backdrop-blur-md"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
-                        {/* Central Glossy Translucent Card (Exact Image 1 Box with Specular Reflection) */}
-                        <div className="relative rounded-[28px] border border-white/25 bg-zinc-900/80 backdrop-blur-3xl p-7 text-center shadow-[0_0_50px_rgba(255,255,255,0.08),inset_0_1px_2px_rgba(255,255,255,0.35)] space-y-3 overflow-hidden group">
+                        {/* Central Ultra-Glossy Translucent Card */}
+                        <div className="relative rounded-[28px] border border-white/30 bg-zinc-900/40 backdrop-blur-3xl p-7 text-center shadow-[0_10px_40px_rgba(0,0,0,0.5),inset_0_1px_3px_rgba(255,255,255,0.4)] space-y-3 overflow-hidden group">
                             {/* Inner Specular Gloss Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/5 to-transparent pointer-events-none rounded-[28px]" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/5 to-transparent pointer-events-none rounded-[28px]" />
 
                             <input
                                 type="file"
@@ -186,18 +186,18 @@ export function AiImportBottomSheet() {
                                 className="hidden"
                             />
 
-                            <div className="w-11 h-11 rounded-full bg-black/70 border border-white/25 text-white flex items-center justify-center mx-auto shadow-[inset_0_1px_3px_rgba(255,255,255,0.3)] relative z-10">
+                            <div className="w-11 h-11 rounded-full bg-white/10 border border-white/30 text-white flex items-center justify-center mx-auto shadow-[inset_0_1px_3px_rgba(255,255,255,0.5)] backdrop-blur-md relative z-10">
                                 <Paperclip className="w-4 h-4" />
                             </div>
 
                             <div className="space-y-0.5 relative z-10">
                                 <h3 className="text-sm font-bold text-white tracking-wide">Add files to upload</h3>
-                                <p className="text-xs text-zinc-400">or browse, 4 MB max</p>
+                                <p className="text-xs text-zinc-300">or browse, 4 MB max</p>
                             </div>
 
                             <button
                                 onClick={() => fileInputRef.current?.click()}
-                                className="px-6 py-2.5 rounded-full bg-zinc-800/90 hover:bg-zinc-700/90 border border-white/25 text-white text-xs font-semibold shadow-xl transition-all relative z-10"
+                                className="px-6 py-2.5 rounded-full bg-white/15 hover:bg-white/25 border border-white/30 text-white text-xs font-semibold shadow-xl backdrop-blur-md transition-all relative z-10"
                             >
                                 Select files
                             </button>
@@ -205,7 +205,7 @@ export function AiImportBottomSheet() {
 
                         {/* Text Input Area */}
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                            <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
                                 <FileText className="w-3.5 h-3.5 text-indigo-400" />
                                 Or Paste Routine Text
                             </label>
@@ -213,17 +213,17 @@ export function AiImportBottomSheet() {
                                 value={rawText}
                                 onChange={(e) => setRawText(e.target.value)}
                                 placeholder="Paste routine text from ChatGPT, Claude, or DeepSeek..."
-                                className="w-full h-20 bg-zinc-900/80 border border-white/10 rounded-2xl p-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none"
+                                className="w-full h-20 bg-zinc-900/40 backdrop-blur-2xl border border-white/20 rounded-2xl p-3 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-white/40 focus:bg-zinc-900/60 transition-colors resize-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]"
                             />
                         </div>
 
                         {/* Attached Files & Prompt Items (Image 1 Item List) */}
                         <div className="space-y-2">
                             {imageFileName && (
-                                <div className="p-3 rounded-2xl bg-zinc-900/90 border border-white/10 flex items-center justify-between text-xs text-zinc-200">
+                                <div className="p-3 rounded-2xl bg-zinc-900/40 backdrop-blur-2xl border border-white/20 flex items-center justify-between text-xs text-zinc-200">
                                     <div className="flex items-center gap-2.5">
-                                        <Paperclip className="w-4 h-4 text-zinc-400" />
-                                        <span className="font-mono text-zinc-300 truncate max-w-[200px]">{imageFileName}</span>
+                                        <Paperclip className="w-4 h-4 text-zinc-300" />
+                                        <span className="font-mono text-zinc-200 truncate max-w-[200px]">{imageFileName}</span>
                                     </div>
                                     <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center">
                                         <Check className="w-3 h-3 stroke-[3]" />
@@ -231,14 +231,14 @@ export function AiImportBottomSheet() {
                                 </div>
                             )}
 
-                            <div className="p-3.5 rounded-2xl bg-zinc-900/90 border border-white/10 flex items-center justify-between text-xs text-zinc-200">
+                            <div className="p-3.5 rounded-2xl bg-zinc-900/40 backdrop-blur-2xl border border-white/20 flex items-center justify-between text-xs text-zinc-200">
                                 <div className="flex items-center gap-2.5 min-w-0">
                                     <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
-                                    <span className="font-medium text-zinc-200 tracking-wide truncate">Universal Copy Prompt</span>
+                                    <span className="font-medium text-zinc-100 tracking-wide truncate">Universal Copy Prompt</span>
                                 </div>
                                 <button
                                     onClick={handleCopyPrompt}
-                                    className="px-3.5 py-1.5 rounded-full bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0"
+                                    className="px-3.5 py-1.5 rounded-full bg-indigo-500/25 hover:bg-indigo-500/40 text-indigo-200 border border-indigo-400/40 text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 backdrop-blur-md"
                                 >
                                     {copiedPrompt ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                                     <span>{copiedPrompt ? "Copied!" : "Copy"}</span>
@@ -247,23 +247,23 @@ export function AiImportBottomSheet() {
                         </div>
 
                         {error && (
-                            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+                            <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 text-xs flex items-center gap-2 backdrop-blur-md">
                                 <AlertTriangle className="w-4 h-4 shrink-0" />
                                 <span>{error}</span>
                             </div>
                         )}
 
-                        {/* Bottom Buttons (Matching Image 1: Cancel / Continue) */}
+                        {/* Bottom Buttons */}
                         <div className="flex items-center gap-3 pt-2">
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="w-1/3 py-3 rounded-2xl bg-zinc-900 border border-white/10 text-zinc-400 font-medium text-xs hover:text-white transition-colors"
+                                className="w-1/3 py-3 rounded-2xl bg-zinc-900/40 backdrop-blur-2xl border border-white/20 text-zinc-300 font-medium text-xs hover:bg-white/10 hover:text-white transition-all"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleStartExtraction}
-                                className="w-2/3 py-3 rounded-2xl bg-white text-black font-bold text-xs shadow-xl hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2"
+                                className="w-2/3 py-3 rounded-2xl bg-white text-black font-bold text-xs shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:bg-zinc-100 transition-all flex items-center justify-center gap-2"
                             >
                                 <span>Continue</span>
                                 <ArrowRight className="w-4 h-4" />
