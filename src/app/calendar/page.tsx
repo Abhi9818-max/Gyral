@@ -73,11 +73,6 @@ export default function CalendarPage() {
 
     return (
         <div className="min-h-screen flex flex-col bg-zinc-950 text-white selection:bg-purple-500/30 relative overflow-hidden">
-            {/* Ambient Background Glow */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-                <div className="absolute top-[15%] left-[50%] -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-purple-900/20 blur-[150px]" />
-            </div>
-
             <Header />
 
             <main className="flex-1 p-4 md:p-8 pt-20 md:pt-24 max-w-5xl mx-auto w-full space-y-6 relative z-10 pb-20">
@@ -105,14 +100,14 @@ export default function CalendarPage() {
                     <div className="flex items-center gap-1.5 bg-white/10 border border-white/20 p-1 rounded-full backdrop-blur-2xl shadow-lg self-start sm:self-auto">
                         <button
                             onClick={() => setViewMode('MONTH')}
-                            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${viewMode === 'MONTH' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30 font-bold' : 'text-zinc-400 hover:text-white'}`}
+                            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${viewMode === 'MONTH' ? 'bg-white text-black font-bold shadow-md' : 'text-zinc-400 hover:text-white'}`}
                         >
                             <CalendarIcon className="w-3.5 h-3.5" />
                             <span>Month View</span>
                         </button>
                         <button
                             onClick={() => setViewMode('YEAR')}
-                            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${viewMode === 'YEAR' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30 font-bold' : 'text-zinc-400 hover:text-white'}`}
+                            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${viewMode === 'YEAR' ? 'bg-white text-black font-bold shadow-md' : 'text-zinc-400 hover:text-white'}`}
                         >
                             <Grid className="w-3.5 h-3.5" />
                             <span>Year Grid</span>
@@ -127,14 +122,8 @@ export default function CalendarPage() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.3 }}
-                            className="w-full max-w-[420px] rounded-[36px] bg-[#161618] border border-white/15 p-7 shadow-[0_30px_90px_rgba(0,0,0,0.85),0_0_50px_rgba(147,51,234,0.15)] relative overflow-hidden backdrop-blur-3xl"
+                            className="w-full max-w-[420px] rounded-[36px] bg-[#161618] border border-white/15 p-7 shadow-[0_30px_90px_rgba(0,0,0,0.85)] relative overflow-hidden backdrop-blur-3xl"
                         >
-                            {/* Inner Specular Sheen & Purple Top Accent Bar */}
-                            <div className="absolute top-0 inset-x-0 flex justify-center">
-                                <div className="h-[4px] w-28 bg-gradient-to-r from-purple-500 via-indigo-400 to-purple-500 rounded-b-full shadow-[0_0_12px_rgba(168,85,247,0.9)]" />
-                            </div>
-                            <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full bg-purple-600/15 blur-3xl pointer-events-none" />
-
                             {/* Header Month Navigation */}
                             <div className="flex items-center justify-between mb-7 relative z-10 pt-1">
                                 <button
@@ -231,13 +220,27 @@ export default function CalendarPage() {
                     </div>
                 )}
 
-                {/* YEAR GRID VIEW: 2 Months per Row Overview */}
+                {/* YEAR GRID VIEW: Strictly 2 Months per Horizontal Row */}
                 {viewMode === 'YEAR' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto">
+                    <div className="grid grid-cols-2 gap-3 sm:gap-6 w-full">
                         {Array.from({ length: 12 }, (_, mIdx) => {
                             const monthDate = new Date(2026, mIdx, 1);
                             const mDays = getDaysInMonth(monthDate);
-                            const mStartDay = (getDay(monthDate) + 6) % 7;
+                            const mFirstDay = new Date(2026, mIdx, 1);
+                            const mStartDay = (getDay(mFirstDay) + 6) % 7;
+
+                            // Previous Month Days
+                            const prevMDate = subMonths(monthDate, 1);
+                            const daysInPrevM = getDaysInMonth(prevMDate);
+                            const prevMList = Array.from({ length: mStartDay }, (_, i) => daysInPrevM - mStartDay + 1 + i);
+
+                            // Current Month Days
+                            const currentMList = Array.from({ length: mDays }, (_, i) => i + 1);
+
+                            // Next Month Days
+                            const totalMCells = (mStartDay + mDays) > 35 ? 42 : 35;
+                            const nextMCount = totalMCells - (mStartDay + mDays);
+                            const nextMList = Array.from({ length: nextMCount }, (_, i) => i + 1);
 
                             return (
                                 <motion.div
@@ -245,27 +248,33 @@ export default function CalendarPage() {
                                     initial={{ opacity: 0, y: 15 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: mIdx * 0.03 }}
-                                    className="bg-[#161618] border border-white/15 rounded-[32px] p-6 backdrop-blur-3xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] space-y-3 relative overflow-hidden"
+                                    className="bg-[#161618] border border-white/10 rounded-[24px] sm:rounded-[32px] p-3 sm:p-5 backdrop-blur-xl shadow-lg relative overflow-hidden space-y-2"
                                 >
-                                    <div className="flex items-center justify-between pb-2 border-b border-white/10">
-                                        <h3 className="text-base font-bold text-white font-sans">
+                                    <div className="pb-1.5 border-b border-white/10">
+                                        <h3 className="text-xs sm:text-base font-bold text-white tracking-wide">
                                             {format(monthDate, 'MMMM yyyy')}
                                         </h3>
                                     </div>
-                                    <div className="grid grid-cols-7 gap-1 text-center">
+                                    <div className="grid grid-cols-7 gap-0.5 sm:gap-1 text-center">
                                         {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((d, idx) => (
-                                            <span key={idx} className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider py-1">
+                                            <span key={idx} className="text-[9px] sm:text-[10px] font-semibold text-zinc-500 uppercase tracking-wider py-0.5">
                                                 {d}
                                             </span>
                                         ))}
-                                        {Array.from({ length: mStartDay }).map((_, i) => (
-                                            <div key={`empty-${i}`} className="h-9" />
+
+                                        {/* Previous Month Overflow Days */}
+                                        {prevMList.map((dNum, i) => (
+                                            <div key={`p-${i}`} className="h-7 sm:h-9 flex items-center justify-center text-zinc-600 font-medium text-[11px] sm:text-xs select-none">
+                                                {dNum}
+                                            </div>
                                         ))}
-                                        {Array.from({ length: mDays }).map((_, i) => {
-                                            const dNum = i + 1;
+
+                                        {/* Current Month Days */}
+                                        {currentMList.map((dNum) => {
                                             const dStr = `2026-${String(mIdx + 1).padStart(2, '0')}-${String(dNum).padStart(2, '0')}`;
                                             const actStyle = getDayColor(dStr);
                                             const isTod = dStr === todayStr;
+                                            const isSel = selectedDateStr === dStr;
 
                                             return (
                                                 <div
@@ -274,19 +283,19 @@ export default function CalendarPage() {
                                                         setSelectedDateStr(dStr);
                                                         setModalDate(dStr);
                                                     }}
-                                                    className="h-9 flex items-center justify-center relative cursor-pointer group"
+                                                    className="h-7 sm:h-9 flex items-center justify-center relative cursor-pointer group"
                                                 >
                                                     <div
-                                                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
-                                                            isTod
-                                                                ? 'bg-purple-600 text-white font-bold shadow-[0_0_15px_rgba(168,85,247,0.85)] border border-purple-400/50 scale-105'
+                                                        className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[11px] sm:text-xs font-medium transition-all ${
+                                                            isSel || isTod
+                                                                ? 'bg-white/20 text-white font-bold border border-white/40 shadow-sm'
                                                                 : 'text-zinc-200 hover:text-white hover:bg-white/10'
                                                         }`}
                                                     >
                                                         <span>{dNum}</span>
-                                                        {actStyle && !isTod && (
+                                                        {actStyle && !(isSel || isTod) && (
                                                             <span
-                                                                className="w-1.5 h-1.5 rounded-full absolute bottom-0.5"
+                                                                className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full absolute bottom-0.5"
                                                                 style={{
                                                                     backgroundColor: actStyle.color,
                                                                     boxShadow: actStyle.boxShadow
@@ -297,6 +306,13 @@ export default function CalendarPage() {
                                                 </div>
                                             );
                                         })}
+
+                                        {/* Next Month Overflow Days */}
+                                        {nextMList.map((dNum, i) => (
+                                            <div key={`n-${i}`} className="h-7 sm:h-9 flex items-center justify-center text-zinc-600 font-medium text-[11px] sm:text-xs select-none">
+                                                {dNum}
+                                            </div>
+                                        ))}
                                     </div>
                                 </motion.div>
                             );
