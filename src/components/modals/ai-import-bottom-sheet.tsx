@@ -13,7 +13,8 @@ import {
     Image as ImageIcon,
     Copy,
     ArrowRight,
-    AlertTriangle
+    AlertTriangle,
+    History
 } from "lucide-react";
 
 const UNIVERSAL_AI_PROMPT = `Great! Now please organize and format the entire routine and advice we just discussed into a structured, progressive timetable for my Gyral discipline system.
