@@ -185,10 +185,10 @@ export function AiImportBottomSheet() {
                             </button>
                         </div>
 
-                        {/* Central Liquid Frosted White Card (Reference Image 2 Glass Styling) */}
-                        <div className="relative rounded-[32px] border border-white/35 bg-white/[0.07] backdrop-blur-3xl p-7 text-center shadow-[0_15px_50px_rgba(0,0,0,0.5),inset_0_1.5px_3px_rgba(255,255,255,0.6)] space-y-3.5 overflow-hidden group">
+                        {/* Central Liquid Frosted Card with Purple Glass Tint */}
+                        <div className="relative rounded-[32px] border border-purple-400/35 bg-gradient-to-br from-purple-950/30 via-white/[0.07] to-indigo-950/25 backdrop-blur-3xl p-7 text-center shadow-[0_15px_50px_rgba(147,51,234,0.15),inset_0_1.5px_3px_rgba(255,255,255,0.6)] space-y-3.5 overflow-hidden group">
                             {/* Inner Specular Gloss Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-white/10 to-transparent pointer-events-none rounded-[32px]" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-purple-500/10 to-transparent pointer-events-none rounded-[32px]" />
 
                             <input
                                 type="file"
@@ -198,18 +198,18 @@ export function AiImportBottomSheet() {
                                 className="hidden"
                             />
 
-                            <div className="w-12 h-12 rounded-full bg-white/15 border border-white/40 text-white flex items-center justify-center mx-auto shadow-[inset_0_1px_3px_rgba(255,255,255,0.6)] backdrop-blur-xl relative z-10 group-hover:scale-105 transition-transform">
+                            <div className="w-12 h-12 rounded-full bg-purple-500/20 border border-purple-400/50 text-white flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(168,85,247,0.3),inset_0_1px_3px_rgba(255,255,255,0.6)] backdrop-blur-xl relative z-10 group-hover:scale-105 transition-transform">
                                 <Paperclip className="w-5 h-5 text-purple-200" />
                             </div>
 
                             <div className="space-y-0.5 relative z-10">
                                 <h3 className="text-sm font-bold text-white tracking-wide drop-shadow">Add files to upload</h3>
-                                <p className="text-xs text-zinc-300">or browse screenshots, 4 MB max</p>
+                                <p className="text-xs text-purple-200/80">or browse screenshots, 4 MB max</p>
                             </div>
 
                             <button
                                 onClick={() => fileInputRef.current?.click()}
-                                className="px-6 py-2.5 rounded-full bg-white/20 hover:bg-white/30 border border-white/40 text-white text-xs font-semibold shadow-xl backdrop-blur-xl transition-all relative z-10 hover:shadow-[0_0_25px_rgba(255,255,255,0.3)]"
+                                className="px-6 py-2.5 rounded-full bg-purple-600/30 hover:bg-purple-600/45 border border-purple-400/50 text-white text-xs font-semibold shadow-xl backdrop-blur-xl transition-all relative z-10 hover:shadow-[0_0_25px_rgba(168,85,247,0.4)]"
                             >
                                 Select files
                             </button>
