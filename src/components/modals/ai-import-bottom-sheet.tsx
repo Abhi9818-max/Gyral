@@ -144,39 +144,49 @@ export function AiImportBottomSheet() {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-end justify-center">
-            {/* Backdrop Overlay with dynamic light blur */}
+            {/* Backdrop Overlay with dynamic atmospheric blur */}
             <div
                 onClick={() => setIsOpen(false)}
-                className="fixed inset-0 bg-black/45 backdrop-blur-md animate-in fade-in duration-300"
+                className="fixed inset-0 bg-black/50 backdrop-blur-xl animate-in fade-in duration-300"
             />
 
-            {/* Ultra-Glassy Translucent Mobile Bottom Sheet */}
-            <div className="relative z-[101] w-full max-w-lg bg-zinc-950/50 border-t border-x border-white/30 rounded-t-[36px] p-6 pb-8 shadow-[0_-20px_80px_rgba(0,0,0,0.85),inset_0_1.5px_2px_rgba(255,255,255,0.4)] backdrop-blur-3xl animate-in slide-in-from-bottom duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden">
-                {/* Specular Diagonal Reflection Sheen */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-white/[0.03] to-transparent pointer-events-none rounded-t-[36px]" />
+            {/* Ultra-Glassy Ethereal Floating Bottom Sheet */}
+            <div className="relative z-[101] w-full max-w-lg bg-zinc-950/45 border-t border-x border-white/35 rounded-t-[40px] p-6 pb-8 shadow-[0_-25px_90px_rgba(0,0,0,0.9),inset_0_2px_3px_rgba(255,255,255,0.5)] backdrop-blur-3xl animate-in slide-in-from-bottom duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden">
+                {/* Ambient Fluid Gradient Blobs (Reference Image 2 Liquid Aura) */}
+                <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-gradient-to-tr from-rose-600/30 via-red-500/20 to-indigo-600/30 blur-3xl pointer-events-none animate-pulse" />
+                <div className="absolute -bottom-20 -right-20 w-64 h-64 rounded-full bg-gradient-to-br from-purple-600/30 via-indigo-500/25 to-pink-500/20 blur-3xl pointer-events-none" />
+
+                {/* Specular Diagonal Glass Reflection Sheen */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/[0.04] to-transparent pointer-events-none rounded-t-[40px]" />
 
                 {/* Drag handle pill */}
-                <div className="w-12 h-1.5 rounded-full bg-white/30 mx-auto mb-6 relative z-10 shadow-[0_1px_2px_rgba(255,255,255,0.4)]" />
+                <div className="w-12 h-1.5 rounded-full bg-white/40 mx-auto mb-5 relative z-10 shadow-[0_1px_3px_rgba(255,255,255,0.5)]" />
 
                 {/* PHASE 1: INPUT & UPLOAD SHEET (IMAGE 1 STYLING) */}
                 {step === 'INPUT' && (
                     <div className="space-y-5 relative z-10">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-2xl font-bold tracking-tight text-white font-sans drop-shadow-sm">
-                                Upload a file to start
-                            </h2>
+                            <div>
+                                <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/10 border border-white/25 text-[10px] font-mono text-zinc-200 uppercase font-semibold backdrop-blur-md mb-1">
+                                    <Sparkles className="w-3 h-3 text-rose-400" />
+                                    <span>AI Importer • Multimodal</span>
+                                </div>
+                                <h2 className="text-2xl font-bold tracking-tight text-white font-sans drop-shadow">
+                                    Upload a file to start
+                                </h2>
+                            </div>
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 flex items-center justify-center text-zinc-300 hover:text-white transition-colors backdrop-blur-md"
+                                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 flex items-center justify-center text-zinc-200 hover:text-white transition-all backdrop-blur-md shadow-md"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
-                        {/* Central Ultra-Glossy Translucent Card */}
-                        <div className="relative rounded-[28px] border border-white/30 bg-zinc-900/40 backdrop-blur-3xl p-7 text-center shadow-[0_10px_40px_rgba(0,0,0,0.5),inset_0_1px_3px_rgba(255,255,255,0.4)] space-y-3 overflow-hidden group">
+                        {/* Central Liquid Frosted White Card (Reference Image 2 Glass Styling) */}
+                        <div className="relative rounded-[32px] border border-white/35 bg-white/[0.07] backdrop-blur-3xl p-7 text-center shadow-[0_15px_50px_rgba(0,0,0,0.5),inset_0_1.5px_3px_rgba(255,255,255,0.6)] space-y-3.5 overflow-hidden group">
                             {/* Inner Specular Gloss Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/5 to-transparent pointer-events-none rounded-[28px]" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-white/10 to-transparent pointer-events-none rounded-[32px]" />
 
                             <input
                                 type="file"
@@ -186,18 +196,18 @@ export function AiImportBottomSheet() {
                                 className="hidden"
                             />
 
-                            <div className="w-11 h-11 rounded-full bg-white/10 border border-white/30 text-white flex items-center justify-center mx-auto shadow-[inset_0_1px_3px_rgba(255,255,255,0.5)] backdrop-blur-md relative z-10">
-                                <Paperclip className="w-4 h-4" />
+                            <div className="w-12 h-12 rounded-full bg-white/15 border border-white/40 text-white flex items-center justify-center mx-auto shadow-[inset_0_1px_3px_rgba(255,255,255,0.6)] backdrop-blur-xl relative z-10 group-hover:scale-105 transition-transform">
+                                <Paperclip className="w-5 h-5 text-rose-200" />
                             </div>
 
                             <div className="space-y-0.5 relative z-10">
-                                <h3 className="text-sm font-bold text-white tracking-wide">Add files to upload</h3>
-                                <p className="text-xs text-zinc-300">or browse, 4 MB max</p>
+                                <h3 className="text-sm font-bold text-white tracking-wide drop-shadow">Add files to upload</h3>
+                                <p className="text-xs text-zinc-300">or browse screenshots, 4 MB max</p>
                             </div>
 
                             <button
                                 onClick={() => fileInputRef.current?.click()}
-                                className="px-6 py-2.5 rounded-full bg-white/15 hover:bg-white/25 border border-white/30 text-white text-xs font-semibold shadow-xl backdrop-blur-md transition-all relative z-10"
+                                className="px-6 py-2.5 rounded-full bg-white/20 hover:bg-white/30 border border-white/40 text-white text-xs font-semibold shadow-xl backdrop-blur-xl transition-all relative z-10 hover:shadow-[0_0_25px_rgba(255,255,255,0.3)]"
                             >
                                 Select files
                             </button>
@@ -206,39 +216,39 @@ export function AiImportBottomSheet() {
                         {/* Text Input Area */}
                         <div className="space-y-1.5">
                             <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-                                <FileText className="w-3.5 h-3.5 text-indigo-400" />
+                                <FileText className="w-3.5 h-3.5 text-rose-400" />
                                 Or Paste Routine Text
                             </label>
                             <textarea
                                 value={rawText}
                                 onChange={(e) => setRawText(e.target.value)}
                                 placeholder="Paste routine text from ChatGPT, Claude, or DeepSeek..."
-                                className="w-full h-20 bg-zinc-900/40 backdrop-blur-2xl border border-white/20 rounded-2xl p-3 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-white/40 focus:bg-zinc-900/60 transition-colors resize-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]"
+                                className="w-full h-20 bg-white/[0.05] backdrop-blur-2xl border border-white/25 rounded-2xl p-3 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-white/50 focus:bg-white/[0.09] transition-all resize-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.4)]"
                             />
                         </div>
 
                         {/* Attached Files & Prompt Items (Image 1 Item List) */}
                         <div className="space-y-2">
                             {imageFileName && (
-                                <div className="p-3 rounded-2xl bg-zinc-900/40 backdrop-blur-2xl border border-white/20 flex items-center justify-between text-xs text-zinc-200">
+                                <div className="p-3.5 rounded-2xl bg-white/[0.06] backdrop-blur-2xl border border-white/25 flex items-center justify-between text-xs text-zinc-200 shadow-md">
                                     <div className="flex items-center gap-2.5">
-                                        <Paperclip className="w-4 h-4 text-zinc-300" />
+                                        <Paperclip className="w-4 h-4 text-rose-300" />
                                         <span className="font-mono text-zinc-200 truncate max-w-[200px]">{imageFileName}</span>
                                     </div>
-                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center">
+                                    <div className="w-5 h-5 rounded-full bg-emerald-500/25 text-emerald-400 border border-emerald-400/50 flex items-center justify-center">
                                         <Check className="w-3 h-3 stroke-[3]" />
                                     </div>
                                 </div>
                             )}
 
-                            <div className="p-3.5 rounded-2xl bg-zinc-900/40 backdrop-blur-2xl border border-white/20 flex items-center justify-between text-xs text-zinc-200">
+                            <div className="p-3.5 rounded-2xl bg-white/[0.06] backdrop-blur-2xl border border-white/25 flex items-center justify-between text-xs text-zinc-200 shadow-md">
                                 <div className="flex items-center gap-2.5 min-w-0">
-                                    <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
-                                    <span className="font-medium text-zinc-100 tracking-wide truncate">Universal Copy Prompt</span>
+                                    <Sparkles className="w-4 h-4 text-rose-400 shrink-0" />
+                                    <span className="font-semibold text-white tracking-wide truncate">Universal Copy Prompt</span>
                                 </div>
                                 <button
                                     onClick={handleCopyPrompt}
-                                    className="px-3.5 py-1.5 rounded-full bg-indigo-500/25 hover:bg-indigo-500/40 text-indigo-200 border border-indigo-400/40 text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 backdrop-blur-md"
+                                    className="px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white border border-white/35 text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 backdrop-blur-xl shadow-sm"
                                 >
                                     {copiedPrompt ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                                     <span>{copiedPrompt ? "Copied!" : "Copy"}</span>
@@ -247,7 +257,7 @@ export function AiImportBottomSheet() {
                         </div>
 
                         {error && (
-                            <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 text-xs flex items-center gap-2 backdrop-blur-md">
+                            <div className="p-3 rounded-xl bg-red-500/25 border border-red-400/40 text-red-200 text-xs flex items-center gap-2 backdrop-blur-md">
                                 <AlertTriangle className="w-4 h-4 shrink-0" />
                                 <span>{error}</span>
                             </div>
@@ -257,13 +267,13 @@ export function AiImportBottomSheet() {
                         <div className="flex items-center gap-3 pt-2">
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="w-1/3 py-3 rounded-2xl bg-zinc-900/40 backdrop-blur-2xl border border-white/20 text-zinc-300 font-medium text-xs hover:bg-white/10 hover:text-white transition-all"
+                                className="w-1/3 py-3.5 rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/25 text-zinc-200 font-semibold text-xs hover:bg-white/20 hover:text-white transition-all shadow-md"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleStartExtraction}
-                                className="w-2/3 py-3 rounded-2xl bg-white text-black font-bold text-xs shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:bg-zinc-100 transition-all flex items-center justify-center gap-2"
+                                className="w-2/3 py-3.5 rounded-2xl bg-white text-black font-bold text-xs shadow-[0_0_35px_rgba(255,255,255,0.45)] hover:bg-zinc-100 transition-all flex items-center justify-center gap-2"
                             >
                                 <span>Continue</span>
                                 <ArrowRight className="w-4 h-4" />

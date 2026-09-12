@@ -353,53 +353,99 @@ export default function ImportTimetablePage() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-black text-white selection:bg-indigo-500/30">
+        <div className="min-h-screen flex flex-col bg-zinc-950 text-white selection:bg-rose-500/30 relative overflow-hidden">
+            {/* Ambient Fluid Artwork Layer (Matching Reference Image 1 & 2 Background) */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-rose-600/35 via-red-500/20 to-purple-600/25 blur-[120px] animate-pulse" />
+                <div className="absolute top-[25%] right-[-10%] w-[550px] h-[550px] rounded-full bg-gradient-to-tr from-indigo-600/30 via-sky-500/20 to-pink-500/25 blur-[140px]" />
+                <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] rounded-full bg-gradient-to-t from-purple-700/25 via-rose-600/20 to-indigo-600/20 blur-[150px]" />
+            </div>
+
             <Header />
 
-            <main className="flex-1 p-4 md:p-8 pt-24 md:pt-28 max-w-5xl mx-auto w-full space-y-6 pb-24">
-                {/* Back to Dashboard Link */}
-                <div className="flex items-center justify-between">
+            <main className="flex-1 p-4 md:p-8 pt-24 md:pt-28 max-w-5xl mx-auto w-full space-y-7 pb-28 relative z-10">
+                {/* Top Header & Pill Navigation */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <Link
                         href="/dashboard"
-                        className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors group"
+                        className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl transition-all group shrink-0 w-fit"
                     >
-                        <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                        <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
                         <span>Back to Dashboard</span>
                     </Link>
 
-                    {/* Tab Navigation */}
-                    <div className="flex items-center gap-2 bg-zinc-900/80 border border-white/10 p-1 rounded-full backdrop-blur-xl">
+                    {/* Pill Bar Tabs (Reference Image 2 Filter Pills) */}
+                    <div className="flex items-center gap-1.5 bg-white/10 border border-white/25 p-1 rounded-full backdrop-blur-2xl shadow-lg">
                         <button
                             onClick={() => setActiveTab('SYNTHESIZER')}
-                            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${activeTab === 'SYNTHESIZER' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-zinc-400 hover:text-white'}`}
+                            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${activeTab === 'SYNTHESIZER' ? 'bg-white text-black shadow-lg shadow-white/20 font-bold' : 'text-zinc-300 hover:text-white'}`}
                         >
                             <Sparkles className="w-3.5 h-3.5" />
-                            <span>AI Synthesizer</span>
+                            <span>AI Routine Records</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('HISTORY')}
-                            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${activeTab === 'HISTORY' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-zinc-400 hover:text-white'}`}
+                            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${activeTab === 'HISTORY' ? 'bg-white text-black shadow-lg shadow-white/20 font-bold' : 'text-zinc-300 hover:text-white'}`}
                         >
                             <History className="w-3.5 h-3.5" />
-                            <span>Import History ({importLogs.length})</span>
+                            <span>History ({importLogs.length})</span>
                         </button>
                     </div>
                 </div>
 
-                {/* Hero Title Header */}
-                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900/90 via-zinc-900/60 to-indigo-950/30 border border-white/10 p-6 md:p-8 shadow-2xl backdrop-blur-2xl">
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
-                    <div className="relative z-10 space-y-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-mono font-semibold">
-                            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-                            <span>Multi-Modal AI Timetable Engine</span>
+                {/* Ethereal Hero Banner Card (Reference Image 1 SOMA & Image 2 ReliefMind Aesthetic) */}
+                <div className="relative overflow-hidden rounded-[36px] bg-white/[0.07] border border-white/35 p-7 md:p-9 shadow-[0_25px_80px_rgba(0,0,0,0.65),inset_0_1.5px_3.5px_rgba(255,255,255,0.7)] backdrop-blur-3xl space-y-4">
+                    {/* Inner Diagonal Specular Glass Sheen */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-white/[0.04] to-transparent pointer-events-none rounded-[36px]" />
+
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div className="space-y-2.5 max-w-2xl">
+                            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 border border-white/30 text-white text-xs font-mono font-semibold backdrop-blur-xl shadow-sm">
+                                <Sparkles className="w-3.5 h-3.5 text-rose-300 animate-pulse" />
+                                <span>Multi-Modal AI Discipline Engine</span>
+                            </div>
+
+                            <h1 className="text-3xl md:text-5xl font-serif tracking-tight text-white font-normal drop-shadow-md">
+                                {parsedData ? parsedData.title : "Hi, Scholar"}
+                            </h1>
+
+                            <p className="text-sm md:text-base text-zinc-200 leading-relaxed font-sans">
+                                {parsedData 
+                                    ? `Ready to seal your ${parsedData.duration || 'progressive'} discipline routine into Gyral.`
+                                    : "Ready for your daily practice? Synthesize AI routines, track phased workloads, and seal habits with extreme precision."
+                                }
+                            </p>
                         </div>
-                        <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white">
-                            AI Timetable & Routine Importer
-                        </h1>
-                        <p className="text-sm md:text-base text-zinc-400 max-w-2xl leading-relaxed">
-                            Paste your routine from ChatGPT, Claude, or DeepSeek, or upload a timetable screenshot. Gyral will automatically extract progressive workload phases, daily pacts, habit trackers, and reference notes.
-                        </p>
+
+                        {/* Floating Quick Action Pill (Matching Image 1 Quick Practice Pill) */}
+                        <div className="shrink-0">
+                            <button
+                                onClick={() => {
+                                    if (step === 'PREVIEW') handleImport();
+                                    else handleCopyPrompt();
+                                }}
+                                className="px-6 py-3 rounded-full bg-zinc-950/80 hover:bg-black text-white border border-white/30 text-xs font-semibold shadow-2xl backdrop-blur-2xl flex items-center gap-2.5 transition-all hover:scale-105"
+                            >
+                                <Zap className="w-4 h-4 text-rose-400 fill-rose-400" />
+                                <span>{step === 'PREVIEW' ? "▶ Seal Routine Now" : "▶ Copy Universal Prompt"}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Stats Bar (Matching Image 1 Practice Days / Total Time) */}
+                    <div className="pt-4 border-t border-white/15 flex flex-wrap items-center gap-6 text-xs text-zinc-200 relative z-10 font-sans">
+                        <div className="flex items-center gap-2">
+                            <span className="text-zinc-400">Target Timeframe:</span>
+                            <span className="font-semibold text-white px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20">{parsedData?.duration || "3 Months"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-zinc-400">Daily Pacts:</span>
+                            <span className="font-semibold text-white px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20">{parsedData?.pacts.length || 0} Action Items</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-zinc-400">Habit Trackers:</span>
+                            <span className="font-semibold text-white px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20">{parsedData?.tasks.length || 0} Trackers</span>
+                        </div>
                     </div>
                 </div>
 
@@ -409,18 +455,18 @@ export default function ImportTimetablePage() {
                         {step === 'INPUT' && (
                             <>
                                 {/* Universal Prompt Card */}
-                                <div className="bg-zinc-900/70 border border-indigo-500/20 rounded-2xl p-5 md:p-6 backdrop-blur-xl relative group">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+                                <div className="bg-white/[0.06] border border-white/30 rounded-[32px] p-6 md:p-7 backdrop-blur-3xl relative space-y-4 shadow-[0_15px_50px_rgba(0,0,0,0.5),inset_0_1px_2.5px_rgba(255,255,255,0.5)]">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/15">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                                            <div className="w-10 h-10 rounded-2xl bg-white/15 border border-white/30 flex items-center justify-center text-rose-300 shadow-md backdrop-blur-xl">
                                                 <Copy className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                                <h3 className="text-base font-bold text-white tracking-wide">
                                                     Universal AI Follow-Up Prompt
                                                 </h3>
-                                                <p className="text-xs text-zinc-400">
-                                                    Copy & paste this prompt at the end of your conversation with ChatGPT/Claude for structured outputs.
+                                                <p className="text-xs text-zinc-300">
+                                                    Copy & paste this prompt into ChatGPT or Claude to format any routine.
                                                 </p>
                                             </div>
                                         </div>
@@ -428,14 +474,13 @@ export default function ImportTimetablePage() {
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => setShowPromptHelp(!showPromptHelp)}
-                                                className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-xs transition-colors flex items-center gap-1.5"
+                                                className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-zinc-200 text-xs font-semibold border border-white/20 backdrop-blur-xl transition-all"
                                             >
-                                                <HelpCircle className="w-3.5 h-3.5" />
-                                                <span>{showPromptHelp ? "Hide Details" : "How it works"}</span>
+                                                {showPromptHelp ? "Hide Details" : "How it works"}
                                             </button>
                                             <button
                                                 onClick={handleCopyPrompt}
-                                                className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition-all shadow-md ${copiedPrompt ? "bg-emerald-600 text-white" : "bg-indigo-600 hover:bg-indigo-500 text-white"}`}
+                                                className={`px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition-all shadow-xl ${copiedPrompt ? "bg-emerald-500 text-white" : "bg-white text-black hover:bg-zinc-100"}`}
                                             >
                                                 {copiedPrompt ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                                                 <span>{copiedPrompt ? "Copied Prompt!" : "Copy Prompt"}</span>
@@ -444,19 +489,19 @@ export default function ImportTimetablePage() {
                                     </div>
 
                                     {showPromptHelp && (
-                                        <div className="mt-4 p-4 rounded-xl bg-black/40 border border-white/5 text-xs text-zinc-300 space-y-2">
+                                        <div className="p-4 rounded-2xl bg-black/40 border border-white/15 text-xs text-zinc-200 space-y-2 backdrop-blur-xl">
                                             <p className="font-semibold text-white">✨ How to get drastic transformation results:</p>
-                                            <ul className="list-disc pl-4 space-y-1 text-zinc-400">
-                                                <li>Ask ChatGPT/Claude for a complete gym routine, study schedule, or lifestyle discipline plan.</li>
+                                            <ul className="list-disc pl-4 space-y-1 text-zinc-300">
+                                                <li>Ask ChatGPT/Claude for a complete gym routine, study schedule, or discipline plan.</li>
                                                 <li>Copy & paste our **Universal Prompt** into your chat conversation with the AI.</li>
-                                                <li>The AI will structure the plan into progressive workload phases (e.g. Month 1 Foundation, Month 2 Overload, Month 3 Peak).</li>
-                                                <li>Copy the structured output or screenshot the routine, then paste/upload it below!</li>
+                                                <li>The AI will structure the plan into progressive workload phases.</li>
+                                                <li>Copy the output or screenshot it, then paste/upload below!</li>
                                             </ul>
                                         </div>
                                     )}
 
-                                    <div className="mt-4 bg-black/50 rounded-xl p-3 border border-white/5 max-h-32 overflow-y-auto">
-                                        <pre className="text-xs text-zinc-300 font-mono whitespace-pre-wrap leading-relaxed">
+                                    <div className="bg-black/50 rounded-2xl p-4 border border-white/15 max-h-36 overflow-y-auto backdrop-blur-xl">
+                                        <pre className="text-xs text-zinc-200 font-mono whitespace-pre-wrap leading-relaxed">
                                             {UNIVERSAL_AI_PROMPT}
                                         </pre>
                                     </div>
@@ -464,31 +509,31 @@ export default function ImportTimetablePage() {
 
                                 {/* Text & Screenshot Input Section */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Text Area */}
-                                    <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-5 space-y-3 flex flex-col justify-between">
+                                    {/* Option A: Text Area */}
+                                    <div className="bg-white/[0.06] border border-white/30 rounded-[32px] p-6 space-y-3.5 flex flex-col justify-between backdrop-blur-3xl shadow-[0_15px_50px_rgba(0,0,0,0.5),inset_0_1px_2.5px_rgba(255,255,255,0.5)]">
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-                                                <FileText className="w-4 h-4 text-indigo-400" />
-                                                Option A: Paste AI Timetable Text
+                                            <label className="text-xs font-bold uppercase tracking-wider text-zinc-200 flex items-center gap-2">
+                                                <FileText className="w-4 h-4 text-rose-400" />
+                                                Option A: Paste Routine Text
                                             </label>
                                             <textarea
                                                 value={rawText}
                                                 onChange={(e) => setRawText(e.target.value)}
                                                 placeholder="Paste routine text from ChatGPT, Claude, DeepSeek, or raw workout text..."
-                                                className="w-full h-48 bg-black/50 border border-white/10 rounded-xl p-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none"
+                                                className="w-full h-48 bg-black/50 border border-white/20 rounded-2xl p-3.5 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-white/50 transition-colors resize-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.4)]"
                                             />
                                         </div>
-                                        <div className="text-[11px] text-zinc-500 flex justify-between">
-                                            <span>Supports markdown, bullet points, & time blocks</span>
+                                        <div className="text-[11px] text-zinc-400 flex justify-between">
+                                            <span>Supports markdown & time blocks</span>
                                             <span>{rawText.length} chars</span>
                                         </div>
                                     </div>
 
-                                    {/* Screenshot Upload Dropzone */}
-                                    <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-5 space-y-3 flex flex-col justify-between">
+                                    {/* Option B: Screenshot Upload */}
+                                    <div className="bg-white/[0.06] border border-white/30 rounded-[32px] p-6 space-y-3.5 flex flex-col justify-between backdrop-blur-3xl shadow-[0_15px_50px_rgba(0,0,0,0.5),inset_0_1px_2.5px_rgba(255,255,255,0.5)]">
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-                                                <ImageIcon className="w-4 h-4 text-indigo-400" />
+                                            <label className="text-xs font-bold uppercase tracking-wider text-zinc-200 flex items-center gap-2">
+                                                <ImageIcon className="w-4 h-4 text-rose-400" />
                                                 Option B: Upload Timetable Screenshot
                                             </label>
 
@@ -501,7 +546,7 @@ export default function ImportTimetablePage() {
                                             />
 
                                             {imageBase64 ? (
-                                                <div className="relative h-48 rounded-xl overflow-hidden border border-indigo-500/40 bg-black/60 group">
+                                                <div className="relative h-48 rounded-2xl overflow-hidden border border-white/30 bg-black/60 group">
                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                     <img
                                                         src={imageBase64}
@@ -509,12 +554,12 @@ export default function ImportTimetablePage() {
                                                         className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                                                     />
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-3 justify-between">
-                                                        <span className="text-xs font-mono text-zinc-300 truncate max-w-[200px]">
+                                                        <span className="text-xs font-mono text-zinc-200 truncate max-w-[200px]">
                                                             {imageFileName}
                                                         </span>
                                                         <button
                                                             onClick={handleClearImage}
-                                                            className="px-2.5 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/40 text-red-300 border border-red-500/30 text-xs transition-colors"
+                                                            className="px-3 py-1 rounded-xl bg-red-500/30 hover:bg-red-500/50 text-red-200 border border-red-400/40 text-xs transition-colors backdrop-blur-md"
                                                         >
                                                             Remove
                                                         </button>
@@ -523,26 +568,26 @@ export default function ImportTimetablePage() {
                                             ) : (
                                                 <div
                                                     onClick={() => fileInputRef.current?.click()}
-                                                    className="h-48 border-2 border-dashed border-white/10 hover:border-indigo-500/50 rounded-xl bg-black/30 hover:bg-indigo-500/5 flex flex-col items-center justify-center p-6 text-center cursor-pointer transition-all group"
+                                                    className="h-48 border-2 border-dashed border-white/20 hover:border-white/50 rounded-2xl bg-black/30 hover:bg-white/[0.04] flex flex-col items-center justify-center p-6 text-center cursor-pointer transition-all group backdrop-blur-xl"
                                                 >
-                                                    <Upload className="w-8 h-8 text-zinc-500 group-hover:text-indigo-400 transition-colors mb-2" />
-                                                    <p className="text-xs font-medium text-zinc-300">
+                                                    <Upload className="w-8 h-8 text-zinc-400 group-hover:text-white transition-colors mb-2" />
+                                                    <p className="text-xs font-semibold text-zinc-200">
                                                         Click or drop routine screenshot here
                                                     </p>
-                                                    <p className="text-[10px] text-zinc-500 mt-1">
+                                                    <p className="text-[10px] text-zinc-400 mt-1">
                                                         PNG, JPG, WEBP supported
                                                     </p>
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="text-[11px] text-zinc-500">
+                                        <div className="text-[11px] text-zinc-400">
                                             Gemini Multi-Modal Vision will OCR & analyze image
                                         </div>
                                     </div>
                                 </div>
 
                                 {error && (
-                                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+                                    <div className="p-4 rounded-2xl bg-red-500/20 border border-red-500/40 text-red-200 text-xs flex items-center gap-2 backdrop-blur-md">
                                         <AlertTriangle className="w-4 h-4 shrink-0" />
                                         <span>{error}</span>
                                     </div>
@@ -553,16 +598,16 @@ export default function ImportTimetablePage() {
                                     <button
                                         onClick={handleParse}
                                         disabled={isLoading || (!rawText.trim() && !imageBase64)}
-                                        className="px-8 py-3.5 rounded-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm shadow-xl shadow-indigo-600/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                                        className="px-8 py-3.5 rounded-full bg-white text-black hover:bg-zinc-100 font-bold text-xs shadow-[0_0_35px_rgba(255,255,255,0.45)] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
                                     >
                                         {isLoading ? (
                                             <>
-                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                <Loader2 className="w-4 h-4 animate-spin text-black" />
                                                 <span>Analyzing Timetable with Gemini AI...</span>
                                             </>
                                         ) : (
                                             <>
-                                                <Sparkles className="w-4 h-4" />
+                                                <Sparkles className="w-4 h-4 text-black" />
                                                 <span>Synthesize Routine with Gemini AI</span>
                                             </>
                                         )}
@@ -571,42 +616,54 @@ export default function ImportTimetablePage() {
                             </>
                         )}
 
-                        {/* STEP PREVIEW: Interactive Selection */}
+                        {/* STEP PREVIEW: Interactive Selection (Reference Image 2 Media/Trackers Cards) */}
                         {step === 'PREVIEW' && parsedData && (
                             <div className="space-y-6">
-                                {/* Title & Duration Card */}
-                                <div className="bg-zinc-900/80 border border-indigo-500/30 rounded-2xl p-6 backdrop-blur-xl space-y-3">
-                                    <div className="flex flex-wrap items-center justify-between gap-3">
+                                {/* Title & Progressive Workload Phases Card */}
+                                <div className="bg-white/[0.07] border border-white/35 rounded-[36px] p-7 backdrop-blur-3xl space-y-4 shadow-[0_20px_70px_rgba(0,0,0,0.6),inset_0_1.5px_3px_rgba(255,255,255,0.6)]">
+                                    <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/15">
                                         <div>
-                                            <span className="text-xs font-mono uppercase tracking-wider text-indigo-400">
+                                            <span className="text-xs font-mono uppercase tracking-wider text-rose-300 font-semibold">
                                                 Extracted Routine Title
                                             </span>
-                                            <h2 className="text-xl font-bold text-white mt-0.5">
+                                            <h2 className="text-2xl font-bold text-white mt-0.5 tracking-wide">
                                                 {parsedData.title}
                                             </h2>
                                         </div>
                                         {parsedData.duration && (
-                                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-mono font-semibold">
-                                                <Clock className="w-3.5 h-3.5" />
-                                                <span>Target Timeframe: {parsedData.duration}</span>
+                                            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 border border-white/30 text-white text-xs font-mono font-semibold backdrop-blur-xl shadow-sm">
+                                                <Clock className="w-3.5 h-3.5 text-rose-300" />
+                                                <span>Timeframe: {parsedData.duration}</span>
                                             </div>
                                         )}
                                     </div>
 
-                                    {/* Progressive Phase Variations */}
+                                    {/* Progressive Workload Phases (Matching Image 2 ReliefMind Cards Layout) */}
                                     {parsedData.phases && parsedData.phases.length > 0 && (
-                                        <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
-                                            <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                                                <TrendingUp className="w-4 h-4 text-indigo-400" />
-                                                Progressive Workload Phases
-                                            </h4>
-                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <h4 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+                                                    <TrendingUp className="w-4 h-4 text-rose-400" />
+                                                    Progressive Workload Phases
+                                                </h4>
+
+                                                {/* Animated Soundwave Visualizer Bars (Reference Image 2 Soundwave Meter) */}
+                                                <div className="flex items-center gap-1 h-4">
+                                                    <div className="w-1 bg-rose-400 rounded-full h-full animate-bounce" />
+                                                    <div className="w-1 bg-rose-300 rounded-full h-3 animate-pulse" />
+                                                    <div className="w-1 bg-rose-400 rounded-full h-full animate-bounce delay-100" />
+                                                    <div className="w-1 bg-white rounded-full h-2" />
+                                                    <div className="w-1 bg-rose-400 rounded-full h-full animate-bounce delay-200" />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                                 {parsedData.phases.map((phase, i) => (
-                                                    <div key={i} className="p-3 rounded-xl bg-black/40 border border-white/5 text-xs text-zinc-300">
-                                                        <span className="font-mono text-indigo-400 text-[10px] uppercase font-bold block mb-1">
-                                                            Phase {i + 1}
+                                                    <div key={i} className="p-4 rounded-2xl bg-white/[0.05] border border-white/25 text-xs text-zinc-200 backdrop-blur-xl shadow-md space-y-1">
+                                                        <span className="font-mono text-rose-300 text-[10px] uppercase font-bold block">
+                                                            Phase {i + 1} Variation
                                                         </span>
-                                                        {phase}
+                                                        <p className="leading-relaxed">{phase}</p>
                                                     </div>
                                                 ))}
                                             </div>
@@ -614,32 +671,32 @@ export default function ImportTimetablePage() {
                                     )}
                                 </div>
 
-                                {/* Items Selection Grid */}
+                                {/* Items Selection Grid (Reference Image 2 Audio/Video Glass Widgets) */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     {/* 1. Daily Pacts */}
-                                    <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-5 space-y-3">
-                                        <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                                    <div className="bg-white/[0.06] border border-white/30 rounded-[32px] p-6 space-y-4 backdrop-blur-3xl shadow-[0_15px_50px_rgba(0,0,0,0.5),inset_0_1px_2.5px_rgba(255,255,255,0.5)]">
+                                        <div className="flex items-center justify-between pb-3 border-b border-white/15">
                                             <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
-                                                <Dumbbell className="w-4 h-4 text-indigo-400" />
+                                                <Dumbbell className="w-4 h-4 text-rose-400" />
                                                 Daily Pacts ({parsedData.pacts.length})
                                             </h3>
                                         </div>
 
-                                        <label className="flex items-center gap-2 text-xs text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 p-2.5 rounded-xl cursor-pointer">
+                                        <label className="flex items-center gap-2 text-xs text-zinc-200 bg-white/10 border border-white/20 p-3 rounded-2xl cursor-pointer backdrop-blur-xl">
                                             <input
                                                 type="checkbox"
                                                 checked={makePactsRecurring}
                                                 onChange={(e) => setMakePactsRecurring(e.target.checked)}
-                                                className="accent-indigo-500"
+                                                className="accent-rose-500 w-4 h-4 rounded"
                                             />
-                                            <span className="font-medium flex items-center gap-1">
-                                                <Repeat className="w-3.5 h-3.5" /> Recurring on all future days
+                                            <span className="font-semibold flex items-center gap-1">
+                                                <Repeat className="w-3.5 h-3.5 text-rose-300" /> Recurring on all days
                                             </span>
                                         </label>
 
-                                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                                        <div className="space-y-2 max-h-64 overflow-y-auto">
                                             {parsedData.pacts.map((pact, idx) => (
-                                                <label key={idx} className="flex items-start gap-2 text-xs text-zinc-300 bg-black/30 p-2.5 rounded-xl border border-white/5 cursor-pointer hover:border-white/20 transition-colors">
+                                                <label key={idx} className="flex items-start gap-2.5 text-xs text-zinc-200 bg-black/40 p-3 rounded-2xl border border-white/15 cursor-pointer hover:border-white/30 transition-all backdrop-blur-xl">
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedPacts[idx]}
@@ -648,26 +705,26 @@ export default function ImportTimetablePage() {
                                                             copy[idx] = e.target.checked;
                                                             setSelectedPacts(copy);
                                                         }}
-                                                        className="mt-0.5 accent-indigo-500"
+                                                        className="mt-0.5 accent-rose-500 w-4 h-4 rounded shrink-0"
                                                     />
-                                                    <span>{pact}</span>
+                                                    <span className="leading-relaxed">{pact}</span>
                                                 </label>
                                             ))}
                                         </div>
                                     </div>
 
-                                    {/* 2. Habit Tasks */}
-                                    <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-5 space-y-3">
-                                        <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                                    {/* 2. Habit Trackers */}
+                                    <div className="bg-white/[0.06] border border-white/30 rounded-[32px] p-6 space-y-4 backdrop-blur-3xl shadow-[0_15px_50px_rgba(0,0,0,0.5),inset_0_1px_2.5px_rgba(255,255,255,0.5)]">
+                                        <div className="flex items-center justify-between pb-3 border-b border-white/15">
                                             <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
                                                 <Zap className="w-4 h-4 text-emerald-400" />
                                                 Habit Trackers ({parsedData.tasks.length})
                                             </h3>
                                         </div>
 
-                                        <div className="space-y-2 max-h-60 overflow-y-auto pt-2">
+                                        <div className="space-y-2 max-h-72 overflow-y-auto">
                                             {parsedData.tasks.map((task, idx) => (
-                                                <label key={idx} className="flex items-start gap-2 text-xs text-zinc-300 bg-black/30 p-2.5 rounded-xl border border-white/5 cursor-pointer hover:border-white/20 transition-colors">
+                                                <label key={idx} className="flex items-start gap-2.5 text-xs text-zinc-200 bg-black/40 p-3 rounded-2xl border border-white/15 cursor-pointer hover:border-white/30 transition-all backdrop-blur-xl">
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedTasks[idx]}
@@ -676,26 +733,26 @@ export default function ImportTimetablePage() {
                                                             copy[idx] = e.target.checked;
                                                             setSelectedTasks(copy);
                                                         }}
-                                                        className="mt-0.5 accent-emerald-500"
+                                                        className="mt-0.5 accent-emerald-500 w-4 h-4 rounded shrink-0"
                                                     />
-                                                    <span>{task}</span>
+                                                    <span className="leading-relaxed">{task}</span>
                                                 </label>
                                             ))}
                                         </div>
                                     </div>
 
-                                    {/* 3. Goals & Milestones */}
-                                    <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-5 space-y-3">
-                                        <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                                    {/* 3. Target Goals */}
+                                    <div className="bg-white/[0.06] border border-white/30 rounded-[32px] p-6 space-y-4 backdrop-blur-3xl shadow-[0_15px_50px_rgba(0,0,0,0.5),inset_0_1px_2.5px_rgba(255,255,255,0.5)]">
+                                        <div className="flex items-center justify-between pb-3 border-b border-white/15">
                                             <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
                                                 <Target className="w-4 h-4 text-amber-400" />
                                                 Goals ({parsedData.goals.length})
                                             </h3>
                                         </div>
 
-                                        <div className="space-y-2 max-h-60 overflow-y-auto pt-2">
+                                        <div className="space-y-2 max-h-72 overflow-y-auto">
                                             {parsedData.goals.map((goal, idx) => (
-                                                <label key={idx} className="flex items-start gap-2 text-xs text-zinc-300 bg-black/30 p-2.5 rounded-xl border border-white/5 cursor-pointer hover:border-white/20 transition-colors">
+                                                <label key={idx} className="flex items-start gap-2.5 text-xs text-zinc-200 bg-black/40 p-3 rounded-2xl border border-white/15 cursor-pointer hover:border-white/30 transition-all backdrop-blur-xl">
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedGoals[idx]}
@@ -704,9 +761,9 @@ export default function ImportTimetablePage() {
                                                             copy[idx] = e.target.checked;
                                                             setSelectedGoals(copy);
                                                         }}
-                                                        className="mt-0.5 accent-amber-500"
+                                                        className="mt-0.5 accent-amber-500 w-4 h-4 rounded shrink-0"
                                                     />
-                                                    <span>{goal}</span>
+                                                    <span className="leading-relaxed">{goal}</span>
                                                 </label>
                                             ))}
                                         </div>
@@ -714,51 +771,51 @@ export default function ImportTimetablePage() {
                                 </div>
 
                                 {/* Reference Note Preview */}
-                                <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-5 space-y-3">
+                                <div className="bg-white/[0.06] border border-white/30 rounded-[32px] p-6 space-y-3.5 backdrop-blur-3xl shadow-[0_15px_50px_rgba(0,0,0,0.5),inset_0_1px_2.5px_rgba(255,255,255,0.5)]">
                                     <div className="flex items-center justify-between">
                                         <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white cursor-pointer">
                                             <input
                                                 type="checkbox"
                                                 checked={includeNote}
                                                 onChange={(e) => setIncludeNote(e.target.checked)}
-                                                className="accent-indigo-500"
+                                                className="accent-rose-500 w-4 h-4 rounded"
                                             />
                                             <span>Save Full Markdown Reference Note in Notes Tab</span>
                                         </label>
                                     </div>
 
                                     {includeNote && (
-                                        <div className="bg-black/50 rounded-xl p-4 border border-white/5 max-h-48 overflow-y-auto">
-                                            <pre className="text-xs text-zinc-300 whitespace-pre-wrap font-mono leading-relaxed">
+                                        <div className="bg-black/50 rounded-2xl p-4 border border-white/15 max-h-48 overflow-y-auto backdrop-blur-xl">
+                                            <pre className="text-xs text-zinc-200 whitespace-pre-wrap font-mono leading-relaxed">
                                                 {parsedData.fullTimetableNote}
                                             </pre>
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Action Bar */}
-                                <div className="flex items-center justify-between pt-4">
+                                {/* Floating Glass Bottom Action Bar (Reference Image 2 & 3 Floating Action Bar) */}
+                                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-xl bg-zinc-950/80 border border-white/35 rounded-full px-6 py-3.5 shadow-[0_20px_60px_rgba(0,0,0,0.9),inset_0_1.5px_2px_rgba(255,255,255,0.5)] backdrop-blur-3xl flex items-center justify-between gap-4 z-50">
                                     <button
                                         onClick={() => setStep('INPUT')}
-                                        className="px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-xs font-medium transition-colors"
+                                        className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white text-xs font-medium transition-all backdrop-blur-md"
                                     >
-                                        Back to Input
+                                        Back
                                     </button>
 
                                     <button
                                         onClick={handleImport}
                                         disabled={isLoading}
-                                        className="px-8 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-xl shadow-emerald-600/30 flex items-center gap-2 transition-all"
+                                        className="px-7 py-2.5 rounded-full bg-white text-black font-bold text-xs shadow-[0_0_30px_rgba(255,255,255,0.5)] hover:bg-zinc-100 flex items-center gap-2 transition-all"
                                     >
                                         {isLoading ? (
                                             <>
-                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                <Loader2 className="w-4 h-4 animate-spin text-black" />
                                                 <span>Importing items...</span>
                                             </>
                                         ) : (
                                             <>
-                                                <CheckCircle2 className="w-4 h-4" />
-                                                <span>Confirm & Seal Routine into Gyral</span>
+                                                <CheckCircle2 className="w-4 h-4 text-black" />
+                                                <span>Confirm & Seal Routine</span>
                                             </>
                                         )}
                                     </button>
@@ -768,13 +825,13 @@ export default function ImportTimetablePage() {
 
                         {/* STEP SUCCESS */}
                         {step === 'SUCCESS' && (
-                            <div className="bg-zinc-900/80 border border-emerald-500/30 rounded-3xl p-8 text-center space-y-6 max-w-lg mx-auto backdrop-blur-2xl">
-                                <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/40">
+                            <div className="bg-white/[0.08] border border-emerald-400/40 rounded-[36px] p-8 md:p-10 text-center space-y-6 max-w-lg mx-auto backdrop-blur-3xl shadow-[0_25px_80px_rgba(0,0,0,0.7),inset_0_1.5px_3px_rgba(255,255,255,0.7)]">
+                                <div className="w-16 h-16 rounded-full bg-emerald-500/25 text-emerald-300 flex items-center justify-center mx-auto border border-emerald-400/50 shadow-xl backdrop-blur-xl">
                                     <CheckCircle2 className="w-8 h-8" />
                                 </div>
                                 <div className="space-y-2">
-                                    <h2 className="text-2xl font-bold text-white">Routine Successfully Sealed!</h2>
-                                    <p className="text-xs text-zinc-400 leading-relaxed">
+                                    <h2 className="text-2xl font-bold text-white tracking-wide">Routine Successfully Sealed!</h2>
+                                    <p className="text-xs text-zinc-300 leading-relaxed">
                                         Your AI routine, pacts, habit trackers, and reference notes are now active in Gyral.
                                     </p>
                                 </div>
@@ -787,13 +844,13 @@ export default function ImportTimetablePage() {
                                             setImageBase64(null);
                                             setStep('INPUT');
                                         }}
-                                        className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white text-xs font-medium transition-colors"
+                                        className="w-full sm:w-auto px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/25 backdrop-blur-xl transition-all shadow-md"
                                     >
                                         Import Another Routine
                                     </button>
                                     <Link
                                         href="/dashboard"
-                                        className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 transition-colors"
+                                        className="w-full sm:w-auto px-7 py-3 rounded-full bg-white text-black text-xs font-bold shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:bg-zinc-100 transition-all"
                                     >
                                         View Dashboard
                                     </Link>
@@ -806,42 +863,42 @@ export default function ImportTimetablePage() {
                 {/* TAB 2: IMPORT HISTORY & PURGE MANAGER */}
                 {activeTab === 'HISTORY' && (
                     <div className="space-y-6">
-                        <div className="bg-zinc-900/60 border border-white/10 rounded-2xl p-5 space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                                    <History className="w-4 h-4 text-indigo-400" />
+                        <div className="bg-white/[0.06] border border-white/30 rounded-[36px] p-7 space-y-5 backdrop-blur-3xl shadow-[0_20px_70px_rgba(0,0,0,0.6),inset_0_1.5px_3px_rgba(255,255,255,0.6)]">
+                            <div className="flex items-center justify-between pb-3 border-b border-white/15">
+                                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                                    <History className="w-4.5 h-4.5 text-rose-400" />
                                     Imported AI Routines Log History
                                 </h3>
-                                <span className="text-xs text-zinc-500 font-mono">
+                                <span className="text-xs text-zinc-300 font-mono font-semibold">
                                     Total Logs: {importLogs.length}
                                 </span>
                             </div>
 
                             {importLogs.length === 0 ? (
-                                <div className="text-center py-12 space-y-3 border border-dashed border-white/10 rounded-xl">
-                                    <History className="w-8 h-8 text-zinc-600 mx-auto" />
-                                    <p className="text-xs text-zinc-400">No AI routines imported yet.</p>
+                                <div className="text-center py-14 space-y-4 border border-dashed border-white/20 rounded-3xl bg-black/30 backdrop-blur-xl">
+                                    <History className="w-10 h-10 text-zinc-500 mx-auto" />
+                                    <p className="text-xs text-zinc-300">No AI routines imported yet.</p>
                                     <button
                                         onClick={() => setActiveTab('SYNTHESIZER')}
-                                        className="px-4 py-2 rounded-full bg-indigo-600 text-white text-xs font-semibold"
+                                        className="px-5 py-2.5 rounded-full bg-white text-black text-xs font-bold shadow-lg"
                                     >
                                         Synthesize New Routine
                                     </button>
                                 </div>
                             ) : (
-                                <div className="space-y-3">
+                                <div className="space-y-3.5">
                                     {importLogs.map((log) => (
-                                        <div key={log.id} className="p-4 rounded-xl bg-black/40 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-white/20 transition-all">
+                                        <div key={log.id} className="p-5 rounded-2xl bg-black/40 border border-white/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-white/40 transition-all backdrop-blur-2xl shadow-md">
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-2">
-                                                    <h4 className="text-sm font-bold text-white">{log.title}</h4>
+                                                    <h4 className="text-sm font-bold text-white tracking-wide">{log.title}</h4>
                                                     {log.duration && (
-                                                        <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-mono text-indigo-300">
+                                                        <span className="px-2.5 py-0.5 rounded-full bg-white/15 border border-white/25 text-[10px] font-mono text-zinc-200">
                                                             {log.duration}
                                                         </span>
                                                     )}
                                                 </div>
-                                                <div className="flex items-center gap-3 text-[11px] text-zinc-400">
+                                                <div className="flex items-center gap-3 text-[11px] text-zinc-300">
                                                     <span>Imported: {new Date(log.importedAt).toLocaleDateString()}</span>
                                                     <span>• Pacts: {log.pactTexts?.length || 0}</span>
                                                     <span>• Tasks: {log.taskNames?.length || 0}</span>
@@ -852,7 +909,7 @@ export default function ImportTimetablePage() {
                                             <button
                                                 onClick={() => handleDeleteImportLog(log)}
                                                 disabled={deletingLogId === log.id}
-                                                className="px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0 self-start sm:self-auto"
+                                                className="px-3.5 py-2 rounded-xl bg-red-500/20 hover:bg-red-500/35 border border-red-400/40 text-red-200 text-xs font-semibold flex items-center gap-1.5 transition-all shrink-0 self-start sm:self-auto backdrop-blur-md"
                                             >
                                                 {deletingLogId === log.id ? (
                                                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
