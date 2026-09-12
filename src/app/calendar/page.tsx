@@ -11,13 +11,13 @@ import { LogActivityModal } from "@/components/modals/log-activity-modal";
 
 export default function CalendarPage() {
     const { records, tasks, activeFilterTaskId } = useUserData();
-    const [currentDate, setCurrentDate] = useState(new Date(2026, 1, 20)); // Default Feb 2026
-    const [selectedDateStr, setSelectedDateStr] = useState<string | null>("2026-02-20");
-    const [viewMode, setViewMode] = useState<'MONTH' | 'YEAR'>('MONTH');
-    const [modalDate, setModalDate] = useState<string | null>(null);
-
     const today = new Date();
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedDateStr, setSelectedDateStr] = useState<string | null>(todayStr);
+    const [viewMode, setViewMode] = useState<'MONTH' | 'YEAR'>('MONTH');
+    const [modalDate, setModalDate] = useState<string | null>(null);
 
     const handlePrevMonth = () => setCurrentDate(prev => subMonths(prev, 1));
     const handleNextMonth = () => setCurrentDate(prev => addMonths(prev, 1));
@@ -95,9 +95,6 @@ export default function CalendarPage() {
                                 <span>Schedule Calendar</span>
                                 <Sparkles className="w-5 h-5 text-purple-400" />
                             </h1>
-                            <p className="text-xs text-zinc-400 font-medium">
-                                Track phased routine consistency & logged activities
-                            </p>
                         </div>
                     </div>
 
