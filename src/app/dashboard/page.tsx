@@ -32,34 +32,6 @@ export default function Home() {
       <main className="flex-1 p-4 md:p-8 pt-24 md:pt-28 max-w-7xl mx-auto w-full space-y-6 md:space-y-8 pb-20 md:pb-8">
         <LongTermReminders />
 
-        {/* AI Routine & Timetable Importer Banner */}
-        <div 
-          onClick={() => setIsImportModalOpen(true)}
-          className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-950/70 via-purple-950/50 to-zinc-900/80 border border-indigo-500/30 p-5 md:p-6 cursor-pointer group hover:border-indigo-500/60 transition-all duration-300 shadow-[0_0_30px_rgba(99,102,241,0.15)]"
-        >
-          <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-indigo-500/20 transition-all" />
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 group-hover:scale-110 transition-transform shrink-0">
-                <Sparkles className="w-6 h-6 animate-pulse" />
-              </div>
-              <div>
-                <h3 className="text-base md:text-lg font-bold text-white flex items-center gap-2 flex-wrap">
-                  Import AI Timetable & Routine
-                  <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">ChatGPT / Claude / DeepSeek</span>
-                </h3>
-                <p className="text-xs md:text-sm text-zinc-400 mt-0.5">
-                  Paste your AI gym split or timetable text/screenshot to automatically import Pacts, Tasks, & Reference Notes into Gyral.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-600 text-white font-semibold text-xs sm:text-sm shadow-lg group-hover:bg-indigo-500 transition-colors shrink-0 self-start sm:self-auto">
-              <span>Import AI Routine</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-        </div>
-
         <div className="text-center py-6 md:py-8 max-w-4xl mx-auto relative group">
           <div className="absolute inset-0 bg-accent/5 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
           <blockquote className="relative z-10">

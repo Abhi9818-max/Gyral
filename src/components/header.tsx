@@ -151,14 +151,14 @@ export function Header() {
             </span>
           </div>
 
-          {/* AI Timetable Import Button - Always Visible */}
+          {/* AI Timetable Import Button - Clean Native Header Pill */}
           <button
             onClick={() => setIsImportModalOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 md:px-3.5 py-1.5 rounded-full bg-indigo-500/10 hover:bg-indigo-500/25 border border-indigo-500/30 hover:border-indigo-500/60 text-indigo-300 hover:text-indigo-100 transition-all cursor-pointer shadow-[0_0_15px_rgba(99,102,241,0.25)] font-mono text-xs font-bold"
+            className="flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-white/20 text-zinc-300 hover:text-white transition-all cursor-pointer group select-none"
             title="Import AI Timetable from ChatGPT / Claude"
           >
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
-            <span className="hidden sm:inline">AI Import</span>
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400 group-hover:rotate-12 transition-transform" />
+            <span className="text-xs md:text-sm font-medium">AI Import</span>
           </button>
 
           {/* Universal Menu Button */}

@@ -110,11 +110,11 @@ export function PactWidget() {
                         {/* AI Routine Import Button */}
                         <button
                             onClick={() => setIsImportModalOpen(true)}
-                            className="px-3 h-10 bg-accent/10 hover:bg-accent/20 text-accent rounded-full flex items-center justify-center gap-1.5 transition-all border border-accent/20 hover:border-accent/40 font-mono text-xs font-bold"
-                            title="Import AI Timetable / Routine"
+                            className="px-3 h-10 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white rounded-full flex items-center justify-center gap-1.5 transition-all border border-white/10 hover:border-white/20 text-xs font-medium"
+                            title="Import AI Timetable from ChatGPT / Claude"
                         >
-                            <Sparkles className="w-4 h-4 animate-pulse" />
-                            <span className="hidden sm:inline">AI Import</span>
+                            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                            <span className="hidden sm:inline">Import AI Timetable</span>
                         </button>
 
                         {/* Add Button (Only if not already adding and list exists) */}
