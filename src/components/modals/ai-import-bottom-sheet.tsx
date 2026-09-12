@@ -152,9 +152,11 @@ export function AiImportBottomSheet() {
 
             {/* Ultra-Glassy Ethereal Floating Bottom Sheet */}
             <div className="relative z-[101] w-full max-w-lg bg-zinc-950/45 border-t border-x border-white/35 rounded-t-[40px] p-6 pb-8 shadow-[0_-25px_90px_rgba(0,0,0,0.9),inset_0_2px_3px_rgba(255,255,255,0.5)] backdrop-blur-3xl animate-in slide-in-from-bottom duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden">
-                {/* Ambient Fluid Gradient Blobs (Matching Deep Purple & Indigo Aura) */}
-                <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-gradient-to-tr from-purple-600/35 via-indigo-500/25 to-violet-600/30 blur-3xl pointer-events-none animate-pulse" />
-                <div className="absolute -bottom-20 -right-20 w-64 h-64 rounded-full bg-gradient-to-br from-purple-600/35 via-indigo-600/30 to-violet-500/25 blur-3xl pointer-events-none" />
+                {/* Uniform Deep Purple Ambient Aura across all 4 edges (Matching Bottom-Right Corner Glow) */}
+                <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-gradient-to-br from-purple-600/35 via-indigo-600/30 to-violet-500/25 blur-3xl pointer-events-none" />
+                <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-gradient-to-br from-purple-600/35 via-indigo-600/30 to-violet-500/25 blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-gradient-to-br from-purple-600/35 via-indigo-600/30 to-violet-500/25 blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-gradient-to-br from-purple-600/35 via-indigo-600/30 to-violet-500/25 blur-3xl pointer-events-none" />
 
                 {/* Specular Diagonal Glass Reflection Sheen */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/[0.04] to-transparent pointer-events-none rounded-t-[40px]" />
