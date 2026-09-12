@@ -231,9 +231,9 @@ export default function CalendarPage() {
                     </div>
                 )}
 
-                {/* YEAR GRID VIEW: 12-Month Overview */}
+                {/* YEAR GRID VIEW: 2 Months per Row Overview */}
                 {viewMode === 'YEAR' && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto">
                         {Array.from({ length: 12 }, (_, mIdx) => {
                             const monthDate = new Date(2026, mIdx, 1);
                             const mDays = getDaysInMonth(monthDate);
@@ -245,19 +245,21 @@ export default function CalendarPage() {
                                     initial={{ opacity: 0, y: 15 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: mIdx * 0.03 }}
-                                    className="bg-white/[0.06] border border-white/20 rounded-[28px] p-5 backdrop-blur-2xl shadow-xl"
+                                    className="bg-[#161618] border border-white/15 rounded-[32px] p-6 backdrop-blur-3xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] space-y-3 relative overflow-hidden"
                                 >
-                                    <h3 className="text-sm font-bold text-white mb-3">
-                                        {format(monthDate, 'MMMM')}
-                                    </h3>
+                                    <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                                        <h3 className="text-base font-bold text-white font-sans">
+                                            {format(monthDate, 'MMMM yyyy')}
+                                        </h3>
+                                    </div>
                                     <div className="grid grid-cols-7 gap-1 text-center">
-                                        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, idx) => (
-                                            <span key={idx} className="text-[10px] font-semibold text-zinc-500">
+                                        {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((d, idx) => (
+                                            <span key={idx} className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider py-1">
                                                 {d}
                                             </span>
                                         ))}
                                         {Array.from({ length: mStartDay }).map((_, i) => (
-                                            <div key={`empty-${i}`} />
+                                            <div key={`empty-${i}`} className="h-9" />
                                         ))}
                                         {Array.from({ length: mDays }).map((_, i) => {
                                             const dNum = i + 1;
@@ -272,15 +274,26 @@ export default function CalendarPage() {
                                                         setSelectedDateStr(dStr);
                                                         setModalDate(dStr);
                                                     }}
-                                                    className={`aspect-square rounded-lg flex items-center justify-center text-[11px] font-medium cursor-pointer transition-all ${
-                                                        isTod
-                                                            ? 'bg-purple-600 text-white font-bold shadow-md'
-                                                            : actStyle
-                                                            ? 'bg-purple-500/20 text-purple-300 font-semibold border border-purple-400/40'
-                                                            : 'text-zinc-400 hover:bg-white/10 hover:text-white'
-                                                    }`}
+                                                    className="h-9 flex items-center justify-center relative cursor-pointer group"
                                                 >
-                                                    {dNum}
+                                                    <div
+                                                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
+                                                            isTod
+                                                                ? 'bg-purple-600 text-white font-bold shadow-[0_0_15px_rgba(168,85,247,0.85)] border border-purple-400/50 scale-105'
+                                                                : 'text-zinc-200 hover:text-white hover:bg-white/10'
+                                                        }`}
+                                                    >
+                                                        <span>{dNum}</span>
+                                                        {actStyle && !isTod && (
+                                                            <span
+                                                                className="w-1.5 h-1.5 rounded-full absolute bottom-0.5"
+                                                                style={{
+                                                                    backgroundColor: actStyle.color,
+                                                                    boxShadow: actStyle.boxShadow
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </div>
                                                 </div>
                                             );
                                         })}
