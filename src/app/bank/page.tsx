@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Coins, AlertTriangle, CheckCircle2, Plus, Sparkles } from 'lucide-react';
+import { ArrowLeft, Coins, AlertTriangle, CheckCircle2, Plus, Sparkles, Store } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
 import { haptic } from '@/utils/haptic';
 import { sfx } from '@/utils/sfx';
@@ -118,11 +118,26 @@ export default function BankPage() {
                     </div>
                 </div>
 
-                <div className="bg-zinc-900/40 border border-white/5 px-4 py-2.5 rounded-2xl flex items-center gap-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] self-stretch sm:self-auto justify-between sm:justify-start">
-                    <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider block">Your Balance</span>
-                    <div className="flex items-center gap-1.5">
-                        <Coins className="w-4 h-4 text-yellow-500" />
-                        <span className="text-base font-black text-yellow-500 font-mono">{noxBalance} Nox</span>
+                <div className="flex items-center gap-3 self-stretch sm:self-auto justify-between sm:justify-end">
+                    <button
+                        onClick={() => {
+                            sfx.playClick();
+                            haptic.light();
+                            router.push('/store');
+                        }}
+                        className="px-3.5 py-2 rounded-2xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 hover:border-indigo-500/40 text-indigo-400 hover:text-indigo-300 transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(99,102,241,0.15)]"
+                        title="Go to Store"
+                    >
+                        <Store className="w-4 h-4 text-indigo-400" />
+                        <span className="text-xs font-bold uppercase tracking-wider font-mono">Store</span>
+                    </button>
+
+                    <div className="bg-zinc-900/40 border border-white/5 px-4 py-2.5 rounded-2xl flex items-center gap-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+                        <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider block">Your Balance</span>
+                        <div className="flex items-center gap-1.5">
+                            <Coins className="w-4 h-4 text-yellow-500" />
+                            <span className="text-base font-black text-yellow-500 font-mono">{noxBalance} Nox</span>
+                        </div>
                     </div>
                 </div>
             </div>

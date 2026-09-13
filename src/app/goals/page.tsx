@@ -61,20 +61,31 @@ export default function GoalsPage() {
                     </h1>
                 </div>
 
-                {pendingAll.length > 0 && (
-                    <button
-                        onClick={async () => {
-                            setIsDownloading(true);
-                            await downloadAestheticCard(pendingAll, 'goals', 'gyral-active-goals');
-                            setIsDownloading(false);
-                        }}
-                        disabled={isDownloading}
-                        className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-full font-bold transition-all border w-full md:w-auto ${isLight ? 'bg-white border-zinc-200 hover:bg-zinc-50 text-black shadow-lg' : 'bg-zinc-900/50 border-white/10 hover:bg-white/5 text-white'} ${isDownloading ? 'opacity-50 cursor-wait' : ''}`}
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <Link
+                        href="/achievements"
+                        className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-3 rounded-full font-bold transition-all border ${isLight ? 'bg-amber-50 border-amber-200 hover:bg-amber-100 text-amber-800' : 'bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20 text-amber-400'}`}
+                        title="Achievements"
                     >
-                        <Download className={`w-4 h-4 ${isDownloading ? 'animate-bounce text-blue-500' : ''}`} />
-                        {isDownloading ? 'Downloading...' : 'Download Goals'}
-                    </button>
-                )}
+                        <Trophy className="w-4 h-4 text-amber-500" />
+                        <span className="text-sm">Achievements</span>
+                    </Link>
+
+                    {pendingAll.length > 0 && (
+                        <button
+                            onClick={async () => {
+                                setIsDownloading(true);
+                                await downloadAestheticCard(pendingAll, 'goals', 'gyral-active-goals');
+                                setIsDownloading(false);
+                            }}
+                            disabled={isDownloading}
+                            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-full font-bold transition-all border ${isLight ? 'bg-white border-zinc-200 hover:bg-zinc-50 text-black shadow-lg' : 'bg-zinc-900/50 border-white/10 hover:bg-white/5 text-white'} ${isDownloading ? 'opacity-50 cursor-wait' : ''}`}
+                        >
+                            <Download className={`w-4 h-4 ${isDownloading ? 'animate-bounce text-blue-500' : ''}`} />
+                            {isDownloading ? 'Downloading...' : 'Download Goals'}
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Dashboard Stats */}

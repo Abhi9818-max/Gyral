@@ -176,10 +176,6 @@ export function Header() {
                   <span class="text-yellow-500">💰</span>
                   <span class="text-white font-medium">Bank</span>
                 </button>` : '',
-                !isPinned('store') ? `<button id="store-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                  <span class="text-indigo-400">🛍️</span>
-                  <span class="text-white font-medium">Store</span>
-                </button>` : '',
                 !isPinned('chat') ? `<button id="chat-rooms-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                   <span class="text-sky-400">💬</span>
                   <span class="text-white font-medium">Chat Rooms</span>
@@ -207,10 +203,6 @@ export function Header() {
                 !isPinned('bucket') ? `<button id="bucket-list-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                   <span>📝</span>
                   <span class="text-white font-medium">Bucket List</span>
-                </button>` : '',
-                !isPinned('achievements') ? `<button id="achievements-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                  <span>🏆</span>
-                  <span class="text-white font-medium">Achievements</span>
                 </button>` : '',
                 !isPinned('notes') ? `<button id="notes-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
                   <span>📋</span>
@@ -277,10 +269,6 @@ export function Header() {
                 closeMenu();
                 router.push('/bank');
               });
-              document.getElementById('store-btn')?.addEventListener('click', () => {
-                closeMenu();
-                router.push('/store');
-              });
               document.getElementById('chat-rooms-btn')?.addEventListener('click', () => {
                 closeMenu();
                 router.push('/chat');
@@ -308,10 +296,6 @@ export function Header() {
               document.getElementById('bucket-list-nav-btn')?.addEventListener('click', () => {
                 closeMenu();
                 router.push('/bucket-list');
-              });
-              document.getElementById('achievements-nav-btn')?.addEventListener('click', () => {
-                closeMenu();
-                router.push('/achievements');
               });
               document.getElementById('notes-nav-btn')?.addEventListener('click', () => {
                 closeMenu();

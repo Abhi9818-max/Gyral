@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { X, Coins, Plus, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { X, Coins, Plus, Trash2, AlertTriangle, CheckCircle2, Store } from 'lucide-react';
 import { useUserData } from '@/context/user-data-context';
 
 interface BankModalProps {
@@ -15,6 +16,7 @@ const parseDebtAmount = (amountStr: string): number => {
 };
 
 export function BankModal({ isOpen, onClose }: BankModalProps) {
+    const router = useRouter();
     const { debts, addDebt, payDebt, payDebtAmount, noxBalance } = useUserData();
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
@@ -95,7 +97,18 @@ export function BankModal({ isOpen, onClose }: BankModalProps) {
                             <p className="text-xs text-yellow-600 font-serif italic">"The Bank will have its due."</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <button
+                            onClick={() => {
+                                onClose();
+                                router.push('/store');
+                            }}
+                            className="p-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 hover:border-indigo-500/40 text-indigo-400 transition-all flex items-center gap-1.5 cursor-pointer"
+                            title="Store"
+                        >
+                            <Store className="w-4 h-4" />
+                            <span className="text-xs font-bold font-mono hidden sm:inline">Store</span>
+                        </button>
                         <div className="text-right">
                             <span className="text-[9px] text-zinc-500 font-mono block uppercase tracking-wider">Your Balance</span>
                             <span className="text-sm font-black text-yellow-500 font-mono">{noxBalance} Nox</span>
