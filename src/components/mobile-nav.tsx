@@ -13,7 +13,6 @@ import { getUserAvatar } from '@/utils/avatar-helpers';
 import { haptic } from '@/utils/haptic';
 import { sfx } from '@/utils/sfx';
 import { BankModal } from './modals/bank-modal';
-import { NightsWatchModal } from './modals/nights-watch-modal';
 import { PactsModal } from './modals/pacts-modal';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
@@ -27,11 +26,10 @@ export function MobileNav() {
     const todayStr = useToday();
 
     const [isBankModalOpen, setIsBankModalOpen] = useState(false);
-    const [isWatchModalOpen, setIsWatchModalOpen] = useState(false);
     const [isPactsModalOpen, setIsPactsModalOpen] = useState(false);
 
     // Fallback nav preferences if loading or empty
-    const defaultNavKeys: NavItemKey[] = ['world', 'bank', 'watch'];
+    const defaultNavKeys: NavItemKey[] = ['world', 'bank', 'goals'];
     const currentNavPrefs = (navPreferences && navPreferences.length > 0) ? navPreferences : defaultNavKeys;
 
     // Get the actual nav items based on preferences
@@ -41,7 +39,6 @@ export function MobileNav() {
 
     const handleAction = (key: NavItemKey) => {
         if (key === 'bank') setIsBankModalOpen(true);
-        if (key === 'watch') setIsWatchModalOpen(true);
         if (key === 'pacts') setIsPactsModalOpen(true);
     };
 
@@ -161,7 +158,6 @@ export function MobileNav() {
             </nav>
 
             <BankModal isOpen={isBankModalOpen} onClose={() => setIsBankModalOpen(false)} />
-            <NightsWatchModal isOpen={isWatchModalOpen} onClose={() => setIsWatchModalOpen(false)} />
             <PactsModal isOpen={isPactsModalOpen} onClose={() => setIsPactsModalOpen(false)} />
         </>
     );

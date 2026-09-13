@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { LayoutDashboard, Users, Shield, ScrollText, ClipboardList, Flag, Settings, Plus, Flame, Globe, Ghost, Skull, Coins, Menu, X, Search, MessageCircle, Bell, Sword, Home, User, Brain, Trophy, Sparkles } from 'lucide-react';
-import { useUserData } from '@/context/user-data-context';
+import { useUserData, NavItemKey } from '@/context/user-data-context';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { createClient } from '@/utils/supabase/client';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -13,7 +13,6 @@ import { Sigil } from './sigil';
 import { AddTaskModal } from './modals/add-task-modal';
 import { PactsModal } from './modals/pacts-modal';
 import { BankModal } from './modals/bank-modal';
-import { NightsWatchModal } from './modals/nights-watch-modal';
 import { SearchModal } from './modals/search-modal';
 import { DailyReviewModal } from './modals/daily-review-modal';
 import { FriendRequestsModal } from './modals/friend-requests-modal';
@@ -30,7 +29,6 @@ export function Header() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isPactsModalOpen, setIsPactsModalOpen] = useState(false);
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
-  const [isWatchModalOpen, setIsWatchModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isDailyReviewModalOpen, setIsDailyReviewModalOpen] = useState(false);
   const [isFriendRequestsModalOpen, setIsFriendRequestsModalOpen] = useState(false);
@@ -39,7 +37,7 @@ export function Header() {
   const [isStoreModalOpen, setIsStoreModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { consistencyScore, currentStreak, streakStatus, streakTier, streakStrength, activeFilterTaskId, tasks, currentFaction, user, profile, noxBalance } = useUserData();
+  const { consistencyScore, currentStreak, streakStatus, streakTier, streakStrength, activeFilterTaskId, tasks, currentFaction, user, profile, noxBalance, navPreferences } = useUserData();
   const { unreadCount, friendRequestCount } = useMessageNotifications();
   const router = useRouter();
 
@@ -155,6 +153,87 @@ export function Header() {
           <button
             className={`w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-all border border-transparent hover:border-white/20 relative ${currentFaction ? 'p-1' : ''}`}
             onClick={() => {
+              const defaultNavKeys: NavItemKey[] = ['world', 'bank', 'goals'];
+              const activeNavKeys = (navPreferences && navPreferences.length > 0) ? navPreferences : defaultNavKeys;
+              const isPinned = (key: NavItemKey) => activeNavKeys.includes(key);
+
+              const buttonsHtml = [
+                !isPinned('messages') ? `<button id="messages-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left relative">
+                  <span>💬</span>
+                  <span class="text-white font-medium">Messages</span>
+                  ${unreadCount > 0 ? `<span class="ml-auto w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${unreadCount > 9 ? '9+' : unreadCount}</span>` : ''}
+                </button>` : '',
+                `<button id="friend-requests-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left relative">
+                  <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                  <span class="text-white font-medium">Friend Requests</span>
+                  ${friendRequestCount > 0 ? `<span class="ml-auto w-5 h-5 bg-purple-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${friendRequestCount > 9 ? '9+' : friendRequestCount}</span>` : ''}
+                </button>`,
+                `<button id="faction-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                   <span class="text-white">🚩</span>
+                   <span class="text-white font-medium">House</span>
+                </button>`,
+                !isPinned('bank') ? `<button id="bank-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                  <span class="text-yellow-500">💰</span>
+                  <span class="text-white font-medium">Bank</span>
+                </button>` : '',
+                !isPinned('store') ? `<button id="store-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                  <span class="text-indigo-400">🛍️</span>
+                  <span class="text-white font-medium">Store</span>
+                </button>` : '',
+                !isPinned('chat') ? `<button id="chat-rooms-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                  <span class="text-sky-400">💬</span>
+                  <span class="text-white font-medium">Chat Rooms</span>
+                </button>` : '',
+                !isPinned('world') ? `<button id="world-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                  <span>🌍</span>
+                  <span class="text-white font-medium">World</span>
+                </button>` : '',
+                !isPinned('memento') ? `<button id="memento-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                  <span>💀</span>
+                  <span class="text-white font-medium">Memento</span>
+                </button>` : '',
+                (!isPinned('pacts') && !isPinned('citadel')) ? `<button id="pacts-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                  <span>📜</span>
+                  <span class="text-white font-medium">Pacts</span>
+                </button>` : '',
+                `<button id="import-timetable-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-accent/10 hover:bg-accent/20 border border-accent/20 hover:border-accent/40 transition-all text-left">
+                  <span>✨</span>
+                  <span class="text-accent font-medium">Import AI Timetable</span>
+                </button>`,
+                !isPinned('goals') ? `<button id="goals-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                  <span>🎯</span>
+                  <span class="text-white font-medium">Goals</span>
+                </button>` : '',
+                !isPinned('bucket') ? `<button id="bucket-list-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                  <span>📝</span>
+                  <span class="text-white font-medium">Bucket List</span>
+                </button>` : '',
+                !isPinned('achievements') ? `<button id="achievements-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                  <span>🏆</span>
+                  <span class="text-white font-medium">Achievements</span>
+                </button>` : '',
+                !isPinned('notes') ? `<button id="notes-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                  <span>📋</span>
+                  <span class="text-white font-medium">Notes</span>
+                </button>` : '',
+                `<button id="habits-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                  <span>➕</span>
+                  <span class="text-white font-medium">Manage Habits</span>
+                </button>`,
+                `<button id="daily-review-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 hover:border-indigo-500/40 transition-all text-left">
+                  <span>🌙</span>
+                  <span class="text-indigo-300 font-medium">Daily Review</span>
+                </button>`,
+                `<button id="settings-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
+                  <span>⚙️</span>
+                  <span class="text-white font-medium">Settings</span>
+                </button>`,
+                `<button id="logout-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/30 transition-all text-left">
+                  <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                  <span class="text-red-400 font-medium">Logout</span>
+                </button>`
+              ].filter(Boolean).join('');
+
               const menuDiv = document.createElement('div');
               menuDiv.className = 'fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] animate-in fade-in duration-200';
               menuDiv.innerHTML = `
@@ -166,88 +245,7 @@ export function Header() {
                     </button>
                   </div>
                   <div class="p-3 space-y-2">
-                    <button id="profile-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>👤</span>
-                      <span class="text-white font-medium">Profile</span>
-                    </button>
-                    <button id="messages-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left relative">
-                      <span>💬</span>
-                      <span class="text-white font-medium">Messages</span>
-                      ${unreadCount > 0 ? `<span class="ml-auto w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${unreadCount > 9 ? '9+' : unreadCount}</span>` : ''}
-                    </button>
-                    <button id="friend-requests-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left relative">
-                      <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                      <span class="text-white font-medium">Friend Requests</span>
-                      ${friendRequestCount > 0 ? `<span class="ml-auto w-5 h-5 bg-purple-500 text-white text-xs font-bold rounded-full flex items-center justify-center">${friendRequestCount > 9 ? '9+' : friendRequestCount}</span>` : ''}
-                    </button>
-                    <button id="faction-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                       <span class="text-white">🚩</span>
-                       <span class="text-white font-medium">House</span>
-                    </button>
-                    <button id="bank-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span class="text-yellow-500">💰</span>
-                      <span class="text-white font-medium">Bank</span>
-                    </button>
-                    <button id="store-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span class="text-indigo-400">🛍️</span>
-                      <span class="text-white font-medium">Store</span>
-                    </button>
-                    <button id="chat-rooms-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span class="text-sky-400">💬</span>
-                      <span class="text-white font-medium">Chat Rooms</span>
-                    </button>
-                    <button id="world-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>🌍</span>
-                      <span class="text-white font-medium">World</span>
-                    </button>
-                    <button id="memento-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>💀</span>
-                      <span class="text-white font-medium">Memento</span>
-                    </button>
-                    <button id="pacts-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>📜</span>
-                      <span class="text-white font-medium">Pacts</span>
-                    </button>
-                    <button id="import-timetable-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-accent/10 hover:bg-accent/20 border border-accent/20 hover:border-accent/40 transition-all text-left">
-                      <span>✨</span>
-                      <span class="text-accent font-medium">Import AI Timetable</span>
-                    </button>
-                    <button id="watch-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span class="text-slate-400">🛡️</span>
-                      <span class="text-white font-medium">The Watch</span>
-                    </button>
-                    <button id="goals-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>🎯</span>
-                      <span class="text-white font-medium">Goals</span>
-                    </button>
-                    <button id="bucket-list-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>📝</span>
-                      <span class="text-white font-medium">Bucket List</span>
-                    </button>
-                    <button id="achievements-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>🏆</span>
-                      <span class="text-white font-medium">Achievements</span>
-                    </button>
-                    <button id="notes-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>📋</span>
-                      <span class="text-white font-medium">Notes</span>
-                    </button>
-                    <button id="habits-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>➕</span>
-                      <span class="text-white font-medium">Manage Habits</span>
-                    </button>
-                    <button id="daily-review-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 hover:border-indigo-500/40 transition-all text-left">
-                      <span>🌙</span>
-                      <span class="text-indigo-300 font-medium">Daily Review</span>
-                    </button>
-                    <button id="settings-nav-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left">
-                      <span>⚙️</span>
-                      <span class="text-white font-medium">Settings</span>
-                    </button>
-                    <button id="logout-btn" class="w-full flex items-center gap-3 p-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/30 transition-all text-left">
-                      <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                      <span class="text-red-400 font-medium">Logout</span>
-                    </button>
+                    ${buttonsHtml}
                   </div>
                 </div>
               `;
@@ -262,11 +260,7 @@ export function Header() {
                 if (e.target === menuDiv) closeMenu();
               });
               document.getElementById('close-menu')?.addEventListener('click', closeMenu);
- 
-              document.getElementById('profile-btn')?.addEventListener('click', () => {
-                closeMenu();
-                router.push('/profile');
-              });
+
               document.getElementById('messages-btn')?.addEventListener('click', () => {
                 closeMenu();
                 router.push('/messages');
@@ -306,10 +300,6 @@ export function Header() {
               document.getElementById('import-timetable-btn')?.addEventListener('click', () => {
                 closeMenu();
                 window.dispatchEvent(new CustomEvent('openAiImportBottomSheet'));
-              });
-              document.getElementById('watch-btn')?.addEventListener('click', () => {
-                closeMenu();
-                setIsWatchModalOpen(true);
               });
               document.getElementById('goals-nav-btn')?.addEventListener('click', () => {
                 closeMenu();
@@ -381,8 +371,7 @@ export function Header() {
       <AddTaskModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
       <PactsModal isOpen={isPactsModalOpen} onClose={() => setIsPactsModalOpen(false)} />
       <BankModal isOpen={isBankModalOpen} onClose={() => setIsBankModalOpen(false)} />
-      <NightsWatchModal isOpen={isWatchModalOpen} onClose={() => setIsWatchModalOpen(false)} />
-      <SearchModal isOpen={isSearchModalOpen} onClose={() => setIsSearchModalOpen(false)} />
+      <SearchModal isOpen={isSearchModalOpen} onClose={() => setIsSearchModalOpen(false)} />archModalOpen} onClose={() => setIsSearchModalOpen(false)} />
       <FriendRequestsModal
         isOpen={isFriendRequestsModalOpen}
         onClose={() => setIsFriendRequestsModalOpen(false)}
