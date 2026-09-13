@@ -371,7 +371,7 @@ export function Header() {
       <AddTaskModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
       <PactsModal isOpen={isPactsModalOpen} onClose={() => setIsPactsModalOpen(false)} />
       <BankModal isOpen={isBankModalOpen} onClose={() => setIsBankModalOpen(false)} />
-      <SearchModal isOpen={isSearchModalOpen} onClose={() => setIsSearchModalOpen(false)} />archModalOpen} onClose={() => setIsSearchModalOpen(false)} />
+      <SearchModal isOpen={isSearchModalOpen} onClose={() => setIsSearchModalOpen(false)} />
       <FriendRequestsModal
         isOpen={isFriendRequestsModalOpen}
         onClose={() => setIsFriendRequestsModalOpen(false)}
