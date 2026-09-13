@@ -430,7 +430,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const [exiledUntil, setExiledUntil] = useState<string | null>(null);
     const [factions, setFactions] = useState<Faction[]>([]);
     const [currentFaction, setCurrentFaction] = useState<Faction | null>(null);
-    const [navPreferences, setNavPreferences] = useState<NavItemKey[]>(['world', 'bank', 'watch']);
+    const [navPreferences, setNavPreferences] = useState<NavItemKey[]>(['world', 'bank', 'goals']);
     const [investments, setInvestments] = useState<Investment[]>([]);
     const [onboardingCompleted, setOnboardingCompleted] = useState(false);
     const [noxBalance, setNoxBalance] = useState<number>(0);
@@ -449,7 +449,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         setProfile(null);
         setUnlockedArtifacts([]);
         setDisplayedArtifactId(null);
-        setNavPreferences(['world', 'bank', 'watch']);
+        setNavPreferences(['world', 'bank', 'goals']);
         setDebts([]);
         setVows([]);
         setInvestments([]);
