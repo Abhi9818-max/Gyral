@@ -213,9 +213,14 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
             const importedGoalTitles: string[] = [];
 
             // 1. Add selected Pacts (Vows)
+            const seenPacts = new Set<string>();
             parsedData.pacts.forEach((pactText, idx) => {
                 if (selectedPacts[idx] && pactText.trim()) {
                     const cleanPact = pactText.trim();
+                    const lower = cleanPact.toLowerCase();
+                    if (seenPacts.has(lower)) return;
+                    seenPacts.add(lower);
+
                     importedPactTexts.push(cleanPact);
                     if (makePactsRecurring) {
                         addDailyPact(cleanPact);
@@ -225,20 +230,30 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
             });
 
             // 2. Add selected Habit Tasks
+            const seenTasks = new Set<string>();
             const taskColors = ["#3b82f6", "#10b981", "#8b5cf6", "#ec4899", "#f59e0b"];
             parsedData.tasks.forEach((taskName, idx) => {
                 if (selectedTasks[idx] && taskName.trim()) {
                     const cleanTask = taskName.trim();
+                    const lower = cleanTask.toLowerCase();
+                    if (seenTasks.has(lower)) return;
+                    seenTasks.add(lower);
+
                     importedTaskNames.push(cleanTask);
-                    const color = taskColors[idx % taskColors.length];
+                    const color = taskColors[importedTaskNames.length % taskColors.length];
                     addTask(cleanTask, color);
                 }
             });
 
             // 3. Add selected Goals
+            const seenGoals = new Set<string>();
             parsedData.goals.forEach((goalText, idx) => {
                 if (selectedGoals[idx] && goalText.trim()) {
                     const cleanGoal = goalText.trim();
+                    const lower = cleanGoal.toLowerCase();
+                    if (seenGoals.has(lower)) return;
+                    seenGoals.add(lower);
+
                     importedGoalTitles.push(cleanGoal);
                     addLifeEvent({
                         event_date: todayStr,

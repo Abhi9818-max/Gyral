@@ -1413,11 +1413,21 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
     // --- ACTIONS ---
     const addTask = async (name: string, color: string, metricConfig?: MetricConfig) => {
-        const newTask: Task = { id: crypto.randomUUID(), name, color, isArchived: false, metricConfig };
-        setTasks((prev) => [...prev, newTask]);
+        const cleanName = name.trim();
+        if (!cleanName) return;
+
+        if (tasks.some(t => !t.isArchived && t.name.trim().toLowerCase() === cleanName.toLowerCase())) {
+            return;
+        }
+
+        const newTask: Task = { id: crypto.randomUUID(), name: cleanName, color, isArchived: false, metricConfig };
+        setTasks((prev) => {
+            if (prev.some(t => !t.isArchived && t.name.trim().toLowerCase() === cleanName.toLowerCase())) return prev;
+            return [...prev, newTask];
+        });
         if (user) {
             await supabase.from('tasks').insert({
-                id: newTask.id, user_id: user.id, name, color, metric_config: metricConfig, is_archived: false
+                id: newTask.id, user_id: user.id, name: cleanName, color, metric_config: metricConfig, is_archived: false
             });
         }
     };
@@ -1568,17 +1578,26 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     const getRecordsForDate = (date: string) => records[date] || [];
 
     const addPact = async (text: string, date: string) => {
+        const cleanText = text.trim();
+        if (!cleanText) return;
+
+        const currentDayPacts = pacts[date] || [];
+        if (currentDayPacts.some(p => p.text.trim().toLowerCase() === cleanText.toLowerCase())) {
+            return;
+        }
+
         const createdAt = new Date().toISOString();
-        const newPact: Pact = { id: crypto.randomUUID(), text, isCompleted: false, createdAt };
+        const newPact: Pact = { id: crypto.randomUUID(), text: cleanText, isCompleted: false, createdAt };
         setPacts(prev => {
             const dayPacts = prev[date] || [];
+            if (dayPacts.some(p => p.text.trim().toLowerCase() === cleanText.toLowerCase())) return prev;
             return { ...prev, [date]: [...dayPacts, newPact] };
         });
         if (user) {
             await supabase.from('pacts').insert({
                 id: newPact.id,
                 user_id: user.id,
-                text,
+                text: cleanText,
                 date,
                 is_completed: false,
                 created_at: createdAt
@@ -1665,14 +1684,24 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     };
 
     const addDailyPact = async (text: string) => {
+        const cleanText = text.trim();
+        if (!cleanText) return;
+
+        if (dailyPacts.some(dp => dp.text.trim().toLowerCase() === cleanText.toLowerCase())) {
+            return;
+        }
+
         const createdAt = new Date().toISOString();
-        const newDaily = { id: crypto.randomUUID(), text, createdAt };
-        setDailyPacts(prev => [...prev, newDaily]);
+        const newDaily = { id: crypto.randomUUID(), text: cleanText, createdAt };
+        setDailyPacts(prev => {
+            if (prev.some(dp => dp.text.trim().toLowerCase() === cleanText.toLowerCase())) return prev;
+            return [...prev, newDaily];
+        });
         if (user) {
             await supabase.from('daily_pacts').insert({
                 id: newDaily.id,
                 user_id: user.id,
-                text,
+                text: cleanText,
                 created_at: createdAt
             });
         }
