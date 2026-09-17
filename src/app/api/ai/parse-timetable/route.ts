@@ -48,9 +48,10 @@ const MONTH_NAMES = '(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun
 const DAY_NAMES = '(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tue|wed|thu|fri|sat|sun)';
 
 /**
- * Sanitize user input for prompt injection but allow up to 15K chars.
+ * Sanitize user input for prompt injection. Allows up to 200K chars
+ * to handle very large multi-month plans (Gemini 1.5/2.0 supports 1M token context).
  */
-function sanitizeLargeInput(input: unknown, maxLength: number = 15000): string {
+function sanitizeLargeInput(input: unknown, maxLength: number = 200000): string {
     if (typeof input !== 'string') return '';
     // eslint-disable-next-line no-control-regex
     const sanitized = input.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim();
@@ -249,9 +250,96 @@ function cleanPactsData(rawPacts: any[]): ParsedPactItem[] {
     return cleaned;
 }
 
-const SYSTEM_INSTRUCTION = `You are Gyral's Routine Intelligence Engine. You deeply analyze workout plans, study schedules, discipline routines, and multi-phase transformation programs.
+/**
+ * Smart JSON parser that attempts to repair truncated JSON (common when AI outputs large 3-month plans)
+ */
+function tryParseOrRepairJson(rawStr: string): any {
+    if (!rawStr || typeof rawStr !== 'string') return null;
 
-Your job: extract MEANINGFUL, ACTIONABLE items from the user's raw plan text. The user may paste output from ChatGPT, Claude, DeepSeek, or their own handwritten notes. Plans can span weeks or months.
+    let text = rawStr.trim();
+    if (text.startsWith('```json')) {
+        text = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '');
+    } else if (text.startsWith('```')) {
+        text = text.replace(/^```\s*/i, '').replace(/\s*```$/i, '');
+    }
+    text = text.trim();
+
+    try {
+        return JSON.parse(text);
+    } catch {
+        // Attempt repair on truncated JSON
+        let repaired = text;
+
+        const firstBrace = repaired.indexOf('{');
+        if (firstBrace !== -1) {
+            repaired = repaired.slice(firstBrace);
+        }
+
+        // Close unclosed quote if odd number of quotes
+        let inString = false;
+        let escaped = false;
+        for (let i = 0; i < repaired.length; i++) {
+            const ch = repaired[i];
+            if (ch === '\\' && !escaped) {
+                escaped = true;
+            } else {
+                if (ch === '"' && !escaped) {
+                    inString = !inString;
+                }
+                escaped = false;
+            }
+        }
+        if (inString) {
+            repaired += '"';
+        }
+
+        // Remove trailing comma before bracket or EOF
+        repaired = repaired
+            .replace(/,\s*([\}\]])/g, '$1')
+            .replace(/,\s*$/, '');
+
+        // Balance unclosed brackets
+        const stack: string[] = [];
+        inString = false;
+        escaped = false;
+
+        for (let i = 0; i < repaired.length; i++) {
+            const ch = repaired[i];
+            if (ch === '\\' && !escaped) {
+                escaped = true;
+                continue;
+            }
+            if (ch === '"' && !escaped) {
+                inString = !inString;
+            } else if (!inString) {
+                if (ch === '{' || ch === '[') {
+                    stack.push(ch);
+                } else if (ch === '}') {
+                    if (stack[stack.length - 1] === '{') stack.pop();
+                } else if (ch === ']') {
+                    if (stack[stack.length - 1] === '[') stack.pop();
+                }
+            }
+            escaped = false;
+        }
+
+        while (stack.length > 0) {
+            const open = stack.pop();
+            if (open === '{') repaired += '}';
+            else if (open === '[') repaired += ']';
+        }
+
+        try {
+            return JSON.parse(repaired);
+        } catch {
+            return null;
+        }
+    }
+}
+
+const SYSTEM_INSTRUCTION = `You are Gyral's Routine Intelligence Engine. You deeply analyze workout plans, study schedules, discipline routines, and multi-phase transformation programs up to 200,000 characters in length.
+
+Your job: extract ALL MEANINGFUL, ACTIONABLE pacts, sub-tasks, habit trackers, and goals from the user's raw plan text (which can span weeks or 3+ months).
 
 RETURN ONLY valid raw JSON. No markdown, no code fences, no commentary.
 
@@ -261,7 +349,8 @@ JSON SCHEMA:
   "duration": "Total timeframe (e.g. '3 Months', '12 Weeks')",
   "phases": [
     "Phase 1 (Weeks 1-4): Foundation & Form",
-    "Phase 2 (Weeks 5-8): Progressive Overload"
+    "Phase 2 (Weeks 5-8): Progressive Overload",
+    "Phase 3 (Weeks 9-12): Peak Performance"
   ],
   "pacts": [
     {
@@ -273,47 +362,24 @@ JSON SCHEMA:
       "text": "Lower Body Workout",
       "phase": "Phase 1",
       "subTasks": ["Squats 4x8", "Romanian Deadlifts 3x10", "Leg Press 3x12"]
-    },
-    {
-      "text": "Evening 30-min Reading",
-      "subTasks": []
     }
   ],
   "tasks": ["Water Intake (3L daily)", "Sleep 7+ Hours", "Morning Meditation"],
   "goals": ["Bench Press 100kg by Week 12", "Lose 5kg body fat"],
-  "fullTimetableNote": "Complete formatted Markdown note with the full breakdown."
+  "fullTimetableNote": "Executive summary of the program."
 }
 
 ABSOLUTELY CRITICAL RULES:
 
-1. DATES ARE NOT PACTS! The input may contain lines like "12 Sept to 25 Sept: Push Ups" or "September 12 - October 3: Upper Body". The DATE RANGE is context/scheduling info, NOT the pact. The PACT is the ACTIVITY after the date — "Push Ups" or "Upper Body". NEVER put date ranges, date strings, day numbers, or month names as pact text. STRIP ALL DATES from pact text!
+1. DATES ARE NOT PACTS! The input may contain lines like "12 Sept to 25 Sept: Push Ups" or "September 12 - October 3: Upper Body". The DATE RANGE is scheduling context, NOT the pact. The PACT is the ACTIVITY after the date — "Push Ups" or "Upper Body Workout". NEVER put date ranges, date strings, day numbers, or month names as pact text. STRIP ALL DATES from pact text!
 
-2. "WORKOUT: YES/NO" IS NOT A PACT! If the input says "Workout: Yes/No" or "Push Ups: Yes/No" or "Running: Done", the pact is the ACTIVITY NAME only — "Workout", "Push Ups", "Running". NEVER include Yes, No, Yes/No, Done, Completed, True, False, or any boolean/status text in pact text or sub-task text.
+2. "WORKOUT: YES/NO" IS NOT A PACT! If input says "Workout: Yes/No" or "Push Ups: Yes/No" or "Running: Done", the pact is the ACTIVITY NAME only — "Workout", "Push Ups", "Running". NEVER include Yes, No, Yes/No, Done, Completed, True, False in pact text.
 
-3. EXTRACT THE REAL ACTIVITY: If input says "12 Sept to 25 Sept - Bench Press, Squats, OHP", the pact should be "Strength Training" with sub-tasks ["Bench Press", "Squats", "OHP"]. If input says "Read 20 pages: Yes/No", the pact should be "Read 20 Pages".
+3. EXTRACT ALL DISTINCT ACTIVITIES ACROSS THE ENTIRE PLAN: If the plan spans 3 months with different workouts for different days/phases, extract each distinct workout (Push Day, Pull Day, Leg Day, Cardio, Mobility, etc.) as separate pacts with their exercises as subTasks. Do NOT skip items or combine unrelated workouts.
 
-4. DIFFERENT WORKOUT TYPES = DIFFERENT PACTS: Push Day, Pull Day, Leg Day, Cardio Day, etc. should be separate pacts with their exercises as sub-tasks.
+4. DO NOT OUTPUT FULL TIMETABLE MARKDOWN IN fullTimetableNote: Keep fullTimetableNote short (under 100 words) so response JSON does not get truncated!
 
-5. PLAN TITLES ARE NOT PACTS: Don't extract "3 Month Transformation", "My Fitness Plan", "Routine", "Schedule" etc. as pacts.
-
-6. SUB-TASKS: Extract specific exercises, book chapters, meal items, study topics as sub-tasks under the main pact.
-
-7. TASKS vs PACTS: "tasks" = daily metrics to track (Water intake, Sleep, Steps). "pacts" = specific activities to DO.
-
-8. PHASE TAGGING: If the plan has phases, weeks, or date-based periods, use them as phase tags on pacts but NEVER as pact text.
-
-EXAMPLES OF CORRECT EXTRACTION:
-Input: "12 Sept to 25 Sept: Push Ups, Bench Press, OHP"
-→ pact: { "text": "Upper Body Push", "phase": "Sept 12-25", "subTasks": ["Push Ups", "Bench Press", "OHP"] }
-
-Input: "Workout: Yes/No"
-→ pact: { "text": "Daily Workout", "subTasks": [] }
-
-Input: "Monday - Chest Day\n  - Bench Press 4x10\n  - Incline DB 3x12"
-→ pact: { "text": "Chest Day Workout", "subTasks": ["Bench Press 4x10", "Incline DB 3x12"] }
-
-Input: "Week 1-4: Light jogging 20 mins"
-→ pact: { "text": "Light Jogging 20 mins", "phase": "Weeks 1-4", "subTasks": [] }`;
+5. PLAN TITLES ARE NOT PACTS: Don't extract "3 Month Transformation", "My Fitness Plan", "Routine", "Schedule" as pact text.`;
 
 export async function POST(req: NextRequest) {
     try {
@@ -366,14 +432,14 @@ export async function POST(req: NextRequest) {
             };
 
             const userPrompt = text
-                ? `Analyze this timetable/routine image. Extract ONLY the ACTIVITIES and EXERCISES — strip all dates, day names, and boolean statuses. Additional context:\n${sanitizeLargeInput(text, 2000)}`
+                ? `Analyze this timetable/routine image. Extract ONLY the ACTIVITIES and EXERCISES — strip all dates, day names, and boolean statuses. Additional context:\n${sanitizeLargeInput(text, 200000)}`
                 : "Analyze this timetable/routine image. Extract ONLY the ACTIVITIES and EXERCISES — strip all dates, day names, and boolean statuses.";
             contents = [SYSTEM_INSTRUCTION, userPrompt, imagePart];
         } else {
-            const sanitizedText = sanitizeLargeInput(text, 15000);
+            const sanitizedText = sanitizeLargeInput(text, 200000);
             contents = [
                 SYSTEM_INSTRUCTION,
-                `Here is the user's routine/plan. IMPORTANT: Lines like "12 Sept to 25 Sept: Push Ups" mean the PACT is "Push Ups" and the date range is just scheduling context. Extract ONLY the activities/exercises as pacts. Never put dates or "Yes/No" in pact text.\n\n---\n${sanitizedText}\n---`
+                `Here is the user's routine/plan (up to 200,000 characters). Extract ALL activities/exercises across all months/phases as pacts. Never put dates or "Yes/No" in pact text.\n\n---\n${sanitizedText}\n---`
             ];
         }
 
@@ -382,19 +448,16 @@ export async function POST(req: NextRequest) {
             const { result } = await generateContentWithFallback(genAI, contents, {
                 generationConfig: {
                     responseMimeType: "application/json",
+                    maxOutputTokens: 8192,
                 }
             });
 
             const responseText = result.response.text();
+            parsedData = tryParseOrRepairJson(responseText);
 
-            let cleanedJson = responseText.trim();
-            if (cleanedJson.startsWith('```json')) {
-                cleanedJson = cleanedJson.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-            } else if (cleanedJson.startsWith('```')) {
-                cleanedJson = cleanedJson.replace(/^```\s*/, '').replace(/\s*```$/, '');
+            if (!parsedData || !Array.isArray(parsedData.pacts)) {
+                throw new Error("AI returned malformed or incomplete JSON structure.");
             }
-
-            parsedData = JSON.parse(cleanedJson);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (aiError: any) {
             console.warn("[ParseTimetable AI Fallback Triggered]:", aiError?.message || aiError);
@@ -471,10 +534,10 @@ export async function POST(req: NextRequest) {
                 parsedData = {
                     title: "Imported Routine & Timetable",
                     duration: "3 Months",
-                    phases: phasesList.length > 0 ? phasesList.slice(0, 6) : ["Phase 1: Foundation", "Phase 2: Progressive Overload", "Phase 3: Peak Performance"],
-                    pacts: pactsList.length > 0 ? pactsList.slice(0, 20) : [{ text: "Daily Workout", subTasks: [] }],
-                    tasks: tasksList.length > 0 ? tasksList.slice(0, 8) : ["Daily Hydration Tracker"],
-                    goals: goalsList.length > 0 ? goalsList.slice(0, 6) : ["Transformation Achievement"],
+                    phases: phasesList.length > 0 ? phasesList.slice(0, 10) : ["Phase 1: Foundation", "Phase 2: Progressive Overload", "Phase 3: Peak Performance"],
+                    pacts: pactsList.length > 0 ? pactsList.slice(0, 100) : [{ text: "Daily Workout", subTasks: [] }],
+                    tasks: tasksList.length > 0 ? tasksList.slice(0, 15) : ["Daily Hydration Tracker"],
+                    goals: goalsList.length > 0 ? goalsList.slice(0, 10) : ["Transformation Achievement"],
                     fullTimetableNote: text
                 };
             } else {
