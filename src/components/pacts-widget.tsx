@@ -15,6 +15,20 @@ export function PactWidget() {
     const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
     const [expandedPactIds, setExpandedPactIds] = useState<Record<string, boolean>>({});
     const [subTaskInputs, setSubTaskInputs] = useState<Record<string, string>>({});
+    const clickTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
+
+    const handlePactClick = (pactId: string) => {
+        if (clickTimerRef.current[pactId]) {
+            clearTimeout(clickTimerRef.current[pactId]);
+            delete clickTimerRef.current[pactId];
+            setExpandedPactIds(prev => ({ ...prev, [pactId]: !prev[pactId] }));
+        } else {
+            clickTimerRef.current[pactId] = setTimeout(() => {
+                delete clickTimerRef.current[pactId];
+                togglePact(pactId, selectedDate);
+            }, 220);
+        }
+    };
 
     const todayStr = useToday();
     const [selectedDate, setSelectedDate] = useState(todayStr);
@@ -268,10 +282,11 @@ export function PactWidget() {
                             >
                                 <div className="flex items-center justify-between w-full">
                                     <button
-                                        onClick={() => togglePact(pact.id, selectedDate)}
-                                        className="flex items-center gap-3 flex-1 min-w-0 text-left focus:outline-none"
+                                        onClick={() => handlePactClick(pact.id)}
+                                        className="flex items-center gap-3 flex-1 min-w-0 text-left focus:outline-none group/btn cursor-pointer"
+                                        title="Click to toggle completion, Double-click to view sub-tasks"
                                     >
-                                        <div className={`p-2 rounded-full shrink-0 ${pact.isCompleted ? 'bg-black text-white' : 'bg-white/5 text-current'}`}>
+                                        <div className={`p-2 rounded-full shrink-0 transition-transform group-hover/btn:scale-105 ${pact.isCompleted ? 'bg-black text-white' : 'bg-white/5 text-current'}`}>
                                             {getIcon(pact.text)}
                                         </div>
                                         <div className="flex flex-col flex-1 min-w-0">
@@ -283,33 +298,20 @@ export function PactWidget() {
                                                     </span>
                                                 )}
                                             </span>
-                                            {totalSubCount > 0 && (
+                                            {totalSubCount > 0 ? (
                                                 <span className={`text-[10px] font-mono mt-0.5 flex items-center gap-1 font-semibold ${pact.isCompleted ? 'text-black/60' : 'text-zinc-400'}`}>
-                                                    <ListChecks className="w-3 h-3" />
+                                                    <ListChecks className="w-3 h-3 text-rose-400" />
                                                     {completedSubCount}/{totalSubCount} sub-tasks completed
+                                                </span>
+                                            ) : (
+                                                <span className={`text-[10px] font-mono mt-0.5 opacity-0 group-hover/item:opacity-60 transition-opacity ${pact.isCompleted ? 'text-black' : 'text-zinc-400'}`}>
+                                                    Double-click for sub-tasks
                                                 </span>
                                             )}
                                         </div>
                                     </button>
 
                                     <div className="flex items-center gap-2 shrink-0 ml-2">
-                                        {/* Toggle Expand Checklist */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setExpandedPactIds(prev => ({ ...prev, [pact.id]: !prev[pact.id] }));
-                                            }}
-                                            className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 text-[11px] font-semibold ${
-                                                pact.isCompleted
-                                                    ? 'text-black/60 hover:text-black hover:bg-black/10'
-                                                    : 'text-zinc-400 hover:text-white hover:bg-white/10'
-                                            }`}
-                                            title={isExpanded ? "Hide checklist" : "Show checklist"}
-                                        >
-                                            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                                            {totalSubCount === 0 && <span className="text-[10px]">+ Sub-task</span>}
-                                        </button>
-
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -326,13 +328,17 @@ export function PactWidget() {
                                         </button>
 
                                         <button
-                                            onClick={() => togglePact(pact.id, selectedDate)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                togglePact(pact.id, selectedDate);
+                                            }}
                                             className={`
                                                 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300
                                                 ${pact.isCompleted
                                                     ? 'border-black bg-black text-white'
                                                     : 'border-zinc-600 hover:border-zinc-400'}
                                             `}
+                                            title="Check/Uncheck Pact"
                                         >
                                             {pact.isCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                                         </button>
