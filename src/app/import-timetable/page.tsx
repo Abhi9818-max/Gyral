@@ -31,7 +31,8 @@ import {
     X,
     LogOut,
     Plus,
-    Edit3
+    Edit3,
+    Calendar
 } from "lucide-react";
 
 function formatCompactDuration(rawDuration?: string): string {
@@ -146,6 +147,7 @@ export default function ImportTimetablePage() {
     const [selectedTasks, setSelectedTasks] = useState<boolean[]>([]);
     const [selectedGoals, setSelectedGoals] = useState<boolean[]>([]);
     const [includeNote, setIncludeNote] = useState(true);
+    const [previewFilterDate, setPreviewFilterDate] = useState<string | null>(null);
 
     // History logs state
     const [importLogs, setImportLogs] = useState<ImportLog[]>([]);
@@ -382,12 +384,15 @@ export default function ImportTimetablePage() {
             const importedTaskNames: string[] = [];
             const importedGoalTitles: string[] = [];
 
-            // 1. Add selected Pacts (with Sub-Tasks)
+            // 1. Add selected Pacts (with Sub-Tasks & Date Range Expansion)
             const seenPacts = new Set<string>();
             parsedData.pacts.forEach((pactObj, idx) => {
                 if (selectedPacts[idx]) {
                     const pactText = typeof pactObj === 'string' ? pactObj : pactObj.text;
                     const pactSubs = typeof pactObj === 'string' ? [] : pactObj.subTasks || [];
+                    const startDateStr = typeof pactObj === 'string' ? undefined : pactObj.startDate;
+                    const endDateStr = typeof pactObj === 'string' ? undefined : pactObj.endDate;
+
                     if (!pactText.trim()) return;
 
                     const cleanPact = pactText.trim();
@@ -396,6 +401,26 @@ export default function ImportTimetablePage() {
                     seenPacts.add(lower);
 
                     importedPactTexts.push(cleanPact);
+
+                    // If a date range is specified (e.g. 12 Sept to 25 Sept), expand pact to EVERY date in range!
+                    if (startDateStr && endDateStr) {
+                        try {
+                            const start = parseISO(startDateStr);
+                            const end = parseISO(endDateStr);
+                            if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && !isBefore(end, start)) {
+                                let curr = start;
+                                while (!isBefore(end, curr)) {
+                                    const dStr = format(curr, 'yyyy-MM-dd');
+                                    addPact(cleanPact, dStr, pactSubs);
+                                    curr = addDays(curr, 1);
+                                }
+                                return;
+                            }
+                        } catch (e) {
+                            console.error("[DateRangeExpand Error]:", e);
+                        }
+                    }
+
                     if (makePactsRecurring) {
                         addDailyPact(cleanPact);
                     }
@@ -897,17 +922,58 @@ export default function ImportTimetablePage() {
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     {/* 1. Daily Pacts */}
                                     <div className="bg-white/[0.06] border border-white/30 rounded-[32px] p-6 space-y-4 backdrop-blur-3xl shadow-[0_15px_50px_rgba(0,0,0,0.5),inset_0_1px_2.5px_rgba(255,255,255,0.5)]">
-                                        <div className="flex items-center justify-between pb-3 border-b border-white/15">
-                                            <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
-                                                <Dumbbell className="w-4 h-4 text-rose-400" />
-                                                Daily Pacts ({parsedData.pacts.length})
-                                            </h3>
-                                            <button
-                                                onClick={handleAddPact}
-                                                className="px-2.5 py-1 rounded-full bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-400/40 text-[11px] font-semibold flex items-center gap-1 transition-all"
-                                            >
-                                                <Plus className="w-3 h-3" /> Add Pact
-                                            </button>
+                                        <div className="flex flex-col gap-2 pb-3 border-b border-white/15">
+                                            <div className="flex items-center justify-between">
+                                                <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
+                                                    <Dumbbell className="w-4 h-4 text-rose-400" />
+                                                    Daily Pacts ({parsedData.pacts.length})
+                                                </h3>
+                                                <button
+                                                    onClick={handleAddPact}
+                                                    className="px-2.5 py-1 rounded-full bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-400/40 text-[11px] font-semibold flex items-center gap-1 transition-all"
+                                                >
+                                                    <Plus className="w-3 h-3" /> Add Pact
+                                                </button>
+                                            </div>
+
+                                            {/* Calendar Date Picker Bar */}
+                                            <div className="flex items-center justify-between gap-2 bg-white/10 border border-white/20 p-2 rounded-2xl backdrop-blur-xl">
+                                                <div className="flex items-center gap-1.5 text-xs text-rose-300 font-semibold">
+                                                    <Calendar className="w-4 h-4 text-rose-400 shrink-0" />
+                                                    <span>Preview Calendar Date:</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <input
+                                                        type="date"
+                                                        value={previewFilterDate || ''}
+                                                        onChange={(e) => setPreviewFilterDate(e.target.value || null)}
+                                                        className="bg-black/50 border border-white/20 rounded-xl px-2 py-1 text-[11px] text-white font-mono focus:outline-none focus:border-rose-400"
+                                                    />
+                                                    {previewFilterDate && (
+                                                        <button
+                                                            onClick={() => setPreviewFilterDate(null)}
+                                                            className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors text-[10px]"
+                                                            title="Clear date filter"
+                                                        >
+                                                            <X className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {previewFilterDate && (
+                                                <div className="text-[11px] font-mono text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-xl flex items-center justify-between">
+                                                    <span>Showing active pacts for: {previewFilterDate}</span>
+                                                    <span className="font-bold">
+                                                        {parsedData.pacts.filter(pObj => {
+                                                            const pStart = typeof pObj === 'string' ? undefined : pObj.startDate;
+                                                            const pEnd = typeof pObj === 'string' ? undefined : pObj.endDate;
+                                                            if (!pStart || !pEnd) return true;
+                                                            return previewFilterDate >= pStart && previewFilterDate <= pEnd;
+                                                        }).length} Active
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <label className="flex items-center gap-2 text-xs text-zinc-200 bg-white/10 border border-white/20 p-3 rounded-2xl cursor-pointer backdrop-blur-xl">
@@ -927,9 +993,29 @@ export default function ImportTimetablePage() {
                                                 const pactText = typeof pactObj === 'string' ? pactObj : pactObj.text;
                                                 const pactSubTasks = typeof pactObj === 'string' ? [] : pactObj.subTasks || [];
                                                 const pactPhase = typeof pactObj === 'string' ? undefined : pactObj.phase;
+                                                const pactStart = typeof pactObj === 'string' ? undefined : pactObj.startDate;
+                                                const pactEnd = typeof pactObj === 'string' ? undefined : pactObj.endDate;
+
+                                                const isFilteredOut = previewFilterDate && pactStart && pactEnd &&
+                                                    (previewFilterDate < pactStart || previewFilterDate > pactEnd);
+
+                                                if (isFilteredOut) return null;
 
                                                 return (
                                                     <div key={idx} className="bg-black/40 p-3 rounded-2xl border border-white/15 focus-within:border-rose-400/50 transition-all backdrop-blur-xl space-y-2.5 group">
+                                                        {/* Date Range Badge if available */}
+                                                        {pactStart && pactEnd && (
+                                                            <div className="flex items-center justify-between text-[10px] font-mono text-emerald-300 bg-emerald-500/15 border border-emerald-400/30 px-2.5 py-0.5 rounded-full">
+                                                                <span className="flex items-center gap-1 font-bold">
+                                                                    <Calendar className="w-3 h-3 text-emerald-400" />
+                                                                    Active: {pactStart} → {pactEnd}
+                                                                </span>
+                                                                <span className="text-emerald-200 font-sans text-[9px] font-semibold">
+                                                                    (Expands across all {differenceInCalendarDays(parseISO(pactEnd), parseISO(pactStart)) + 1} days)
+                                                                </span>
+                                                            </div>
+                                                        )}
+
                                                         {/* Main Pact Row */}
                                                         <div className="flex items-center gap-2.5">
                                                             <input

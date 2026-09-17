@@ -215,6 +215,17 @@ function cleanPactsData(rawPacts: any[]): ParsedPactItem[] {
         const rawText = typeof item === 'string' ? item : item?.text || '';
         const subTasks: string[] = Array.isArray(item?.subTasks) ? item.subTasks : [];
         let phase = item?.phase || undefined;
+        let startDate = item?.startDate || undefined;
+        let endDate = item?.endDate || undefined;
+
+        // Auto-extract date range if missing from AI fields
+        if (!startDate || !endDate) {
+            const extracted = extractDateRangeFromText(rawText) || extractDateRangeFromText(item?.phase || '');
+            if (extracted) {
+                startDate = extracted.startDate;
+                endDate = extracted.endDate;
+            }
+        }
 
         const text = cleanPactText(rawText);
         if (!text) continue;
@@ -243,7 +254,9 @@ function cleanPactsData(rawPacts: any[]): ParsedPactItem[] {
         cleaned.push({
             text,
             subTasks: cleanedSubTasks,
-            phase
+            phase,
+            startDate,
+            endDate
         });
     }
 
