@@ -524,7 +524,7 @@ export function PactWidget() {
                             <div
                                 key={pact.id}
                                 className={`
-                                    relative flex flex-col p-4 rounded-2xl transition-all duration-300 group/item text-left select-none
+                                    relative flex flex-col p-3.5 rounded-2xl transition-all duration-300 group/item text-left select-none
                                     ${pact.isCompleted
                                         ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]'
                                         : 'bg-zinc-800/40 text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200 border border-transparent hover:border-white/5'}
@@ -539,34 +539,26 @@ export function PactWidget() {
                                         <div className={`p-2 rounded-full shrink-0 transition-transform group-hover/btn:scale-105 ${pact.isCompleted ? 'bg-black text-white' : 'bg-white/5 text-current'}`}>
                                             {getIcon(pact.text)}
                                         </div>
-                                        <div className="flex flex-col flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <span className={`font-bold text-sm break-words whitespace-normal ${pact.isCompleted ? 'line-through decoration-black/20' : ''}`}>
-                                                    {pact.text}
+                                        <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
+                                            <span className={`font-bold text-sm break-words whitespace-normal ${pact.isCompleted ? 'line-through decoration-black/20' : ''}`}>
+                                                {pact.text}
+                                            </span>
+
+                                            {(pact.shiftedCount ?? 0) > 0 && (
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 whitespace-nowrap">
+                                                    Shifted
                                                 </span>
+                                            )}
 
-                                                {(pact.shiftedCount ?? 0) > 0 && (
-                                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 whitespace-nowrap">
-                                                        Shifted
-                                                    </span>
-                                                )}
-
-                                                {/* VIBRANT ORANGE LOGO BADGE FOR PACTS WITH SUB-TASKS */}
-                                                {totalSubCount > 0 && (
-                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono font-bold shrink-0 shadow-sm ${
-                                                        pact.isCompleted
-                                                            ? 'bg-orange-500/20 text-orange-950 border-orange-500/50 font-extrabold'
-                                                            : 'bg-orange-500/20 text-orange-300 border-orange-500/40'
-                                                    }`} title="Contains sub-tasks (Double click to view)">
-                                                        <ListChecks className="w-3 h-3 text-orange-400 animate-pulse" />
-                                                        <span>{completedSubCount}/{totalSubCount}</span>
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            {totalSubCount === 0 && (
-                                                <span className={`text-[10px] font-mono mt-0.5 opacity-0 group-hover/item:opacity-60 transition-opacity ${pact.isCompleted ? 'text-black' : 'text-zinc-400'}`}>
-                                                    Double-click for sub-tasks
+                                            {/* VIBRANT ORANGE LOGO BADGE FOR PACTS WITH SUB-TASKS */}
+                                            {totalSubCount > 0 && (
+                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono font-bold shrink-0 shadow-sm ${
+                                                    pact.isCompleted
+                                                        ? 'bg-orange-500/20 text-orange-950 border-orange-500/50 font-extrabold'
+                                                        : 'bg-orange-500/20 text-orange-300 border-orange-500/40'
+                                                }`} title="Contains sub-tasks (Double click to view)">
+                                                    <ListChecks className="w-3 h-3 text-orange-400 animate-pulse" />
+                                                    <span>{completedSubCount}/{totalSubCount}</span>
                                                 </span>
                                             )}
                                         </div>
