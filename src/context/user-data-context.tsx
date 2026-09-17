@@ -275,9 +275,11 @@ interface UserDataContextType {
     togglePact: (id: string, date: string) => void;
     deletePact: (id: string, date: string) => void;
     shiftPact: (id: string, currentDate: string) => void;
+    updatePactText: (id: string, date: string, newText: string) => Promise<void>;
     addPactSubTask: (pactId: string, date: string, text: string) => Promise<void>;
     togglePactSubTask: (pactId: string, date: string, subTaskId: string) => Promise<void>;
     deletePactSubTask: (pactId: string, date: string, subTaskId: string) => Promise<void>;
+    updatePactSubTaskText: (pactId: string, date: string, subTaskId: string, newText: string) => Promise<void>;
 
     // Daily Pacts
     dailyPacts: DailyPact[];
@@ -1774,6 +1776,39 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const updatePactText = async (id: string, date: string, newText: string) => {
+        const cleanText = newText.trim();
+        if (!cleanText) return;
+        setPacts(prev => {
+            const dayPacts = prev[date] || [];
+            const updated = dayPacts.map(p => p.id === id ? { ...p, text: cleanText } : p);
+            return { ...prev, [date]: updated };
+        });
+        if (user) await supabase.from('pacts').update({ text: cleanText }).eq('id', id);
+    };
+
+    const updatePactSubTaskText = async (pactId: string, date: string, subTaskId: string, newText: string) => {
+        const cleanText = newText.trim();
+        if (!cleanText) return;
+        let updatedSubTasks: PactSubTask[] = [];
+
+        setPacts(prev => {
+            const dayPacts = prev[date] || [];
+            const updated = dayPacts.map(p => {
+                if (p.id === pactId) {
+                    updatedSubTasks = (p.subTasks || []).map(s => s.id === subTaskId ? { ...s, text: cleanText } : s);
+                    return { ...p, subTasks: updatedSubTasks };
+                }
+                return p;
+            });
+            return { ...prev, [date]: updated };
+        });
+
+        if (user) {
+            await supabase.from('pacts').update({ sub_tasks: updatedSubTasks }).eq('id', pactId);
+        }
+    };
+
     const addDailyPact = async (text: string) => {
         const cleanText = text.trim();
         if (!cleanText) return;
@@ -2330,7 +2365,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         <UserDataContext.Provider value={{
             tasks, records, addTask, updateTask, deleteTask, toggleTaskArchive, addRecord, deleteRecord, getRecordsForDate, activeFilterTaskId, setActiveFilterTaskId,
             consistencyScore, currentStreak, longestStreak, streakStatus, streakTier, streakStrength, rebuildMode, analyzePatterns, getAdaptiveSuggestion, getTaskAnalytics,
-            lastCompletion, setLastCompletion, getStreakForDate, showLossModal, setShowLossModal, pacts, addPact, togglePact, deletePact, shiftPact, addPactSubTask, togglePactSubTask, deletePactSubTask, dailyPacts, addDailyPact, deleteDailyPact, notes, addNote, updateNote, deleteNote,
+            lastCompletion, setLastCompletion, getStreakForDate, showLossModal, setShowLossModal, pacts, addPact, togglePact, deletePact, shiftPact, updatePactText, addPactSubTask, togglePactSubTask, deletePactSubTask, updatePactSubTaskText, dailyPacts, addDailyPact, deleteDailyPact, notes, addNote, updateNote, deleteNote,
             restoreData, syncCloudData, birthDate, setBirthDate: updateBirthDate, showStatsCard, toggleStatsCard, theme, setTheme, language, setLanguage, user, lifeEvents, addLifeEvent, updateLifeEvent, deleteLifeEvent,
             debts, addDebt, payDebt, vows, addVow, completeVowDaily, extendVow, isExiled, exiledUntil, redeemExile, factions, currentFaction, setFaction, investments, addInvestment, completeInvestment,
             navPreferences, updateNavPreferences, ALL_NAV_ITEMS, profile, setProfile, onboardingCompleted, completeOnboarding, mementoViewMode, toggleMementoViewMode,

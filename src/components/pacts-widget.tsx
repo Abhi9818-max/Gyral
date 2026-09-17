@@ -2,19 +2,38 @@
 
 import { useUserData } from '@/context/user-data-context';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Dumbbell, BookOpen, Droplet, Carrot, Circle, Check, Zap, Brain, Moon, Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight, MoreVertical, Sparkles, ChevronDown, ChevronUp, Trash2, ListChecks } from 'lucide-react';
+import { Dumbbell, BookOpen, Droplet, Carrot, Circle, Check, Zap, Brain, Moon, Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight, MoreVertical, Sparkles, ChevronDown, ChevronUp, Trash2, ListChecks, Edit3, X, Save, Layers } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToday } from '@/hooks/use-today';
 
 export function PactWidget() {
     const router = useRouter();
-    const { pacts, addPact, togglePact, deletePact, shiftPact, addDailyPact, dailyPacts, deleteDailyPact, addPactSubTask, togglePactSubTask, deletePactSubTask } = useUserData();
+    const {
+        pacts, addPact, togglePact, deletePact, shiftPact,
+        addDailyPact, dailyPacts, deleteDailyPact,
+        addPactSubTask, togglePactSubTask, deletePactSubTask,
+        updatePactText, updatePactSubTaskText
+    } = useUserData();
+
     const [newPactText, setNewPactText] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
+
+    // Initial Sub-Tasks during creation
+    const [initialSubTasks, setInitialSubTasks] = useState<string[]>([]);
+    const [newSubTaskStepText, setNewSubTaskStepText] = useState('');
+    const [showInitialSubTasks, setShowInitialSubTasks] = useState(false);
+
+    // Editing Pact Mode (from 3 dots menu)
+    const [editingPactId, setEditingPactId] = useState<string | null>(null);
+    const [editPactTitle, setEditPactTitle] = useState('');
+    const [editingSubTaskId, setEditingSubTaskId] = useState<string | null>(null);
+    const [editSubTaskText, setEditSubTaskText] = useState('');
+    const [editAddSubTaskInput, setEditAddSubTaskInput] = useState('');
+
+    // Double click expansion state
     const [expandedPactIds, setExpandedPactIds] = useState<Record<string, boolean>>({});
-    const [subTaskInputs, setSubTaskInputs] = useState<Record<string, string>>({});
     const clickTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
     const handlePactClick = (pactId: string) => {
@@ -64,15 +83,31 @@ export function PactWidget() {
         return <Zap className="w-4 h-4" />; // Generic energetic icon
     };
 
-    const handleAddPact = (e: React.FormEvent) => {
+    const handleAddPact = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (newPactText.trim()) {
-            addPact(newPactText.trim(), selectedDate);
-            setNewPactText('');
-            // If we have pacts, close the adding mode
-            if (currentPacts.length >= 0) {
-                setIsAdding(false);
+        const pactTitle = newPactText.trim();
+        if (pactTitle) {
+            addPact(pactTitle, selectedDate);
+
+            // Add initial sub-tasks if provided
+            if (initialSubTasks.length > 0) {
+                const stepsToAdd = [...initialSubTasks];
+                setTimeout(() => {
+                    const dayPacts = pacts[selectedDate] || [];
+                    const createdPact = dayPacts.find(p => p.text.trim().toLowerCase() === pactTitle.toLowerCase());
+                    if (createdPact) {
+                        stepsToAdd.forEach(step => {
+                            if (step.trim()) addPactSubTask(createdPact.id, selectedDate, step.trim());
+                        });
+                    }
+                }, 100);
             }
+
+            setNewPactText('');
+            setInitialSubTasks([]);
+            setNewSubTaskStepText('');
+            setShowInitialSubTasks(false);
+            setIsAdding(false);
         }
     };
 
@@ -123,7 +158,7 @@ export function PactWidget() {
                             </button>
                         </div>
 
-                        {/* Add Button (Only if not already adding and list exists) */}
+                        {/* Add Button */}
                         {!showInput && (
                             <button
                                 onClick={() => setIsAdding(true)}
@@ -164,24 +199,99 @@ export function PactWidget() {
                     </div>
                 </div>
 
-                {/* Input Form */}
+                {/* Input Form with Sub-Task Steps Option */}
                 {showInput && (
-                    <form onSubmit={handleAddPact} className="mb-6 relative animate-[fadeIn_0.3s_ease-out]">
-                        <input
-                            type="text"
-                            value={newPactText}
-                            onChange={(e) => setNewPactText(e.target.value)}
-                            placeholder={`Add a pact for ${displayDate}...`}
-                            autoFocus={isAdding}
-                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 pr-12 text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/30 transition-all"
-                        />
-                        <button
-                            type="submit"
-                            disabled={!newPactText.trim()}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-white text-black rounded-lg disabled:opacity-50 disabled:bg-zinc-800 disabled:text-zinc-600 transition-all hover:scale-105 flex items-center justify-center"
-                        >
-                            <Plus className="w-4 h-4" />
-                        </button>
+                    <form onSubmit={handleAddPact} className="mb-6 bg-black/40 border border-white/15 rounded-2xl p-4 space-y-3 animate-[fadeIn_0.3s_ease-out]">
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="text"
+                                value={newPactText}
+                                onChange={(e) => setNewPactText(e.target.value)}
+                                placeholder={`Add a pact for ${displayDate}...`}
+                                autoFocus={isAdding}
+                                className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder:text-zinc-500 focus:outline-none focus:border-white/30 transition-all text-sm font-medium"
+                            />
+                            <button
+                                type="submit"
+                                disabled={!newPactText.trim()}
+                                className="px-4 py-2.5 bg-white text-black font-bold rounded-xl text-xs disabled:opacity-50 transition-all hover:scale-105 flex items-center gap-1.5 shrink-0 shadow-md"
+                            >
+                                <Plus className="w-4 h-4" />
+                                <span>Seal Pact</span>
+                            </button>
+                        </div>
+
+                        {/* Button to expand Initial Sub-Tasks */}
+                        {!showInitialSubTasks ? (
+                            <button
+                                type="button"
+                                onClick={() => setShowInitialSubTasks(true)}
+                                className="text-xs text-orange-400 hover:text-orange-300 font-semibold flex items-center gap-1.5 transition-colors pt-1"
+                            >
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>+ Add Sub-Task Steps</span>
+                            </button>
+                        ) : (
+                            <div className="space-y-2 pt-2 border-t border-white/10">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-orange-400 flex items-center gap-1">
+                                        <ListChecks className="w-3.5 h-3.5" /> Initial Sub-Task Steps ({initialSubTasks.length})
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowInitialSubTasks(false)}
+                                        className="text-[11px] text-zinc-500 hover:text-zinc-300"
+                                    >
+                                        Hide
+                                    </button>
+                                </div>
+
+                                {initialSubTasks.map((step, sIdx) => (
+                                    <div key={sIdx} className="flex items-center justify-between gap-2 bg-white/5 px-3 py-1.5 rounded-xl text-xs text-zinc-200 border border-white/5">
+                                        <span className="font-medium">• {step}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => setInitialSubTasks(prev => prev.filter((_, idx) => idx !== sIdx))}
+                                            className="text-zinc-500 hover:text-red-400 p-0.5"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                ))}
+
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        value={newSubTaskStepText}
+                                        onChange={(e) => setNewSubTaskStepText(e.target.value)}
+                                        placeholder="Add sub-task step (e.g. 10 Warmup Laps)..."
+                                        className="flex-1 bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-orange-500/40"
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                if (newSubTaskStepText.trim()) {
+                                                    setInitialSubTasks(prev => [...prev, newSubTaskStepText.trim()]);
+                                                    setNewSubTaskStepText('');
+                                                }
+                                            }
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (newSubTaskStepText.trim()) {
+                                                setInitialSubTasks(prev => [...prev, newSubTaskStepText.trim()]);
+                                                setNewSubTaskStepText('');
+                                            }
+                                        }}
+                                        disabled={!newSubTaskStepText.trim()}
+                                        className="px-3 py-1.5 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-300 font-bold rounded-xl text-xs disabled:opacity-40"
+                                    >
+                                        + Step
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </form>
                 )}
 
@@ -189,7 +299,138 @@ export function PactWidget() {
                 <div className="flex flex-col gap-3">
                     {currentPacts.map(pact => {
                         const isDeleting = deleteCandidateId === pact.id;
+                        const isEditing = editingPactId === pact.id;
+                        const subTasks = pact.subTasks || [];
+                        const completedSubCount = subTasks.filter(s => s.isCompleted).length;
+                        const totalSubCount = subTasks.length;
 
+                        // EDIT PACT CARD MODE
+                        if (isEditing) {
+                            return (
+                                <div key={pact.id} className="relative flex flex-col p-4 rounded-2xl bg-zinc-900 border border-orange-500/40 shadow-2xl z-10 animate-[fadeIn_0.2s_ease-out] space-y-4">
+                                    <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                                        <span className="text-orange-400 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                            <Edit3 className="w-4 h-4" /> Edit Pact & Sub-Tasks
+                                        </span>
+                                        <button
+                                            onClick={() => setEditingPactId(null)}
+                                            className="text-xs px-3.5 py-1 bg-orange-500 text-black font-bold rounded-lg hover:bg-orange-400 transition-colors"
+                                        >
+                                            Done
+                                        </button>
+                                    </div>
+
+                                    {/* Edit Main Pact Title */}
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] text-zinc-400 font-mono">Main Pact Title:</label>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="text"
+                                                value={editPactTitle}
+                                                onChange={(e) => setEditPactTitle(e.target.value)}
+                                                className="flex-1 bg-black/50 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500/50"
+                                            />
+                                            <button
+                                                onClick={() => {
+                                                    if (editPactTitle.trim()) {
+                                                        updatePactText(pact.id, selectedDate, editPactTitle.trim());
+                                                    }
+                                                }}
+                                                className="px-3 py-2 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl border border-white/20 transition-all"
+                                            >
+                                                Save
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Sub-Tasks Management */}
+                                    <div className="space-y-2 pt-2 border-t border-white/10">
+                                        <span className="text-[11px] text-zinc-400 font-mono flex items-center gap-1">
+                                            <ListChecks className="w-3.5 h-3.5 text-orange-400" /> Manage Sub-Tasks ({subTasks.length}):
+                                        </span>
+
+                                        {subTasks.map(sub => (
+                                            <div key={sub.id} className="flex items-center justify-between gap-2 bg-black/40 p-2.5 rounded-xl border border-white/10">
+                                                {editingSubTaskId === sub.id ? (
+                                                    <div className="flex items-center gap-2 flex-1">
+                                                        <input
+                                                            type="text"
+                                                            value={editSubTaskText}
+                                                            onChange={(e) => setEditSubTaskText(e.target.value)}
+                                                            className="flex-1 bg-black border border-orange-500/40 rounded-lg px-2.5 py-1 text-xs text-white"
+                                                            autoFocus
+                                                        />
+                                                        <button
+                                                            onClick={() => {
+                                                                if (editSubTaskText.trim()) {
+                                                                    updatePactSubTaskText(pact.id, selectedDate, sub.id, editSubTaskText.trim());
+                                                                }
+                                                                setEditingSubTaskId(null);
+                                                            }}
+                                                            className="px-2.5 py-1 bg-emerald-500 text-white font-bold text-xs rounded-lg"
+                                                        >
+                                                            Save
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <span className="text-xs text-zinc-200 flex-1 truncate font-medium">{sub.text}</span>
+                                                        <div className="flex items-center gap-1">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setEditingSubTaskId(sub.id);
+                                                                    setEditSubTaskText(sub.text);
+                                                                }}
+                                                                className="p-1 text-zinc-400 hover:text-white rounded"
+                                                                title="Rename Sub-task"
+                                                            >
+                                                                <Edit3 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => deletePactSubTask(pact.id, selectedDate, sub.id)}
+                                                                className="p-1 text-zinc-500 hover:text-red-400 rounded"
+                                                                title="Delete Sub-task"
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        ))}
+
+                                        {/* Form to Add New Sub-Task in Edit Mode */}
+                                        <form
+                                            onSubmit={(e) => {
+                                                e.preventDefault();
+                                                if (editAddSubTaskInput.trim()) {
+                                                    addPactSubTask(pact.id, selectedDate, editAddSubTaskInput.trim());
+                                                    setEditAddSubTaskInput('');
+                                                }
+                                            }}
+                                            className="flex items-center gap-2 pt-1"
+                                        >
+                                            <input
+                                                type="text"
+                                                value={editAddSubTaskInput}
+                                                onChange={(e) => setEditAddSubTaskInput(e.target.value)}
+                                                placeholder="Add new sub-task step..."
+                                                className="flex-1 bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-orange-500/40"
+                                            />
+                                            <button
+                                                type="submit"
+                                                disabled={!editAddSubTaskInput.trim()}
+                                                className="px-3 py-1.5 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-300 font-bold text-xs rounded-xl disabled:opacity-40"
+                                            >
+                                                + Sub-Task
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            );
+                        }
+
+                        // 3 DOTS OPTIONS MENU MODE
                         if (isDeleting) {
                             const matchedDailyPact = dailyPacts?.find(dp => dp.text.trim().toLowerCase() === pact.text.trim().toLowerCase());
 
@@ -209,6 +450,18 @@ export function PactWidget() {
                                             className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold text-zinc-400 hover:text-white transition-colors"
                                         >
                                             CANCEL
+                                        </button>
+
+                                        {/* EDIT PACT & SUB-TASKS BUTTON */}
+                                        <button
+                                            onClick={() => {
+                                                setEditingPactId(pact.id);
+                                                setEditPactTitle(pact.text);
+                                                setDeleteCandidateId(null);
+                                            }}
+                                            className="px-3 py-2 rounded-lg bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-300 text-xs font-bold transition-all flex items-center gap-1.5 shadow-md"
+                                        >
+                                            <Edit3 className="w-3.5 h-3.5" /> EDIT / SUB-TASKS
                                         </button>
 
                                         {!matchedDailyPact && (!pact.shiftedCount || pact.shiftedCount < 1) && (
@@ -266,9 +519,6 @@ export function PactWidget() {
                         }
 
                         const isExpanded = expandedPactIds[pact.id] || false;
-                        const subTasks = pact.subTasks || [];
-                        const completedSubCount = subTasks.filter(s => s.isCompleted).length;
-                        const totalSubCount = subTasks.length;
 
                         return (
                             <div
@@ -290,20 +540,31 @@ export function PactWidget() {
                                             {getIcon(pact.text)}
                                         </div>
                                         <div className="flex flex-col flex-1 min-w-0">
-                                            <span className={`font-bold text-sm break-words whitespace-normal ${pact.isCompleted ? 'line-through decoration-black/20' : ''}`}>
-                                                {pact.text}
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <span className={`font-bold text-sm break-words whitespace-normal ${pact.isCompleted ? 'line-through decoration-black/20' : ''}`}>
+                                                    {pact.text}
+                                                </span>
+
                                                 {pact.shiftedCount && pact.shiftedCount > 0 && (
-                                                    <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 whitespace-nowrap">
+                                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 whitespace-nowrap">
                                                         Shifted
                                                     </span>
                                                 )}
-                                            </span>
-                                            {totalSubCount > 0 ? (
-                                                <span className={`text-[10px] font-mono mt-0.5 flex items-center gap-1 font-semibold ${pact.isCompleted ? 'text-black/60' : 'text-zinc-400'}`}>
-                                                    <ListChecks className="w-3 h-3 text-rose-400" />
-                                                    {completedSubCount}/{totalSubCount} sub-tasks completed
-                                                </span>
-                                            ) : (
+
+                                                {/* VIBRANT ORANGE LOGO BADGE FOR PACTS WITH SUB-TASKS */}
+                                                {totalSubCount > 0 && (
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono font-bold shrink-0 shadow-sm ${
+                                                        pact.isCompleted
+                                                            ? 'bg-orange-500/20 text-orange-950 border-orange-500/50 font-extrabold'
+                                                            : 'bg-orange-500/20 text-orange-300 border-orange-500/40'
+                                                    }`} title="Contains sub-tasks (Double click to view)">
+                                                        <ListChecks className="w-3 h-3 text-orange-400 animate-pulse" />
+                                                        <span>{completedSubCount}/{totalSubCount}</span>
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {totalSubCount === 0 && (
                                                 <span className={`text-[10px] font-mono mt-0.5 opacity-0 group-hover/item:opacity-60 transition-opacity ${pact.isCompleted ? 'text-black' : 'text-zinc-400'}`}>
                                                     Double-click for sub-tasks
                                                 </span>
@@ -322,7 +583,7 @@ export function PactWidget() {
                                                     ? 'text-black/40 hover:text-black/70 hover:bg-black/5'
                                                     : 'text-zinc-500 hover:text-white hover:bg-white/5'
                                             }`}
-                                            title="Pact Options"
+                                            title="Pact Options & Sub-tasks Edit"
                                         >
                                             <MoreVertical className="w-4 h-4" />
                                         </button>
@@ -345,17 +606,17 @@ export function PactWidget() {
                                     </div>
                                 </div>
 
-                                {/* Expandable Sub-Tasks Checklist Section */}
+                                {/* Expandable Sub-Tasks Checklist Section (Triggered via Double-Click) */}
                                 {isExpanded && (
                                     <div className={`mt-3 pt-3 border-t text-xs space-y-2.5 animate-[fadeIn_0.2s_ease-out] ${
                                         pact.isCompleted ? 'border-black/15 text-black' : 'border-white/10 text-zinc-300'
                                     }`}>
-                                        {subTasks.length > 0 && (
+                                        {subTasks.length > 0 ? (
                                             <div className="space-y-1.5">
                                                 {subTasks.map(sub => (
                                                     <div
                                                         key={sub.id}
-                                                        className={`flex items-center justify-between gap-2 p-2 rounded-xl transition-all ${
+                                                        className={`flex items-center justify-between gap-2 p-2.5 rounded-xl transition-all ${
                                                             pact.isCompleted ? 'bg-black/5 hover:bg-black/10' : 'bg-black/30 hover:bg-black/50 border border-white/5'
                                                         }`}
                                                     >
@@ -364,62 +625,20 @@ export function PactWidget() {
                                                                 type="checkbox"
                                                                 checked={sub.isCompleted}
                                                                 onChange={() => togglePactSubTask(pact.id, selectedDate, sub.id)}
-                                                                className="w-3.5 h-3.5 accent-rose-500 rounded cursor-pointer shrink-0"
+                                                                className="w-3.5 h-3.5 accent-orange-500 rounded cursor-pointer shrink-0"
                                                             />
                                                             <span className={`leading-relaxed font-medium break-words ${sub.isCompleted ? 'line-through opacity-60' : ''}`}>
                                                                 {sub.text}
                                                             </span>
                                                         </label>
-                                                        <button
-                                                            onClick={() => deletePactSubTask(pact.id, selectedDate, sub.id)}
-                                                            className={`p-1 rounded-lg transition-colors shrink-0 ${
-                                                                pact.isCompleted ? 'text-black/40 hover:text-red-600' : 'text-zinc-500 hover:text-red-400'
-                                                            }`}
-                                                            title="Delete sub-task"
-                                                        >
-                                                            <Trash2 className="w-3.5 h-3.5" />
-                                                        </button>
                                                     </div>
                                                 ))}
                                             </div>
+                                        ) : (
+                                            <div className="py-2 text-center text-[11px] text-zinc-400 font-mono italic">
+                                                No sub-tasks. Open 3 dots menu ➔ &quot;EDIT / SUB-TASKS&quot; to add steps.
+                                            </div>
                                         )}
-
-                                        {/* Inline Add Sub-Task Form */}
-                                        <form
-                                            onSubmit={(e) => {
-                                                e.preventDefault();
-                                                const text = subTaskInputs[pact.id] || '';
-                                                if (text.trim()) {
-                                                    addPactSubTask(pact.id, selectedDate, text.trim());
-                                                    setSubTaskInputs(prev => ({ ...prev, [pact.id]: '' }));
-                                                }
-                                            }}
-                                            className="flex items-center gap-2 pt-1"
-                                        >
-                                            <input
-                                                type="text"
-                                                value={subTaskInputs[pact.id] || ''}
-                                                onChange={(e) => setSubTaskInputs(prev => ({ ...prev, [pact.id]: e.target.value }))}
-                                                placeholder="Add sub-task step (e.g. 10 Warmup Laps)..."
-                                                className={`flex-1 px-3 py-1.5 rounded-xl border text-xs focus:outline-none transition-all ${
-                                                    pact.isCompleted
-                                                        ? 'bg-black/5 border-black/20 text-black placeholder:text-black/40 focus:border-black/50'
-                                                        : 'bg-black/50 border-white/10 text-white placeholder:text-zinc-500 focus:border-white/30'
-                                                }`}
-                                            />
-                                            <button
-                                                type="submit"
-                                                disabled={!(subTaskInputs[pact.id] || '').trim()}
-                                                className={`px-3 py-1.5 font-bold rounded-xl text-xs disabled:opacity-40 flex items-center gap-1 transition-all ${
-                                                    pact.isCompleted
-                                                        ? 'bg-black text-white hover:bg-zinc-800'
-                                                        : 'bg-white text-black hover:bg-zinc-200'
-                                                }`}
-                                            >
-                                                <Plus className="w-3.5 h-3.5" />
-                                                <span>Add</span>
-                                            </button>
-                                        </form>
                                     </div>
                                 )}
                             </div>
@@ -436,3 +655,4 @@ export function PactWidget() {
         </div>
     );
 }
+
