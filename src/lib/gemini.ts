@@ -44,8 +44,16 @@ export async function generateContentWithFallback(
             const result = await model.generateContent(contents);
             return { result, modelName };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (err: any) {
-            const errStr = String(err?.message || err);
+            const isApiKeyError =
+                errStr.includes('API_KEY_INVALID') ||
+                errStr.includes('API key not valid') ||
+                errStr.includes('API_KEY_SERVICE_BLOCKED') ||
+                errStr.includes('UNAUTHENTICATED') ||
+                errStr.includes('403');
+
+            if (isApiKeyError) {
+                throw new Error(`Gemini API Key Error: ${err?.message || 'Invalid or unauthorized GEMINI_API_KEY.'}`);
+            }
 
             const isNotFound =
                 errStr.includes('404') ||
