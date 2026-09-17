@@ -545,7 +545,7 @@ export function PactWidget() {
                                                     {pact.text}
                                                 </span>
 
-                                                {pact.shiftedCount && pact.shiftedCount > 0 && (
+                                                {(pact.shiftedCount ?? 0) > 0 && (
                                                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 whitespace-nowrap">
                                                         Shifted
                                                     </span>
