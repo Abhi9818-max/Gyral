@@ -2,17 +2,19 @@
 
 import { useUserData } from '@/context/user-data-context';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Dumbbell, BookOpen, Droplet, Carrot, Circle, Check, Zap, Brain, Moon, Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight, MoreVertical, Sparkles } from 'lucide-react';
+import { Dumbbell, BookOpen, Droplet, Carrot, Circle, Check, Zap, Brain, Moon, Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight, MoreVertical, Sparkles, ChevronDown, ChevronUp, Trash2, ListChecks } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToday } from '@/hooks/use-today';
 
 export function PactWidget() {
     const router = useRouter();
-    const { pacts, addPact, togglePact, deletePact, shiftPact, addDailyPact, dailyPacts, deleteDailyPact } = useUserData();
+    const { pacts, addPact, togglePact, deletePact, shiftPact, addDailyPact, dailyPacts, deleteDailyPact, addPactSubTask, togglePactSubTask, deletePactSubTask } = useUserData();
     const [newPactText, setNewPactText] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
+    const [expandedPactIds, setExpandedPactIds] = useState<Record<string, boolean>>({});
+    const [subTaskInputs, setSubTaskInputs] = useState<Record<string, string>>({});
 
     const todayStr = useToday();
     const [selectedDate, setSelectedDate] = useState(todayStr);
@@ -249,61 +251,171 @@ export function PactWidget() {
                             );
                         }
 
+                        const isExpanded = expandedPactIds[pact.id] || false;
+                        const subTasks = pact.subTasks || [];
+                        const completedSubCount = subTasks.filter(s => s.isCompleted).length;
+                        const totalSubCount = subTasks.length;
+
                         return (
                             <div
                                 key={pact.id}
                                 className={`
-                                    relative flex items-center justify-between p-4 rounded-2xl transition-all duration-500 group/item text-left select-none
+                                    relative flex flex-col p-4 rounded-2xl transition-all duration-300 group/item text-left select-none
                                     ${pact.isCompleted
-                                        ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-[1.02]'
+                                        ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]'
                                         : 'bg-zinc-800/40 text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200 border border-transparent hover:border-white/5'}
                                 `}
                             >
-                                <button
-                                    onClick={() => togglePact(pact.id, selectedDate)}
-                                    className="flex items-center gap-3 flex-1 min-w-0 text-left focus:outline-none"
-                                >
-                                    <div className={`p-2 rounded-full shrink-0 ${pact.isCompleted ? 'bg-black text-white' : 'bg-white/5 text-current'}`}>
-                                        {getIcon(pact.text)}
-                                    </div>
-                                    <span className={`font-bold text-sm break-words whitespace-normal flex-1 ${pact.isCompleted ? 'line-through decoration-black/20' : ''}`}>
-                                        {pact.text}
-                                        {pact.shiftedCount && pact.shiftedCount > 0 && (
-                                            <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 whitespace-nowrap">
-                                                Shifted
-                                            </span>
-                                        )}
-                                    </span>
-                                </button>
-
-                                <div className="flex items-center gap-3 shrink-0 ml-2">
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setDeleteCandidateId(pact.id);
-                                        }}
-                                        className={`p-1.5 rounded-lg transition-colors duration-300 ${
-                                            pact.isCompleted
-                                                ? 'text-black/40 hover:text-black/70 hover:bg-black/5'
-                                                : 'text-zinc-500 hover:text-white hover:bg-white/5'
-                                        }`}
-                                        title="Pact Options"
-                                    >
-                                        <MoreVertical className="w-4 h-4" />
-                                    </button>
-
+                                <div className="flex items-center justify-between w-full">
                                     <button
                                         onClick={() => togglePact(pact.id, selectedDate)}
-                                        className={`
-                                            w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300
-                                            ${pact.isCompleted
-                                                ? 'border-black bg-black text-white'
-                                                : 'border-zinc-600 hover:border-zinc-400'}
-                                        `}
+                                        className="flex items-center gap-3 flex-1 min-w-0 text-left focus:outline-none"
                                     >
-                                        {pact.isCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                                        <div className={`p-2 rounded-full shrink-0 ${pact.isCompleted ? 'bg-black text-white' : 'bg-white/5 text-current'}`}>
+                                            {getIcon(pact.text)}
+                                        </div>
+                                        <div className="flex flex-col flex-1 min-w-0">
+                                            <span className={`font-bold text-sm break-words whitespace-normal ${pact.isCompleted ? 'line-through decoration-black/20' : ''}`}>
+                                                {pact.text}
+                                                {pact.shiftedCount && pact.shiftedCount > 0 && (
+                                                    <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 whitespace-nowrap">
+                                                        Shifted
+                                                    </span>
+                                                )}
+                                            </span>
+                                            {totalSubCount > 0 && (
+                                                <span className={`text-[10px] font-mono mt-0.5 flex items-center gap-1 font-semibold ${pact.isCompleted ? 'text-black/60' : 'text-zinc-400'}`}>
+                                                    <ListChecks className="w-3 h-3" />
+                                                    {completedSubCount}/{totalSubCount} sub-tasks completed
+                                                </span>
+                                            )}
+                                        </div>
                                     </button>
+
+                                    <div className="flex items-center gap-2 shrink-0 ml-2">
+                                        {/* Toggle Expand Checklist */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setExpandedPactIds(prev => ({ ...prev, [pact.id]: !prev[pact.id] }));
+                                            }}
+                                            className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 text-[11px] font-semibold ${
+                                                pact.isCompleted
+                                                    ? 'text-black/60 hover:text-black hover:bg-black/10'
+                                                    : 'text-zinc-400 hover:text-white hover:bg-white/10'
+                                            }`}
+                                            title={isExpanded ? "Hide checklist" : "Show checklist"}
+                                        >
+                                            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                            {totalSubCount === 0 && <span className="text-[10px]">+ Sub-task</span>}
+                                        </button>
+
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setDeleteCandidateId(pact.id);
+                                            }}
+                                            className={`p-1.5 rounded-lg transition-colors duration-300 ${
+                                                pact.isCompleted
+                                                    ? 'text-black/40 hover:text-black/70 hover:bg-black/5'
+                                                    : 'text-zinc-500 hover:text-white hover:bg-white/5'
+                                            }`}
+                                            title="Pact Options"
+                                        >
+                                            <MoreVertical className="w-4 h-4" />
+                                        </button>
+
+                                        <button
+                                            onClick={() => togglePact(pact.id, selectedDate)}
+                                            className={`
+                                                w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300
+                                                ${pact.isCompleted
+                                                    ? 'border-black bg-black text-white'
+                                                    : 'border-zinc-600 hover:border-zinc-400'}
+                                            `}
+                                        >
+                                            {pact.isCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                                        </button>
+                                    </div>
                                 </div>
+
+                                {/* Expandable Sub-Tasks Checklist Section */}
+                                {isExpanded && (
+                                    <div className={`mt-3 pt-3 border-t text-xs space-y-2.5 animate-[fadeIn_0.2s_ease-out] ${
+                                        pact.isCompleted ? 'border-black/15 text-black' : 'border-white/10 text-zinc-300'
+                                    }`}>
+                                        {subTasks.length > 0 && (
+                                            <div className="space-y-1.5">
+                                                {subTasks.map(sub => (
+                                                    <div
+                                                        key={sub.id}
+                                                        className={`flex items-center justify-between gap-2 p-2 rounded-xl transition-all ${
+                                                            pact.isCompleted ? 'bg-black/5 hover:bg-black/10' : 'bg-black/30 hover:bg-black/50 border border-white/5'
+                                                        }`}
+                                                    >
+                                                        <label className="flex items-center gap-2.5 cursor-pointer flex-1 min-w-0">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={sub.isCompleted}
+                                                                onChange={() => togglePactSubTask(pact.id, selectedDate, sub.id)}
+                                                                className="w-3.5 h-3.5 accent-rose-500 rounded cursor-pointer shrink-0"
+                                                            />
+                                                            <span className={`leading-relaxed font-medium break-words ${sub.isCompleted ? 'line-through opacity-60' : ''}`}>
+                                                                {sub.text}
+                                                            </span>
+                                                        </label>
+                                                        <button
+                                                            onClick={() => deletePactSubTask(pact.id, selectedDate, sub.id)}
+                                                            className={`p-1 rounded-lg transition-colors shrink-0 ${
+                                                                pact.isCompleted ? 'text-black/40 hover:text-red-600' : 'text-zinc-500 hover:text-red-400'
+                                                            }`}
+                                                            title="Delete sub-task"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Inline Add Sub-Task Form */}
+                                        <form
+                                            onSubmit={(e) => {
+                                                e.preventDefault();
+                                                const text = subTaskInputs[pact.id] || '';
+                                                if (text.trim()) {
+                                                    addPactSubTask(pact.id, selectedDate, text.trim());
+                                                    setSubTaskInputs(prev => ({ ...prev, [pact.id]: '' }));
+                                                }
+                                            }}
+                                            className="flex items-center gap-2 pt-1"
+                                        >
+                                            <input
+                                                type="text"
+                                                value={subTaskInputs[pact.id] || ''}
+                                                onChange={(e) => setSubTaskInputs(prev => ({ ...prev, [pact.id]: e.target.value }))}
+                                                placeholder="Add sub-task step (e.g. 10 Warmup Laps)..."
+                                                className={`flex-1 px-3 py-1.5 rounded-xl border text-xs focus:outline-none transition-all ${
+                                                    pact.isCompleted
+                                                        ? 'bg-black/5 border-black/20 text-black placeholder:text-black/40 focus:border-black/50'
+                                                        : 'bg-black/50 border-white/10 text-white placeholder:text-zinc-500 focus:border-white/30'
+                                                }`}
+                                            />
+                                            <button
+                                                type="submit"
+                                                disabled={!(subTaskInputs[pact.id] || '').trim()}
+                                                className={`px-3 py-1.5 font-bold rounded-xl text-xs disabled:opacity-40 flex items-center gap-1 transition-all ${
+                                                    pact.isCompleted
+                                                        ? 'bg-black text-white hover:bg-zinc-800'
+                                                        : 'bg-white text-black hover:bg-zinc-200'
+                                                }`}
+                                            >
+                                                <Plus className="w-3.5 h-3.5" />
+                                                <span>Add</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                )}
                             </div>
                         );
                     })}

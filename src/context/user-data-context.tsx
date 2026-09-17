@@ -52,12 +52,19 @@ export type RecordsMap = {
 
 export type StreakStatus = 'safe' | 'at-risk' | 'lost';
 
+export type PactSubTask = {
+    id: string;
+    text: string;
+    isCompleted: boolean;
+};
+
 export type Pact = {
     id: string;
     text: string;
     isCompleted: boolean;
     shiftedCount?: number;
     createdAt?: string;
+    subTasks?: PactSubTask[];
 };
 
 export type DailyPact = {
@@ -268,6 +275,9 @@ interface UserDataContextType {
     togglePact: (id: string, date: string) => void;
     deletePact: (id: string, date: string) => void;
     shiftPact: (id: string, currentDate: string) => void;
+    addPactSubTask: (pactId: string, date: string, text: string) => Promise<void>;
+    togglePactSubTask: (pactId: string, date: string, subTaskId: string) => Promise<void>;
+    deletePactSubTask: (pactId: string, date: string, subTaskId: string) => Promise<void>;
 
     // Daily Pacts
     dailyPacts: DailyPact[];
@@ -576,7 +586,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                             text: p.text,
                             isCompleted: p.is_completed,
                             shiftedCount: p.shifted_count,
-                            createdAt: p.created_at
+                            createdAt: p.created_at,
+                            subTasks: p.sub_tasks || []
                         });
                     });
                 }
@@ -1683,6 +1694,86 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const addPactSubTask = async (pactId: string, date: string, text: string) => {
+        const cleanText = text.trim();
+        if (!cleanText) return;
+
+        let updatedSubTasks: PactSubTask[] = [];
+
+        setPacts(prev => {
+            const dayPacts = prev[date] || [];
+            const updated = dayPacts.map(p => {
+                if (p.id === pactId) {
+                    const currentSubs = p.subTasks || [];
+                    if (currentSubs.some(s => s.text.trim().toLowerCase() === cleanText.toLowerCase())) return p;
+                    const newSub: PactSubTask = { id: crypto.randomUUID(), text: cleanText, isCompleted: false };
+                    updatedSubTasks = [...currentSubs, newSub];
+                    return { ...p, subTasks: updatedSubTasks };
+                }
+                return p;
+            });
+            return { ...prev, [date]: updated };
+        });
+
+        if (user && updatedSubTasks.length > 0) {
+            await supabase.from('pacts').update({ sub_tasks: updatedSubTasks }).eq('id', pactId);
+        }
+    };
+
+    const togglePactSubTask = async (pactId: string, date: string, subTaskId: string) => {
+        let updatedSubTasks: PactSubTask[] = [];
+        let newParentCompleted: boolean | undefined;
+
+        setPacts(prev => {
+            const dayPacts = prev[date] || [];
+            const updated = dayPacts.map(p => {
+                if (p.id === pactId) {
+                    const currentSubs = p.subTasks || [];
+                    updatedSubTasks = currentSubs.map(s => {
+                        if (s.id === subTaskId) {
+                            return { ...s, isCompleted: !s.isCompleted };
+                        }
+                        return s;
+                    });
+                    const allDone = updatedSubTasks.length > 0 && updatedSubTasks.every(s => s.isCompleted);
+                    newParentCompleted = allDone ? true : p.isCompleted;
+                    return { ...p, subTasks: updatedSubTasks, isCompleted: newParentCompleted };
+                }
+                return p;
+            });
+            return { ...prev, [date]: updated };
+        });
+
+        if (user) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const dbUpdates: any = { sub_tasks: updatedSubTasks };
+            if (newParentCompleted !== undefined) {
+                dbUpdates.is_completed = newParentCompleted;
+            }
+            await supabase.from('pacts').update(dbUpdates).eq('id', pactId);
+        }
+    };
+
+    const deletePactSubTask = async (pactId: string, date: string, subTaskId: string) => {
+        let updatedSubTasks: PactSubTask[] = [];
+
+        setPacts(prev => {
+            const dayPacts = prev[date] || [];
+            const updated = dayPacts.map(p => {
+                if (p.id === pactId) {
+                    updatedSubTasks = (p.subTasks || []).filter(s => s.id !== subTaskId);
+                    return { ...p, subTasks: updatedSubTasks };
+                }
+                return p;
+            });
+            return { ...prev, [date]: updated };
+        });
+
+        if (user) {
+            await supabase.from('pacts').update({ sub_tasks: updatedSubTasks }).eq('id', pactId);
+        }
+    };
+
     const addDailyPact = async (text: string) => {
         const cleanText = text.trim();
         if (!cleanText) return;
@@ -2239,7 +2330,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         <UserDataContext.Provider value={{
             tasks, records, addTask, updateTask, deleteTask, toggleTaskArchive, addRecord, deleteRecord, getRecordsForDate, activeFilterTaskId, setActiveFilterTaskId,
             consistencyScore, currentStreak, longestStreak, streakStatus, streakTier, streakStrength, rebuildMode, analyzePatterns, getAdaptiveSuggestion, getTaskAnalytics,
-            lastCompletion, setLastCompletion, getStreakForDate, showLossModal, setShowLossModal, pacts, addPact, togglePact, deletePact, shiftPact, dailyPacts, addDailyPact, deleteDailyPact, notes, addNote, updateNote, deleteNote,
+            lastCompletion, setLastCompletion, getStreakForDate, showLossModal, setShowLossModal, pacts, addPact, togglePact, deletePact, shiftPact, addPactSubTask, togglePactSubTask, deletePactSubTask, dailyPacts, addDailyPact, deleteDailyPact, notes, addNote, updateNote, deleteNote,
             restoreData, syncCloudData, birthDate, setBirthDate: updateBirthDate, showStatsCard, toggleStatsCard, theme, setTheme, language, setLanguage, user, lifeEvents, addLifeEvent, updateLifeEvent, deleteLifeEvent,
             debts, addDebt, payDebt, vows, addVow, completeVowDaily, extendVow, isExiled, exiledUntil, redeemExile, factions, currentFaction, setFaction, investments, addInvestment, completeInvestment,
             navPreferences, updateNavPreferences, ALL_NAV_ITEMS, profile, setProfile, onboardingCompleted, completeOnboarding, mementoViewMode, toggleMementoViewMode,
