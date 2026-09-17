@@ -29,7 +29,9 @@ import {
     AlertTriangle,
     ArrowRight,
     X,
-    LogOut
+    LogOut,
+    Plus,
+    Edit3
 } from "lucide-react";
 
 function formatCompactDuration(rawDuration?: string): string {
@@ -144,6 +146,80 @@ export default function ImportTimetablePage() {
     const [deletingLogId, setDeletingLogId] = useState<string | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Preview Edit Handlers
+    const handleUpdateTitle = (newTitle: string) => {
+        if (!parsedData) return;
+        setParsedData({ ...parsedData, title: newTitle });
+    };
+
+    const handleUpdateNote = (newNote: string) => {
+        if (!parsedData) return;
+        setParsedData({ ...parsedData, fullTimetableNote: newNote });
+    };
+
+    const handleUpdatePact = (index: number, newText: string) => {
+        if (!parsedData) return;
+        const updated = [...parsedData.pacts];
+        updated[index] = newText;
+        setParsedData({ ...parsedData, pacts: updated });
+    };
+
+    const handleRemovePact = (index: number) => {
+        if (!parsedData) return;
+        const updatedPacts = parsedData.pacts.filter((_, i) => i !== index);
+        const updatedSelected = selectedPacts.filter((_, i) => i !== index);
+        setParsedData({ ...parsedData, pacts: updatedPacts });
+        setSelectedPacts(updatedSelected);
+    };
+
+    const handleAddPact = () => {
+        if (!parsedData) return;
+        setParsedData({ ...parsedData, pacts: [...parsedData.pacts, "New Daily Pact"] });
+        setSelectedPacts([...selectedPacts, true]);
+    };
+
+    const handleUpdateTask = (index: number, newText: string) => {
+        if (!parsedData) return;
+        const updated = [...parsedData.tasks];
+        updated[index] = newText;
+        setParsedData({ ...parsedData, tasks: updated });
+    };
+
+    const handleRemoveTask = (index: number) => {
+        if (!parsedData) return;
+        const updatedTasks = parsedData.tasks.filter((_, i) => i !== index);
+        const updatedSelected = selectedTasks.filter((_, i) => i !== index);
+        setParsedData({ ...parsedData, tasks: updatedTasks });
+        setSelectedTasks(updatedSelected);
+    };
+
+    const handleAddTask = () => {
+        if (!parsedData) return;
+        setParsedData({ ...parsedData, tasks: [...parsedData.tasks, "New Habit Tracker"] });
+        setSelectedTasks([...selectedTasks, true]);
+    };
+
+    const handleUpdateGoal = (index: number, newText: string) => {
+        if (!parsedData) return;
+        const updated = [...parsedData.goals];
+        updated[index] = newText;
+        setParsedData({ ...parsedData, goals: updated });
+    };
+
+    const handleRemoveGoal = (index: number) => {
+        if (!parsedData) return;
+        const updatedGoals = parsedData.goals.filter((_, i) => i !== index);
+        const updatedSelected = selectedGoals.filter((_, i) => i !== index);
+        setParsedData({ ...parsedData, goals: updatedGoals });
+        setSelectedGoals(updatedSelected);
+    };
+
+    const handleAddGoal = () => {
+        if (!parsedData) return;
+        setParsedData({ ...parsedData, goals: [...parsedData.goals, "New Goal"] });
+        setSelectedGoals([...selectedGoals, true]);
+    };
 
     // Load import logs from localStorage and check temp parsed routine from bottom sheet
     useEffect(() => {
@@ -715,13 +791,17 @@ export default function ImportTimetablePage() {
                                 {/* Title & Progressive Workload Phases Card */}
                                 <div className="bg-white/[0.07] border border-white/35 rounded-[36px] p-7 backdrop-blur-3xl space-y-4 shadow-[0_20px_70px_rgba(0,0,0,0.6),inset_0_1.5px_3px_rgba(255,255,255,0.6)]">
                                     <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/15">
-                                        <div>
-                                            <span className="text-xs font-mono uppercase tracking-wider text-rose-300 font-semibold">
-                                                Extracted Routine Title
+                                        <div className="flex-1 min-w-[240px]">
+                                            <span className="text-xs font-mono uppercase tracking-wider text-rose-300 font-semibold flex items-center gap-1.5">
+                                                <Edit3 className="w-3.5 h-3.5" /> Routine Title (Editable)
                                             </span>
-                                            <h2 className="text-2xl font-bold text-white mt-0.5 tracking-wide">
-                                                {parsedData.title}
-                                            </h2>
+                                            <input
+                                                type="text"
+                                                value={parsedData.title}
+                                                onChange={(e) => handleUpdateTitle(e.target.value)}
+                                                className="w-full text-xl md:text-2xl font-bold text-white bg-black/40 border border-white/25 rounded-2xl px-3.5 py-1.5 mt-1 focus:outline-none focus:border-rose-400/60 tracking-wide"
+                                                placeholder="Routine title..."
+                                            />
                                         </div>
                                         {parsedData.duration && (
                                             <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 border border-white/30 text-white text-xs font-mono font-semibold backdrop-blur-xl shadow-sm">
@@ -764,7 +844,7 @@ export default function ImportTimetablePage() {
                                     )}
                                 </div>
 
-                                {/* Items Selection Grid (Reference Image 2 Audio/Video Glass Widgets) */}
+                                {/* Items Selection & Editing Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     {/* 1. Daily Pacts */}
                                     <div className="bg-white/[0.06] border border-white/30 rounded-[32px] p-6 space-y-4 backdrop-blur-3xl shadow-[0_15px_50px_rgba(0,0,0,0.5),inset_0_1px_2.5px_rgba(255,255,255,0.5)]">
@@ -773,6 +853,12 @@ export default function ImportTimetablePage() {
                                                 <Dumbbell className="w-4 h-4 text-rose-400" />
                                                 Daily Pacts ({parsedData.pacts.length})
                                             </h3>
+                                            <button
+                                                onClick={handleAddPact}
+                                                className="px-2.5 py-1 rounded-full bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-400/40 text-[11px] font-semibold flex items-center gap-1 transition-all"
+                                            >
+                                                <Plus className="w-3 h-3" /> Add Pact
+                                            </button>
                                         </div>
 
                                         <label className="flex items-center gap-2 text-xs text-zinc-200 bg-white/10 border border-white/20 p-3 rounded-2xl cursor-pointer backdrop-blur-xl">
@@ -787,9 +873,9 @@ export default function ImportTimetablePage() {
                                             </span>
                                         </label>
 
-                                        <div className="space-y-2 max-h-64 overflow-y-auto">
+                                        <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                                             {parsedData.pacts.map((pact, idx) => (
-                                                <label key={idx} className="flex items-start gap-2.5 text-xs text-zinc-200 bg-black/40 p-3 rounded-2xl border border-white/15 cursor-pointer hover:border-white/30 transition-all backdrop-blur-xl">
+                                                <div key={idx} className="flex items-center gap-2.5 text-xs text-zinc-200 bg-black/40 p-2.5 rounded-2xl border border-white/15 focus-within:border-rose-400/50 transition-all backdrop-blur-xl group">
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedPacts[idx]}
@@ -798,10 +884,24 @@ export default function ImportTimetablePage() {
                                                             copy[idx] = e.target.checked;
                                                             setSelectedPacts(copy);
                                                         }}
-                                                        className="mt-0.5 accent-rose-500 w-4 h-4 rounded shrink-0"
+                                                        className="accent-rose-500 w-4 h-4 rounded shrink-0 cursor-pointer"
+                                                        title="Include in routine"
                                                     />
-                                                    <span className="leading-relaxed">{pact}</span>
-                                                </label>
+                                                    <input
+                                                        type="text"
+                                                        value={pact}
+                                                        onChange={(e) => handleUpdatePact(idx, e.target.value)}
+                                                        placeholder="Pact text..."
+                                                        className={`flex-1 bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none border-b border-transparent focus:border-rose-400/40 py-0.5 ${!selectedPacts[idx] ? 'line-through opacity-40' : ''}`}
+                                                    />
+                                                    <button
+                                                        onClick={() => handleRemovePact(idx)}
+                                                        className="p-1 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors opacity-60 group-hover:opacity-100"
+                                                        title="Delete pact"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
@@ -813,11 +913,17 @@ export default function ImportTimetablePage() {
                                                 <Zap className="w-4 h-4 text-emerald-400" />
                                                 Habit Trackers ({parsedData.tasks.length})
                                             </h3>
+                                            <button
+                                                onClick={handleAddTask}
+                                                className="px-2.5 py-1 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 text-[11px] font-semibold flex items-center gap-1 transition-all"
+                                            >
+                                                <Plus className="w-3 h-3" /> Add Habit
+                                            </button>
                                         </div>
 
-                                        <div className="space-y-2 max-h-72 overflow-y-auto">
+                                        <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                                             {parsedData.tasks.map((task, idx) => (
-                                                <label key={idx} className="flex items-start gap-2.5 text-xs text-zinc-200 bg-black/40 p-3 rounded-2xl border border-white/15 cursor-pointer hover:border-white/30 transition-all backdrop-blur-xl">
+                                                <div key={idx} className="flex items-center gap-2.5 text-xs text-zinc-200 bg-black/40 p-2.5 rounded-2xl border border-white/15 focus-within:border-emerald-400/50 transition-all backdrop-blur-xl group">
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedTasks[idx]}
@@ -826,10 +932,24 @@ export default function ImportTimetablePage() {
                                                             copy[idx] = e.target.checked;
                                                             setSelectedTasks(copy);
                                                         }}
-                                                        className="mt-0.5 accent-emerald-500 w-4 h-4 rounded shrink-0"
+                                                        className="accent-emerald-500 w-4 h-4 rounded shrink-0 cursor-pointer"
+                                                        title="Include in routine"
                                                     />
-                                                    <span className="leading-relaxed">{task}</span>
-                                                </label>
+                                                    <input
+                                                        type="text"
+                                                        value={task}
+                                                        onChange={(e) => handleUpdateTask(idx, e.target.value)}
+                                                        placeholder="Habit tracker name..."
+                                                        className={`flex-1 bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none border-b border-transparent focus:border-emerald-400/40 py-0.5 ${!selectedTasks[idx] ? 'line-through opacity-40' : ''}`}
+                                                    />
+                                                    <button
+                                                        onClick={() => handleRemoveTask(idx)}
+                                                        className="p-1 rounded-lg text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors opacity-60 group-hover:opacity-100"
+                                                        title="Delete habit"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
@@ -841,11 +961,17 @@ export default function ImportTimetablePage() {
                                                 <Target className="w-4 h-4 text-amber-400" />
                                                 Goals ({parsedData.goals.length})
                                             </h3>
+                                            <button
+                                                onClick={handleAddGoal}
+                                                className="px-2.5 py-1 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 text-[11px] font-semibold flex items-center gap-1 transition-all"
+                                            >
+                                                <Plus className="w-3 h-3" /> Add Goal
+                                            </button>
                                         </div>
 
-                                        <div className="space-y-2 max-h-72 overflow-y-auto">
+                                        <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                                             {parsedData.goals.map((goal, idx) => (
-                                                <label key={idx} className="flex items-start gap-2.5 text-xs text-zinc-200 bg-black/40 p-3 rounded-2xl border border-white/15 cursor-pointer hover:border-white/30 transition-all backdrop-blur-xl">
+                                                <div key={idx} className="flex items-center gap-2.5 text-xs text-zinc-200 bg-black/40 p-2.5 rounded-2xl border border-white/15 focus-within:border-amber-400/50 transition-all backdrop-blur-xl group">
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedGoals[idx]}
@@ -854,16 +980,30 @@ export default function ImportTimetablePage() {
                                                             copy[idx] = e.target.checked;
                                                             setSelectedGoals(copy);
                                                         }}
-                                                        className="mt-0.5 accent-amber-500 w-4 h-4 rounded shrink-0"
+                                                        className="accent-amber-500 w-4 h-4 rounded shrink-0 cursor-pointer"
+                                                        title="Include in routine"
                                                     />
-                                                    <span className="leading-relaxed">{goal}</span>
-                                                </label>
+                                                    <input
+                                                        type="text"
+                                                        value={goal}
+                                                        onChange={(e) => handleUpdateGoal(idx, e.target.value)}
+                                                        placeholder="Goal title..."
+                                                        className={`flex-1 bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none border-b border-transparent focus:border-amber-400/40 py-0.5 ${!selectedGoals[idx] ? 'line-through opacity-40' : ''}`}
+                                                    />
+                                                    <button
+                                                        onClick={() => handleRemoveGoal(idx)}
+                                                        className="p-1 rounded-lg text-zinc-500 hover:text-amber-400 hover:bg-amber-500/10 transition-colors opacity-60 group-hover:opacity-100"
+                                                        title="Delete goal"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Reference Note Preview */}
+                                {/* Reference Note Preview & Editor */}
                                 <div className="bg-white/[0.06] border border-white/30 rounded-[32px] p-6 space-y-3.5 backdrop-blur-3xl shadow-[0_15px_50px_rgba(0,0,0,0.5),inset_0_1px_2.5px_rgba(255,255,255,0.5)]">
                                     <div className="flex items-center justify-between">
                                         <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white cursor-pointer">
@@ -875,14 +1015,21 @@ export default function ImportTimetablePage() {
                                             />
                                             <span>Save Full Markdown Reference Note in Notes Tab</span>
                                         </label>
+                                        {includeNote && (
+                                            <span className="text-[11px] font-mono text-zinc-400">
+                                                {parsedData.fullTimetableNote?.length || 0} characters
+                                            </span>
+                                        )}
                                     </div>
 
                                     {includeNote && (
-                                        <div className="bg-black/50 rounded-2xl p-4 border border-white/15 max-h-48 overflow-y-auto backdrop-blur-xl">
-                                            <pre className="text-xs text-zinc-200 whitespace-pre-wrap font-mono leading-relaxed">
-                                                {parsedData.fullTimetableNote}
-                                            </pre>
-                                        </div>
+                                        <textarea
+                                            value={parsedData.fullTimetableNote}
+                                            onChange={(e) => handleUpdateNote(e.target.value)}
+                                            rows={8}
+                                            placeholder="Detailed markdown timetable note..."
+                                            className="w-full bg-black/50 border border-white/20 rounded-2xl p-4 text-xs text-zinc-200 font-mono leading-relaxed focus:outline-none focus:border-rose-400/50 resize-y shadow-inner"
+                                        />
                                     )}
                                 </div>
 

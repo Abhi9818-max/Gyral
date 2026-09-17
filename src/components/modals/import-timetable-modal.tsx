@@ -23,7 +23,9 @@ import {
     TrendingUp,
     Trash2,
     History,
-    AlertTriangle
+    AlertTriangle,
+    Plus,
+    Edit3
 } from "lucide-react";
 
 interface ImportTimetableModalProps {
@@ -110,6 +112,80 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
     const [deletingLogId, setDeletingLogId] = useState<string | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Preview Edit Handlers
+    const handleUpdateTitle = (newTitle: string) => {
+        if (!parsedData) return;
+        setParsedData({ ...parsedData, title: newTitle });
+    };
+
+    const handleUpdateNote = (newNote: string) => {
+        if (!parsedData) return;
+        setParsedData({ ...parsedData, fullTimetableNote: newNote });
+    };
+
+    const handleUpdatePact = (index: number, newText: string) => {
+        if (!parsedData) return;
+        const updated = [...parsedData.pacts];
+        updated[index] = newText;
+        setParsedData({ ...parsedData, pacts: updated });
+    };
+
+    const handleRemovePact = (index: number) => {
+        if (!parsedData) return;
+        const updatedPacts = parsedData.pacts.filter((_, i) => i !== index);
+        const updatedSelected = selectedPacts.filter((_, i) => i !== index);
+        setParsedData({ ...parsedData, pacts: updatedPacts });
+        setSelectedPacts(updatedSelected);
+    };
+
+    const handleAddPact = () => {
+        if (!parsedData) return;
+        setParsedData({ ...parsedData, pacts: [...parsedData.pacts, "New Daily Pact"] });
+        setSelectedPacts([...selectedPacts, true]);
+    };
+
+    const handleUpdateTask = (index: number, newText: string) => {
+        if (!parsedData) return;
+        const updated = [...parsedData.tasks];
+        updated[index] = newText;
+        setParsedData({ ...parsedData, tasks: updated });
+    };
+
+    const handleRemoveTask = (index: number) => {
+        if (!parsedData) return;
+        const updatedTasks = parsedData.tasks.filter((_, i) => i !== index);
+        const updatedSelected = selectedTasks.filter((_, i) => i !== index);
+        setParsedData({ ...parsedData, tasks: updatedTasks });
+        setSelectedTasks(updatedSelected);
+    };
+
+    const handleAddTask = () => {
+        if (!parsedData) return;
+        setParsedData({ ...parsedData, tasks: [...parsedData.tasks, "New Habit Tracker"] });
+        setSelectedTasks([...selectedTasks, true]);
+    };
+
+    const handleUpdateGoal = (index: number, newText: string) => {
+        if (!parsedData) return;
+        const updated = [...parsedData.goals];
+        updated[index] = newText;
+        setParsedData({ ...parsedData, goals: updated });
+    };
+
+    const handleRemoveGoal = (index: number) => {
+        if (!parsedData) return;
+        const updatedGoals = parsedData.goals.filter((_, i) => i !== index);
+        const updatedSelected = selectedGoals.filter((_, i) => i !== index);
+        setParsedData({ ...parsedData, goals: updatedGoals });
+        setSelectedGoals(updatedSelected);
+    };
+
+    const handleAddGoal = () => {
+        if (!parsedData) return;
+        setParsedData({ ...parsedData, goals: [...parsedData.goals, "New Goal"] });
+        setSelectedGoals([...selectedGoals, true]);
+    };
 
     // Load import logs from localStorage when modal opens
     useEffect(() => {
@@ -568,16 +644,24 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                     <div className="space-y-6 overflow-y-auto pr-1 max-h-[65vh]">
                         {/* Title & Progressive Timeframe Card */}
                         <div className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-3">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-mono">Detected Routine Title</span>
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-mono flex items-center gap-1">
+                                    <Edit3 className="w-3 h-3 text-accent" /> Routine Title (Editable)
+                                </span>
                                 {parsedData.duration && (
-                                    <span className="text-xs font-mono font-bold text-accent px-2.5 py-1 bg-accent/10 border border-accent/20 rounded-full flex items-center gap-1.5">
+                                    <span className="text-xs font-mono font-bold text-accent px-2.5 py-1 bg-accent/10 border border-accent/20 rounded-full flex items-center gap-1.5 shrink-0">
                                         <Clock className="w-3.5 h-3.5" />
                                         {parsedData.duration}
                                     </span>
                                 )}
                             </div>
-                            <h3 className="text-lg font-bold text-white">{parsedData.title}</h3>
+                            <input
+                                type="text"
+                                value={parsedData.title}
+                                onChange={(e) => handleUpdateTitle(e.target.value)}
+                                className="w-full text-base font-bold text-white bg-black/40 border border-white/20 rounded-xl px-3 py-1.5 focus:outline-none focus:border-accent"
+                                placeholder="Routine title..."
+                            />
 
                             {/* Progressive Phases Breakdown */}
                             {parsedData.phases && parsedData.phases.length > 0 && (
@@ -595,179 +679,212 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                             )}
                         </div>
 
-                        {/* Category 1: Pacts with Multi-Day / Recurring Toggle */}
-                        {parsedData.pacts.length > 0 && (
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <h4 className="text-xs uppercase tracking-widest text-zinc-400 font-mono flex items-center gap-2">
-                                        <Dumbbell className="w-4 h-4 text-accent" />
-                                        Daily Pacts / Habits ({parsedData.pacts.length})
-                                    </h4>
+                        {/* Category 1: Daily Pacts */}
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <h4 className="text-xs uppercase tracking-widest text-zinc-400 font-mono flex items-center gap-2">
+                                    <Dumbbell className="w-4 h-4 text-accent" />
+                                    Daily Pacts ({parsedData.pacts.length})
+                                </h4>
+                                <div className="flex items-center gap-2">
                                     <button
-                                        onClick={() => {
-                                            const allChecked = selectedPacts.every(Boolean);
-                                            setSelectedPacts(new Array(parsedData.pacts.length).fill(!allChecked));
-                                        }}
-                                        className="text-[11px] text-accent hover:underline"
+                                        onClick={handleAddPact}
+                                        className="text-xs px-2.5 py-1 rounded-lg bg-accent/20 hover:bg-accent/30 text-accent font-semibold flex items-center gap-1 transition-all"
                                     >
-                                        Toggle All
+                                        <Plus className="w-3 h-3" /> Add Pact
                                     </button>
                                 </div>
+                            </div>
 
-                                {/* Recurring / Multi-Day Option Card */}
-                                <label className="flex items-center justify-between p-3.5 bg-accent/5 border border-accent/20 rounded-xl cursor-pointer hover:bg-accent/10 transition-all">
-                                    <div className="flex items-center gap-2.5">
-                                        <Repeat className="w-4 h-4 text-accent" />
-                                        <div>
-                                            <span className="text-xs font-bold text-white block">Make Pacts Recurring Daily (Appears across all days)</span>
-                                            <span className="text-[11px] text-zinc-400">Pacts will automatically populate on every day for your timeframe</span>
-                                        </div>
+                            <label className="flex items-center justify-between p-3.5 bg-accent/5 border border-accent/20 rounded-xl cursor-pointer hover:bg-accent/10 transition-all">
+                                <div className="flex items-center gap-2.5">
+                                    <Repeat className="w-4 h-4 text-accent" />
+                                    <div>
+                                        <span className="text-xs font-bold text-white block">Make Pacts Recurring Daily</span>
+                                        <span className="text-[11px] text-zinc-400">Pacts automatically populate on every day</span>
                                     </div>
-                                    <input
-                                        type="checkbox"
-                                        checked={makePactsRecurring}
-                                        onChange={(e) => setMakePactsRecurring(e.target.checked)}
-                                        className="w-4 h-4 rounded border-white/20 bg-black text-accent focus:ring-accent"
-                                    />
-                                </label>
-
-                                <div className="space-y-2">
-                                    {parsedData.pacts.map((pact, idx) => (
-                                        <label
-                                            key={idx}
-                                            className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                                                selectedPacts[idx]
-                                                    ? 'bg-accent/10 border-accent/30 text-white'
-                                                    : 'bg-white/5 border-white/5 text-zinc-500'
-                                            }`}
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedPacts[idx] || false}
-                                                onChange={(e) => {
-                                                    const updated = [...selectedPacts];
-                                                    updated[idx] = e.target.checked;
-                                                    setSelectedPacts(updated);
-                                                }}
-                                                className="mt-0.5 rounded border-white/20 bg-black text-accent focus:ring-accent"
-                                            />
-                                            <span className="text-sm font-medium leading-relaxed">{pact}</span>
-                                        </label>
-                                    ))}
                                 </div>
-                            </div>
-                        )}
+                                <input
+                                    type="checkbox"
+                                    checked={makePactsRecurring}
+                                    onChange={(e) => setMakePactsRecurring(e.target.checked)}
+                                    className="w-4 h-4 rounded border-white/20 bg-black text-accent focus:ring-accent"
+                                />
+                            </label>
 
-                        {/* Category 2: Tasks */}
-                        {parsedData.tasks.length > 0 && (
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <h4 className="text-xs uppercase tracking-widest text-zinc-400 font-mono flex items-center gap-2">
-                                        <Zap className="w-4 h-4 text-blue-400" />
-                                        Habit Trackers ({parsedData.tasks.length})
-                                    </h4>
-                                    <button
-                                        onClick={() => {
-                                            const allChecked = selectedTasks.every(Boolean);
-                                            setSelectedTasks(new Array(parsedData.tasks.length).fill(!allChecked));
-                                        }}
-                                        className="text-[11px] text-accent hover:underline"
+                            <div className="space-y-2">
+                                {parsedData.pacts.map((pact, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all ${
+                                            selectedPacts[idx]
+                                                ? 'bg-accent/10 border-accent/30 text-white'
+                                                : 'bg-white/5 border-white/5 text-zinc-500'
+                                        }`}
                                     >
-                                        Toggle All
-                                    </button>
-                                </div>
-                                <div className="space-y-2">
-                                    {parsedData.tasks.map((task, idx) => (
-                                        <label
-                                            key={idx}
-                                            className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                                                selectedTasks[idx]
-                                                    ? 'bg-blue-500/10 border-blue-500/30 text-white'
-                                                    : 'bg-white/5 border-white/5 text-zinc-500'
-                                            }`}
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedPacts[idx] || false}
+                                            onChange={(e) => {
+                                                const updated = [...selectedPacts];
+                                                updated[idx] = e.target.checked;
+                                                setSelectedPacts(updated);
+                                            }}
+                                            className="rounded border-white/20 bg-black text-accent focus:ring-accent shrink-0"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={pact}
+                                            onChange={(e) => handleUpdatePact(idx, e.target.value)}
+                                            className={`flex-1 bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none border-b border-transparent focus:border-accent/40 py-0.5 ${!selectedPacts[idx] ? 'line-through opacity-40' : ''}`}
+                                            placeholder="Pact description..."
+                                        />
+                                        <button
+                                            onClick={() => handleRemovePact(idx)}
+                                            className="p-1 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                                            title="Remove pact"
                                         >
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedTasks[idx] || false}
-                                                onChange={(e) => {
-                                                    const updated = [...selectedTasks];
-                                                    updated[idx] = e.target.checked;
-                                                    setSelectedTasks(updated);
-                                                }}
-                                                className="rounded border-white/20 bg-black text-blue-500 focus:ring-blue-500"
-                                            />
-                                            <span className="text-sm font-medium">{task}</span>
-                                        </label>
-                                    ))}
-                                </div>
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                ))}
                             </div>
-                        )}
+                        </div>
+
+                        {/* Category 2: Habit Trackers */}
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <h4 className="text-xs uppercase tracking-widest text-zinc-400 font-mono flex items-center gap-2">
+                                    <Zap className="w-4 h-4 text-blue-400" />
+                                    Habit Trackers ({parsedData.tasks.length})
+                                </h4>
+                                <button
+                                    onClick={handleAddTask}
+                                    className="text-xs px-2.5 py-1 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 font-semibold flex items-center gap-1 transition-all"
+                                >
+                                    <Plus className="w-3 h-3" /> Add Habit
+                                </button>
+                            </div>
+                            <div className="space-y-2">
+                                {parsedData.tasks.map((task, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all ${
+                                            selectedTasks[idx]
+                                                ? 'bg-blue-500/10 border-blue-500/30 text-white'
+                                                : 'bg-white/5 border-white/5 text-zinc-500'
+                                        }`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedTasks[idx] || false}
+                                            onChange={(e) => {
+                                                const updated = [...selectedTasks];
+                                                updated[idx] = e.target.checked;
+                                                setSelectedTasks(updated);
+                                            }}
+                                            className="rounded border-white/20 bg-black text-blue-500 focus:ring-blue-500 shrink-0"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={task}
+                                            onChange={(e) => handleUpdateTask(idx, e.target.value)}
+                                            className={`flex-1 bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none border-b border-transparent focus:border-blue-400/40 py-0.5 ${!selectedTasks[idx] ? 'line-through opacity-40' : ''}`}
+                                            placeholder="Habit tracker name..."
+                                        />
+                                        <button
+                                            onClick={() => handleRemoveTask(idx)}
+                                            className="p-1 rounded-lg text-zinc-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
+                                            title="Remove habit"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
 
                         {/* Category 3: Goals */}
-                        {parsedData.goals.length > 0 && (
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <h4 className="text-xs uppercase tracking-widest text-zinc-400 font-mono flex items-center gap-2">
-                                        <Target className="w-4 h-4 text-purple-400" />
-                                        Long-Term Goals ({parsedData.goals.length})
-                                    </h4>
-                                    <button
-                                        onClick={() => {
-                                            const allChecked = selectedGoals.every(Boolean);
-                                            setSelectedGoals(new Array(parsedData.goals.length).fill(!allChecked));
-                                        }}
-                                        className="text-[11px] text-accent hover:underline"
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <h4 className="text-xs uppercase tracking-widest text-zinc-400 font-mono flex items-center gap-2">
+                                    <Target className="w-4 h-4 text-purple-400" />
+                                    Long-Term Goals ({parsedData.goals.length})
+                                </h4>
+                                <button
+                                    onClick={handleAddGoal}
+                                    className="text-xs px-2.5 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 font-semibold flex items-center gap-1 transition-all"
+                                >
+                                    <Plus className="w-3 h-3" /> Add Goal
+                                </button>
+                            </div>
+                            <div className="space-y-2">
+                                {parsedData.goals.map((goal, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all ${
+                                            selectedGoals[idx]
+                                                ? 'bg-purple-500/10 border-purple-500/30 text-white'
+                                                : 'bg-white/5 border-white/5 text-zinc-500'
+                                        }`}
                                     >
-                                        Toggle All
-                                    </button>
-                                </div>
-                                <div className="space-y-2">
-                                    {parsedData.goals.map((goal, idx) => (
-                                        <label
-                                            key={idx}
-                                            className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                                                selectedGoals[idx]
-                                                    ? 'bg-purple-500/10 border-purple-500/30 text-white'
-                                                    : 'bg-white/5 border-white/5 text-zinc-500'
-                                            }`}
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedGoals[idx] || false}
+                                            onChange={(e) => {
+                                                const updated = [...selectedGoals];
+                                                updated[idx] = e.target.checked;
+                                                setSelectedGoals(updated);
+                                            }}
+                                            className="rounded border-white/20 bg-black text-purple-500 focus:ring-purple-500 shrink-0"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={goal}
+                                            onChange={(e) => handleUpdateGoal(idx, e.target.value)}
+                                            className={`flex-1 bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none border-b border-transparent focus:border-purple-400/40 py-0.5 ${!selectedGoals[idx] ? 'line-through opacity-40' : ''}`}
+                                            placeholder="Goal title..."
+                                        />
+                                        <button
+                                            onClick={() => handleRemoveGoal(idx)}
+                                            className="p-1 rounded-lg text-zinc-500 hover:text-purple-400 hover:bg-purple-500/10 transition-colors"
+                                            title="Remove goal"
                                         >
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedGoals[idx] || false}
-                                                onChange={(e) => {
-                                                    const updated = [...selectedGoals];
-                                                    updated[idx] = e.target.checked;
-                                                    setSelectedGoals(updated);
-                                                }}
-                                                className="rounded border-white/20 bg-black text-purple-500 focus:ring-purple-500"
-                                            />
-                                            <span className="text-sm font-medium">{goal}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Category 4: Timetable Note */}
-                        {parsedData.fullTimetableNote && (
-                            <div className="space-y-3">
-                                <label className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl cursor-pointer hover:bg-white/[0.07] transition-all">
-                                    <div className="flex items-center gap-3">
-                                        <FileText className="w-5 h-5 text-emerald-400" />
-                                        <div>
-                                            <h5 className="text-sm font-bold text-white">Save Complete Reference Note</h5>
-                                            <p className="text-xs text-zinc-400">Creates a structured Markdown note in Notes / Memento</p>
-                                        </div>
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
                                     </div>
-                                    <input
-                                        type="checkbox"
-                                        checked={includeNote}
-                                        onChange={(e) => setIncludeNote(e.target.checked)}
-                                        className="w-4 h-4 rounded border-white/20 bg-black text-emerald-500"
-                                    />
-                                </label>
+                                ))}
                             </div>
-                        )}
+                        </div>
+
+                        {/* Category 4: Timetable Reference Note */}
+                        <div className="space-y-3">
+                            <label className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl cursor-pointer hover:bg-white/[0.07] transition-all">
+                                <div className="flex items-center gap-3">
+                                    <FileText className="w-5 h-5 text-emerald-400" />
+                                    <div>
+                                        <h5 className="text-sm font-bold text-white">Save Complete Reference Note</h5>
+                                        <p className="text-xs text-zinc-400">Creates a structured Markdown note in Notes tab</p>
+                                    </div>
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    checked={includeNote}
+                                    onChange={(e) => setIncludeNote(e.target.checked)}
+                                    className="w-4 h-4 rounded border-white/20 bg-black text-emerald-500"
+                                />
+                            </label>
+
+                            {includeNote && (
+                                <textarea
+                                    value={parsedData.fullTimetableNote}
+                                    onChange={(e) => handleUpdateNote(e.target.value)}
+                                    rows={6}
+                                    placeholder="Detailed markdown timetable note..."
+                                    className="w-full bg-black/50 border border-white/20 rounded-xl p-3 text-xs text-zinc-200 font-mono leading-relaxed focus:outline-none focus:border-accent resize-y"
+                                />
+                            )}
+                        </div>
 
                         {/* Action Buttons */}
                         <div className="flex gap-4 pt-4 border-t border-white/10">
