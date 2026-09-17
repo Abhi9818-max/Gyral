@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { createClient } from '@/utils/supabase/server';
-import { sanitizeForPrompt } from '@/lib/validation';
 
 import { generateContentWithFallback } from '@/lib/gemini';
 
@@ -15,28 +14,24 @@ function formatCompactDuration(rawDuration?: string): string {
     const str = rawDuration.trim();
     if (!str) return "Progressive";
 
-    // 1. If months are mentioned anywhere (e.g. "12 Weeks ( 3 Month )", "3 Months", "3 mths") -> Primary: Months Only
     const monthNumMatch = str.match(/(\d+)\s*(?:month|mth|mo)s?/i);
     if (monthNumMatch) {
         const num = monthNumMatch[1];
         return `${num} Month${parseInt(num, 10) > 1 ? 's' : ''}`;
     }
 
-    // 2. Secondary: If weeks are mentioned (e.g. "12 weeks") -> Weeks Only
     const weekNumMatch = str.match(/(\d+)\s*(?:week|wk)s?/i);
     if (weekNumMatch) {
         const num = weekNumMatch[1];
         return `${num} Week${parseInt(num, 10) > 1 ? 's' : ''}`;
     }
 
-    // 3. Tertiary: If days are mentioned (e.g. "30 days") -> Days Only
     const dayNumMatch = str.match(/(\d+)\s*(?:day|d)s?/i);
     if (dayNumMatch) {
         const num = dayNumMatch[1];
         return `${num} Day${parseInt(num, 10) > 1 ? 's' : ''}`;
     }
 
-    // 4. Fallback clean up
     const cleanFirstPart = str.split(/[(,]/)[0].trim();
     if (cleanFirstPart.length <= 15) return cleanFirstPart;
     return cleanFirstPart.substring(0, 15);
@@ -48,6 +43,69 @@ export interface ParsedPactItem {
     phase?: string;
 }
 
+/**
+ * Sanitize user input for prompt injection but allow up to 15K chars
+ * to handle large multi-month plans without truncation.
+ */
+function sanitizeLargeInput(input: unknown, maxLength: number = 15000): string {
+    if (typeof input !== 'string') return '';
+    // Remove control characters but preserve newlines & tabs (important for structure)
+    // eslint-disable-next-line no-control-regex
+    const sanitized = input.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim();
+    // Strip prompt injection markers
+    const cleaned = sanitized
+        .replace(/system\s*prompt/gi, '')
+        .replace(/ignore\s*previous/gi, '')
+        .replace(/ignore\s*instructions/gi, '')
+        .replace(/<\/s>/g, '')
+        .trim();
+    return cleaned.slice(0, maxLength);
+}
+
+/**
+ * Determine if a line is junk: boolean status, date header, document title, etc.
+ */
+function isJunkLine(line: string): boolean {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.length < 3) return true;
+
+    // Pure boolean / status words
+    if (/^(yes\s*\/?\s*no|yes|no|true|false|completed|done|status|n\/a|na|none|tbd)$/i.test(trimmed)) return true;
+
+    // Checkbox-only lines
+    if (/^\[[ xX✓✗]\]\s*$/.test(trimmed)) return true;
+
+    // Standalone date strings
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return true;
+    if (/^\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}$/.test(trimmed)) return true;
+    if (/^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i.test(trimmed)) return true;
+    if (/^(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d+/i.test(trimmed)) return true;
+    if (/^day\s*\d+$/i.test(trimmed)) return true;
+
+    // Document headers / meta
+    if (/^(table of contents|routine title|overview|introduction|summary|notes?:?\s*$)/i.test(trimmed)) return true;
+
+    // Just a number or bullet marker
+    if (/^[\d.)\-*•]+\s*$/.test(trimmed)) return true;
+
+    return false;
+}
+
+/**
+ * Strip boolean suffixes and checkbox markers from a string.
+ */
+function stripBooleanNoise(text: string): string {
+    return text
+        .replace(/:\s*(yes\s*\/?\s*no|yes|no|completed|done|true|false|pending|n\/a)\s*$/gi, '')
+        .replace(/\s*[-–]\s*(yes\s*\/?\s*no|yes|no|done|completed|true|false)\s*$/gi, '')
+        .replace(/\[[ xX✓✗]\]\s*/g, '')
+        .replace(/\s*\(?(yes|no|done|completed|true|false)\)?\s*$/gi, '')
+        .trim();
+}
+
+/**
+ * Clean an array of pact items from junk, dedup, and normalize.
+ */
 function cleanPactsData(rawPacts: any[]): ParsedPactItem[] {
     if (!Array.isArray(rawPacts)) return [];
 
@@ -59,32 +117,27 @@ function cleanPactsData(rawPacts: any[]): ParsedPactItem[] {
         const subTasks: string[] = Array.isArray(item?.subTasks) ? item.subTasks : [];
         const phase = item?.phase || undefined;
 
-        // Clean text from junk prefixes & boolean statuses
+        // Strip numbered prefixes, bullet markers, boolean noise
         text = text
-            .replace(/^(Pact\s*\d+:|Task\s*\d+:|Item\s*\d+:|[*\-•\d.]+\s*)/i, '')
-            .replace(/:\s*(yes\s*\/?\s*no|yes|no|completed|done|true|false)\b/gi, '')
-            .replace(/\[[ xX]\]/g, '')
+            .replace(/^(Pact\s*\d+:|Task\s*\d+:|Item\s*\d+:|Step\s*\d+:|[*\-•\d.)+]+\s*)/i, '')
             .trim();
+        text = stripBooleanNoise(text);
 
-        // Skip document headers, date headers, or boolean noise
+        if (isJunkLine(text)) continue;
+
         const lower = text.toLowerCase();
-        if (
-            !text ||
-            text.length < 3 ||
-            seen.has(lower) ||
-            /^(yes\s*\/?\s*no|yes|no|true|false|completed|status|date|day \d+|week \d+|table of contents|routine title)$/i.test(text) ||
-            /^\d{4}-\d{2}-\d{2}$/.test(text) ||
-            /^(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d+/i.test(text)
-        ) {
-            continue;
-        }
-
+        if (seen.has(lower)) continue;
         seen.add(lower);
 
-        // Clean sub-tasks array
+        // Clean sub-tasks
         const cleanedSubTasks = subTasks
-            .map(st => typeof st === 'string' ? st.replace(/^[*\-•\d.]+\s*/, '').trim() : '')
-            .filter(st => st.length >= 2 && !/^(yes\s*\/?\s*no|yes|no|completed|done)$/i.test(st));
+            .map(st => {
+                if (typeof st !== 'string') return '';
+                let cleaned = st.replace(/^[*\-•\d.)+]+\s*/, '').trim();
+                cleaned = stripBooleanNoise(cleaned);
+                return cleaned;
+            })
+            .filter(st => st.length >= 2 && !isJunkLine(st));
 
         cleaned.push({
             text,
@@ -96,12 +149,88 @@ function cleanPactsData(rawPacts: any[]): ParsedPactItem[] {
     return cleaned;
 }
 
+const SYSTEM_INSTRUCTION = `You are Gyral's Routine Intelligence Engine — an expert at deeply analyzing workout plans, study schedules, discipline routines, and multi-phase transformation programs.
+
+Your job is to extract MEANINGFUL, ACTIONABLE items from the user's input. The user may paste output from ChatGPT, Claude, DeepSeek, or their own handwritten plans. Plans can span weeks or months with different activities on different days.
+
+RETURN ONLY valid raw JSON. No markdown, no code fences, no commentary.
+
+JSON SCHEMA:
+{
+  "title": "Descriptive title (e.g. '12-Week Progressive Strength Program')",
+  "duration": "Total timeframe (e.g. '3 Months', '12 Weeks')",
+  "phases": [
+    "Phase 1 (Weeks 1-4): Foundation & Form",
+    "Phase 2 (Weeks 5-8): Progressive Overload",
+    "Phase 3 (Weeks 9-12): Peak Intensity"
+  ],
+  "pacts": [
+    {
+      "text": "Morning Gym - Upper Body Push",
+      "phase": "Phase 1",
+      "subTasks": [
+        "Bench Press 4x10 @ 60kg",
+        "Incline Dumbbell Press 3x12",
+        "Cable Flyes 3x15",
+        "Tricep Pushdowns 3x12"
+      ]
+    },
+    {
+      "text": "Morning Gym - Lower Body",
+      "phase": "Phase 1",
+      "subTasks": [
+        "Squats 4x8",
+        "Romanian Deadlifts 3x10",
+        "Leg Press 3x12",
+        "Calf Raises 4x15"
+      ]
+    },
+    {
+      "text": "Evening 30-min Reading",
+      "subTasks": []
+    }
+  ],
+  "tasks": [
+    "Water Intake (3L daily)",
+    "Sleep 7+ Hours",
+    "Morning Meditation"
+  ],
+  "goals": [
+    "Bench Press 100kg by Week 12",
+    "Lose 5kg body fat",
+    "Read 6 books"
+  ],
+  "fullTimetableNote": "Complete formatted Markdown note with the full daily/weekly breakdown, time blocks, phase progression, and all details."
+}
+
+CRITICAL RULES — FOLLOW EXACTLY:
+
+1. EXTRACT REAL EXERCISES & ACTIVITIES: When the input describes workouts, extract the ACTUAL exercises (Bench Press, Squats, Deadlifts, etc.) as sub-tasks under the workout pact. Do NOT just write "Gym Workout" — break it down.
+
+2. DIFFERENT DAYS = DIFFERENT PACTS: If the plan has Push Day, Pull Day, Leg Day, or Monday/Tuesday/Wednesday splits, create SEPARATE pact entries for each (e.g. "Push Day - Chest & Triceps", "Pull Day - Back & Biceps", "Leg Day - Quads & Hamstrings"). Tag each with its phase.
+
+3. NEVER EXTRACT JUNK AS PACTS:
+   - NEVER include "Yes/No", "Yes", "No", "Done", "Completed", "Status", "True/False" as pact text or sub-task text
+   - NEVER include document titles ("3 Month Transformation Plan"), section headers ("Table of Contents"), or navigation text
+   - NEVER include bare dates ("September 17", "Day 1", "Monday") as pact items
+   - NEVER include the routine/plan name itself as a pact
+   - NEVER include "Workout: Yes/No" — extract the ACTUAL workout content instead
+
+4. PACT TEXT = SHORT ACTIONABLE TITLE (4-8 words): e.g. "Morning Upper Body Push", "Evening 20-min Cardio", "Read Before Bed"
+
+5. SUB-TASKS = DETAILED STEPS: Exercises with sets/reps, specific book chapters, meal prep steps, etc.
+
+6. TASKS vs PACTS: "tasks" are recurring daily METRICS to track (Water intake, Sleep hours, Steps count). "pacts" are specific ACTIVITIES to do.
+
+7. MULTI-PHASE AWARENESS: If the plan changes across phases/weeks, include pacts from ALL phases, tagged with their phase. Don't collapse a 12-week plan into just "Day 1" items.
+
+8. DEDUPLICATION: Don't repeat the same pact. If "Gym Workout" appears on multiple days with different exercises, create separate pacts like "Push Day Workout", "Pull Day Workout" etc.`;
+
 export async function POST(req: NextRequest) {
     try {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        // Guest check fallback via cookie
         const isGuest = req.cookies.get('gyral-guest-mode')?.value === 'true';
 
         if (!user && !isGuest) {
@@ -110,7 +239,6 @@ export async function POST(req: NextRequest) {
 
         const userId = user ? user.id : 'guest-user';
 
-        // Rate limit: 20 parse requests per hour per user/guest
         const rateLimitCheck = checkRateLimit(userId, 'parse-timetable', {
             cooldownMs: 3000,
             maxRequests: 20,
@@ -136,50 +264,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Provide either text or imageBase64 data.' }, { status: 400 });
         }
 
-        const systemPrompt = `
-You are an expert Productivity & Routine Parsing Engine for the Gyral discipline system.
-Analyze the user's timetable, gym schedule, habit plan, or raw AI output (from ChatGPT, Claude, DeepSeek, etc.) and extract structured data.
-
-INSTRUCTIONS:
-1. Return ONLY valid, raw JSON (no code block formatting, no markdown wrappers, no commentary).
-2. The JSON schema MUST match exactly:
-{
-  "title": "Short descriptive title for this routine (e.g. 3-Month Progressive Gym & Mindset Routine)",
-  "duration": "Target timeframe for this transformation (e.g. 3 Months)",
-  "phases": [
-    "Phase breakdown describing progressive workload variation (e.g. Phase 1 (Weeks 1-4): Light Foundation & Form, Phase 2 (Weeks 5-8): Progressive Overload, Phase 3 (Weeks 9-12): Peak Intensity)"
-  ],
-  "pacts": [
-    {
-      "text": "Actionable main pact title (e.g. 7:00 AM Upper Body Gym Workout)",
-      "phase": "Optional phase tag (e.g. Phase 1)",
-      "subTasks": [
-        "Bench Press 4x10",
-        "Incline Dumbbell Press 3x12",
-        "Cable Flyes 3x15"
-      ]
-    }
-  ],
-  "tasks": [
-    "Habit trackers or recurring metrics (e.g. Heavy Upper Body Training, 3L Water Intake, Meditation)"
-  ],
-  "goals": [
-    "Long-term milestones or target achievements (e.g. Bench press 100kg in 3 months, Read 12 books this year)"
-  ],
-  "fullTimetableNote": "A clean, beautifully formatted Markdown reference note representing the complete daily/weekly timetable with time blocks, progressive phase breakdown, and bullet points."
-}
-
-CRITICAL CLEANING & EXTRACTION RULES:
-- NO JUNK / NO BOOLEAN TEXT: NEVER output text like 'Workout: Yes/No', 'Completed: Yes', 'Status: Done', '[ ]', '[x]', or 'Yes' as pact text! Strip all boolean/checkbox noise completely.
-- NO DOCUMENT HEADERS / NO DATES AS PACTS: Never extract document titles (e.g., '3 Month Transformation Plan', 'Table of Contents'), section headers, or date strings (e.g., 'September 17', 'Monday', 'Day 1') as pact items!
-- SUB-TASKS CHECKLIST: Whenever a pact or workout has step-by-step exercises, chapters, or sub-activities, extract them into the 'subTasks' array of that pact object!
-- CONCISE PACT TEXT: Main pact 'text' MUST be clean and actionable (e.g. '7:00 AM Upper Body Workout', 'Read 20 pages before bed'). Keep it to 4-6 words.
-- NO DUPLICATIONS: Keep pacts as time-blocked action items with sub-tasks, and habit trackers ('tasks') as distinct daily metrics.
-`;
-
         let contents;
         if (imageBase64) {
-            // Process screenshot image
             const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
             const mimeType = imageBase64.match(/^data:(image\/\w+);base64,/)?.[1] || 'image/png';
 
@@ -191,13 +277,16 @@ CRITICAL CLEANING & EXTRACTION RULES:
             };
 
             const userPrompt = text
-                ? `Extract timetable from this image. Additional context: ${sanitizeForPrompt(text, 500)}`
-                : "Extract timetable from this screenshot image.";
-            contents = [systemPrompt, userPrompt, imagePart];
+                ? `Analyze this timetable/routine image and extract ALL activities, exercises, and phases into structured pacts with sub-tasks. Additional context from user:\n${sanitizeLargeInput(text, 2000)}`
+                : "Analyze this timetable/routine image and extract ALL activities, exercises, and phases into structured pacts with sub-tasks.";
+            contents = [SYSTEM_INSTRUCTION, userPrompt, imagePart];
         } else {
-            // Process text input
-            const sanitizedText = sanitizeForPrompt(text, 4000);
-            contents = [systemPrompt, `User AI Timetable Input:\n\n${sanitizedText}`];
+            // Allow up to 15K chars for large multi-month plans
+            const sanitizedText = sanitizeLargeInput(text, 15000);
+            contents = [
+                SYSTEM_INSTRUCTION,
+                `Here is the user's routine/timetable/plan. Extract ALL meaningful activities, exercises (with sets/reps as sub-tasks), habits, and goals. If there are multiple days or phases, create separate pacts for each day type (e.g. Push Day, Pull Day, Leg Day, Study Day A, etc.) and tag them with their phase.\n\n---\n${sanitizedText}\n---`
+            ];
         }
 
         let parsedData: any = null;
@@ -210,7 +299,6 @@ CRITICAL CLEANING & EXTRACTION RULES:
 
             const responseText = result.response.text();
 
-            // Clean any potential markdown fencing if model didn't obey responseMimeType strictly
             let cleanedJson = responseText.trim();
             if (cleanedJson.startsWith('```json')) {
                 cleanedJson = cleanedJson.replace(/^```json\s*/, '').replace(/\s*```$/, '');
@@ -219,57 +307,79 @@ CRITICAL CLEANING & EXTRACTION RULES:
             }
 
             parsedData = JSON.parse(cleanedJson);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (aiError: any) {
             console.warn("[ParseTimetable AI Fallback Triggered]:", aiError?.message || aiError);
 
             if (text && text.trim()) {
-                // Perform smart text extraction fallback if Gemini API throws an error
-                const lines = text.split('\n').map((l: string) => l.trim()).filter(Boolean);
+                // Smart text extraction fallback
+                const rawLines = text.split('\n');
                 const pactsList: ParsedPactItem[] = [];
                 const tasksList: string[] = [];
                 const goalsList: string[] = [];
                 const phasesList: string[] = [];
+                const seenPacts = new Set<string>();
 
                 let currentPact: ParsedPactItem | null = null;
+                let currentPhase: string | undefined = undefined;
 
-                lines.forEach((line: string) => {
-                    let clean = line.replace(/^[*\-•\d.]+\s*/, '').trim();
-                    clean = clean
-                        .replace(/:\s*(yes\s*\/?\s*no|yes|no|completed|done|true|false)\b/gi, '')
-                        .replace(/\[[ xX]\]/g, '')
-                        .trim();
+                for (let i = 0; i < rawLines.length; i++) {
+                    const rawLine = rawLines[i];
+                    const indented = rawLine.startsWith('  ') || rawLine.startsWith('\t') || rawLine.startsWith('   -') || rawLine.startsWith('   *');
+                    let clean = rawLine.replace(/^[\s]*[*\-•\d.)+]+\s*/, '').trim();
+                    clean = stripBooleanNoise(clean);
 
-                    if (!clean || clean.length < 3) return;
+                    if (isJunkLine(clean)) continue;
 
-                    // Skip headers & boolean noise
-                    if (/^(yes\s*\/?\s*no|yes|no|true|false|completed|status|date|table of contents|routine title)$/i.test(clean)) return;
-
+                    // Detect phase/week headers
                     if (/phase\s*\d+/i.test(clean) || /week\s*\d+/i.test(clean)) {
+                        currentPhase = clean;
                         phasesList.push(clean);
-                    } else if (/goal|bench|target|weight|marathon|achieve|milestone/i.test(clean)) {
-                        goalsList.push(clean.substring(0, 60));
-                    } else if (/track|water|intake|sleep|meditat|steps|calorie/i.test(clean) && clean.split(' ').length <= 5) {
-                        tasksList.push(clean.substring(0, 45));
-                    } else {
-                        if (line.startsWith(' ') || line.startsWith('\t') || line.startsWith('  -') || line.startsWith('  *')) {
-                            if (currentPact) {
-                                if (!currentPact.subTasks) currentPact.subTasks = [];
-                                currentPact.subTasks.push(clean.substring(0, 50));
-                                return;
-                            }
-                        }
-                        currentPact = { text: clean.substring(0, 50), subTasks: [] };
-                        pactsList.push(currentPact);
+                        currentPact = null;
+                        continue;
                     }
-                });
+
+                    // Detect goals
+                    if (/goal|bench\s*press\s*\d|target\s*weight|marathon|achieve|milestone|lose\s*\d+\s*kg/i.test(clean) && clean.length < 80) {
+                        goalsList.push(clean.substring(0, 60));
+                        continue;
+                    }
+
+                    // Detect habit trackers (short metric-style items)
+                    if (/^(track|water|intake|sleep|meditat|steps|calorie|hydrat|stretch)/i.test(clean) && clean.split(' ').length <= 6) {
+                        tasksList.push(clean.substring(0, 45));
+                        continue;
+                    }
+
+                    // Sub-task detection: indented under a current pact
+                    if (indented && currentPact) {
+                        if (!currentPact.subTasks) currentPact.subTasks = [];
+                        if (currentPact.subTasks.length < 15) {
+                            currentPact.subTasks.push(clean.substring(0, 60));
+                        }
+                        continue;
+                    }
+
+                    // Main pact line
+                    const pactLower = clean.toLowerCase();
+                    if (seenPacts.has(pactLower)) continue;
+                    seenPacts.add(pactLower);
+
+                    currentPact = {
+                        text: clean.substring(0, 60),
+                        subTasks: [],
+                        phase: currentPhase
+                    };
+                    pactsList.push(currentPact);
+                }
 
                 parsedData = {
                     title: "Imported Routine & Timetable",
                     duration: "3 Months",
-                    phases: phasesList.length > 0 ? phasesList.slice(0, 3) : ["Phase 1: Foundation", "Phase 2: Progressive Overload", "Phase 3: Peak Performance"],
-                    pacts: pactsList.length > 0 ? pactsList.slice(0, 8) : [{ text: "7:00 AM Daily Workout", subTasks: ["Bench Press 4x10", "Incline Dumbbell Press 3x12"] }],
-                    tasks: tasksList.length > 0 ? tasksList.slice(0, 6) : ["Daily Hydration Tracker", "Discipline Metric"],
-                    goals: goalsList.length > 0 ? goalsList.slice(0, 5) : ["Transformation Achievement"],
+                    phases: phasesList.length > 0 ? phasesList.slice(0, 6) : ["Phase 1: Foundation", "Phase 2: Progressive Overload", "Phase 3: Peak Performance"],
+                    pacts: pactsList.length > 0 ? pactsList.slice(0, 20) : [{ text: "Daily Workout", subTasks: ["Bench Press 4x10", "Incline Dumbbell Press 3x12"] }],
+                    tasks: tasksList.length > 0 ? tasksList.slice(0, 8) : ["Daily Hydration Tracker"],
+                    goals: goalsList.length > 0 ? goalsList.slice(0, 6) : ["Transformation Achievement"],
                     fullTimetableNote: text
                 };
             } else {
