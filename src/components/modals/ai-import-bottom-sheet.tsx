@@ -34,8 +34,9 @@ export function AiImportBottomSheet() {
 
     // Input state
     const [rawText, setRawText] = useState("");
-    const [imageBase64, setImageBase64] = useState<string | null>(null);
-    const [imageFileName, setImageFileName] = useState<string | null>(null);
+    const [fileBase64, setFileBase64] = useState<string | null>(null);
+    const [fileName, setFileName] = useState<string | null>(null);
+    const [fileMimeType, setFileMimeType] = useState<string | null>(null);
     const [copiedPrompt, setCopiedPrompt] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -67,24 +68,29 @@ export function AiImportBottomSheet() {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        if (!file.type.startsWith("image/")) {
-            setError("Please select an image file (PNG, JPG, WEBP)");
+
+        const isImage = file.type.startsWith("image/");
+        const isPdf = file.type === "application/pdf" || file.name.endsWith(".pdf");
+
+        if (!isImage && !isPdf) {
+            setError("Please select a PDF document (.pdf) or image file (PNG, JPG, WEBP)");
             return;
         }
 
-        setImageFileName(file.name);
+        setFileName(file.name);
+        setFileMimeType(isPdf ? "application/pdf" : file.type);
         setError(null);
 
         const reader = new FileReader();
         reader.onload = (event) => {
-            setImageBase64(event.target?.result as string);
+            setFileBase64(event.target?.result as string);
         };
         reader.readAsDataURL(file);
     };
 
     const handleStartExtraction = async () => {
-        if (!rawText.trim() && !imageBase64) {
-            setError("Please paste routine text or select a screenshot.");
+        if (!rawText.trim() && !fileBase64) {
+            setError("Please paste routine text or select a PDF / screenshot.");
             return;
         }
 
@@ -109,7 +115,8 @@ export function AiImportBottomSheet() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     text: rawText.trim() || undefined,
-                    imageBase64: imageBase64 || undefined
+                    fileBase64: fileBase64 || undefined,
+                    fileMimeType: fileMimeType || undefined
                 })
             });
 
@@ -195,7 +202,7 @@ export function AiImportBottomSheet() {
                                 type="file"
                                 ref={fileInputRef}
                                 onChange={handleFileChange}
-                                accept="image/*"
+                                accept=".pdf,application/pdf,image/*"
                                 className="hidden"
                             />
 
@@ -204,15 +211,15 @@ export function AiImportBottomSheet() {
                             </div>
 
                             <div className="space-y-0.5 relative z-10">
-                                <h3 className="text-sm font-bold text-white tracking-wide drop-shadow">Add files to upload</h3>
-                                <p className="text-xs text-purple-200/80">or browse screenshots, 4 MB max</p>
+                                <h3 className="text-sm font-bold text-white tracking-wide drop-shadow">Add PDF or Image to upload</h3>
+                                <p className="text-xs text-purple-200/80">PDF documents, screenshots, PNG, JPG</p>
                             </div>
 
                             <button
                                 onClick={() => fileInputRef.current?.click()}
                                 className="px-6 py-2.5 rounded-full bg-purple-600/30 hover:bg-purple-600/45 border border-purple-400/50 text-white text-xs font-semibold shadow-xl backdrop-blur-xl transition-all relative z-10 hover:shadow-[0_0_25px_rgba(168,85,247,0.4)]"
                             >
-                                Select files
+                                Select file
                             </button>
                         </div>
 
@@ -232,11 +239,15 @@ export function AiImportBottomSheet() {
 
                         {/* Attached Files & Prompt Items (Image 1 Item List) */}
                         <div className="space-y-2">
-                            {imageFileName && (
+                            {fileName && (
                                 <div className="p-3.5 rounded-2xl bg-white/[0.06] backdrop-blur-2xl border border-white/25 flex items-center justify-between text-xs text-zinc-200 shadow-md">
                                     <div className="flex items-center gap-2.5">
-                                        <Paperclip className="w-4 h-4 text-purple-300" />
-                                        <span className="font-mono text-zinc-200 truncate max-w-[200px]">{imageFileName}</span>
+                                        {fileMimeType === "application/pdf" ? (
+                                            <FileText className="w-4 h-4 text-rose-400" />
+                                        ) : (
+                                            <Paperclip className="w-4 h-4 text-purple-300" />
+                                        )}
+                                        <span className="font-mono text-zinc-200 truncate max-w-[200px]">{fileName}</span>
                                     </div>
                                     <div className="w-5 h-5 rounded-full bg-emerald-500/25 text-emerald-400 border border-emerald-400/50 flex items-center justify-center">
                                         <Check className="w-3 h-3 stroke-[3]" />
@@ -308,17 +319,17 @@ export function AiImportBottomSheet() {
                                 {/* Translucent File Icon with [TEXT] / [IMAGE] Badge (Image 2) */}
                                 <div className="relative w-16 h-20 rounded-2xl bg-gradient-to-br from-indigo-950/80 via-zinc-900 to-purple-950/60 border border-indigo-400/30 flex items-center justify-center shadow-xl">
                                     <FileText className="w-8 h-8 text-indigo-300" />
-                                    <div className="absolute -left-2 bottom-4 px-1.5 py-0.5 rounded-md bg-zinc-900 border border-white/20 text-[9px] font-mono font-bold text-white shadow">
-                                        {imageBase64 ? "IMAGE" : "TEXT"}
-                                    </div>
+                                     <div className="absolute -left-2 bottom-4 px-1.5 py-0.5 rounded-md bg-zinc-900 border border-white/20 text-[9px] font-mono font-bold text-white shadow">
+                                        {fileMimeType === "application/pdf" ? "PDF" : fileBase64 ? "IMAGE" : "TEXT"}
+                                     </div>
                                 </div>
 
                                 <div>
                                     <h3 className="text-base font-bold text-white font-sans tracking-wide">
-                                        {imageFileName || "Routine_Extract.txt"}
+                                        {fileName || "Routine_Extract.txt"}
                                     </h3>
                                     <p className="text-xs font-mono text-zinc-400 mt-1">
-                                        {rawText ? `${rawText.length} chars` : "Multimodal Image OCR"}
+                                        {rawText ? `${rawText.length} chars` : fileMimeType === "application/pdf" ? "Gemini Native PDF Extraction" : "Multimodal Image OCR"}
                                     </p>
                                 </div>
                             </div>

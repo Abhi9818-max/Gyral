@@ -490,28 +490,31 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { text, imageBase64 } = body;
+        const { text, imageBase64, fileBase64, fileMimeType } = body;
 
-        if (!text && !imageBase64) {
-            return NextResponse.json({ error: 'Provide either text or imageBase64 data.' }, { status: 400 });
+        const rawFile = fileBase64 || imageBase64;
+
+        if (!text && !rawFile) {
+            return NextResponse.json({ error: 'Provide text, PDF document, or routine image file.' }, { status: 400 });
         }
 
         let contents;
-        if (imageBase64) {
-            const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
-            const mimeType = imageBase64.match(/^data:(image\/\w+);base64,/)?.[1] || 'image/png';
+        if (rawFile) {
+            const base64Data = rawFile.replace(/^data:[^;]+;base64,/, '');
+            const mimeType = fileMimeType || rawFile.match(/^data:([^;]+);base64,/)?.[1] || 'image/png';
 
-            const imagePart = {
+            const filePart = {
                 inlineData: {
                     data: base64Data,
                     mimeType: mimeType
                 }
             };
 
+            const isPdf = mimeType === 'application/pdf';
             const userPrompt = text
-                ? `Analyze this timetable/routine image. Extract ONLY the ACTIVITIES and EXERCISES — strip all dates, day names, and boolean statuses. Additional context:\n${sanitizeLargeInput(text, 200000)}`
-                : "Analyze this timetable/routine image. Extract ONLY the ACTIVITIES and EXERCISES — strip all dates, day names, and boolean statuses.";
-            contents = [SYSTEM_INSTRUCTION, userPrompt, imagePart];
+                ? `Analyze this timetable/routine ${isPdf ? 'PDF document' : 'image'}. Extract ALL ACTIVITIES and EXERCISES across all months/phases as pacts — strip all dates, day names, and boolean statuses. Additional context:\n${sanitizeLargeInput(text, 200000)}`
+                : `Analyze this timetable/routine ${isPdf ? 'PDF document' : 'image'}. Extract ALL ACTIVITIES and EXERCISES across all months/phases as pacts — strip all dates, day names, and boolean statuses.`;
+            contents = [SYSTEM_INSTRUCTION, userPrompt, filePart];
         } else {
             const sanitizedText = sanitizeLargeInput(text, 200000);
             contents = [

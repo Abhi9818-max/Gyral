@@ -136,8 +136,9 @@ export default function ImportTimetablePage() {
 
     // Input state
     const [rawText, setRawText] = useState("");
-    const [imageBase64, setImageBase64] = useState<string | null>(null);
-    const [imageFileName, setImageFileName] = useState<string | null>(null);
+    const [fileBase64, setFileBase64] = useState<string | null>(null);
+    const [fileName, setFileName] = useState<string | null>(null);
+    const [fileMimeType, setFileMimeType] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [copiedPrompt, setCopiedPrompt] = useState(false);
@@ -309,36 +310,41 @@ export default function ImportTimetablePage() {
         setTimeout(() => setCopiedPrompt(false), 2500);
     };
 
-    // Handle File / Screenshot Selection
+    // Handle File / Screenshot / PDF Selection
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (!file.type.startsWith("image/")) {
-            setError("Please upload an image file (PNG, JPG, WEBP)");
+        const isImage = file.type.startsWith("image/");
+        const isPdf = file.type === "application/pdf" || file.name.endsWith(".pdf");
+
+        if (!isImage && !isPdf) {
+            setError("Please upload a PDF document (.pdf) or an image file (PNG, JPG, WEBP)");
             return;
         }
 
-        setImageFileName(file.name);
+        setFileName(file.name);
+        setFileMimeType(isPdf ? "application/pdf" : file.type);
         setError(null);
 
         const reader = new FileReader();
         reader.onload = (event) => {
-            setImageBase64(event.target?.result as string);
+            setFileBase64(event.target?.result as string);
         };
         reader.readAsDataURL(file);
     };
 
-    const handleClearImage = () => {
-        setImageBase64(null);
-        setImageFileName(null);
+    const handleClearFile = () => {
+        setFileBase64(null);
+        setFileName(null);
+        setFileMimeType(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
     // Trigger Gemini API Parser
     const handleParse = async () => {
-        if (!rawText.trim() && !imageBase64) {
-            setError("Please paste text from ChatGPT/Claude or upload a timetable screenshot.");
+        if (!rawText.trim() && !fileBase64) {
+            setError("Please paste routine text, or upload a PDF document or screenshot.");
             return;
         }
 
@@ -351,7 +357,8 @@ export default function ImportTimetablePage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     text: rawText.trim() || undefined,
-                    imageBase64: imageBase64 || undefined
+                    fileBase64: fileBase64 || undefined,
+                    fileMimeType: fileMimeType || undefined
                 })
             });
 
@@ -775,39 +782,48 @@ export default function ImportTimetablePage() {
                                         </div>
                                     </div>
 
-                                    {/* Option B: Screenshot Upload */}
+                                    {/* Option B: PDF or Image Upload */}
                                     <div className="bg-white/[0.06] border border-white/30 rounded-[32px] p-6 space-y-3.5 flex flex-col justify-between backdrop-blur-3xl shadow-[0_15px_50px_rgba(0,0,0,0.5),inset_0_1px_2.5px_rgba(255,255,255,0.5)]">
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold uppercase tracking-wider text-zinc-200 flex items-center gap-2">
-                                                <ImageIcon className="w-4 h-4 text-rose-400" />
-                                                Option B: Upload Timetable Screenshot
+                                                <Upload className="w-4 h-4 text-rose-400" />
+                                                Option B: Upload PDF Document or Image
                                             </label>
 
                                             <input
                                                 type="file"
                                                 ref={fileInputRef}
                                                 onChange={handleFileChange}
-                                                accept="image/*"
+                                                accept=".pdf,application/pdf,image/*"
                                                 className="hidden"
                                             />
 
-                                            {imageBase64 ? (
-                                                <div className="relative h-48 rounded-2xl overflow-hidden border border-white/30 bg-black/60 group">
-                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                    <img
-                                                        src={imageBase64}
-                                                        alt="Timetable Screenshot"
-                                                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                                    />
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-3 justify-between">
-                                                        <span className="text-xs font-mono text-zinc-200 truncate max-w-[200px]">
-                                                            {imageFileName}
-                                                        </span>
+                                            {fileBase64 ? (
+                                                <div className="relative h-48 rounded-2xl overflow-hidden border border-white/30 bg-black/60 group p-4 flex flex-col items-center justify-center text-center">
+                                                    {fileMimeType === "application/pdf" ? (
+                                                        <div className="space-y-2">
+                                                            <FileText className="w-12 h-12 text-rose-400 mx-auto animate-pulse" />
+                                                            <div className="text-xs font-bold text-white font-mono truncate max-w-[220px]">{fileName}</div>
+                                                            <div className="text-[10px] text-emerald-300 font-semibold bg-emerald-500/15 border border-emerald-400/30 px-2.5 py-0.5 rounded-full inline-block">
+                                                                PDF Document Loaded for AI Extraction
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                            <img
+                                                                src={fileBase64}
+                                                                alt="Timetable Attachment"
+                                                                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity rounded-xl"
+                                                            />
+                                                        </>
+                                                    )}
+                                                    <div className="absolute bottom-3 right-3 z-10">
                                                         <button
-                                                            onClick={handleClearImage}
-                                                            className="px-3 py-1 rounded-xl bg-red-500/30 hover:bg-red-500/50 text-red-200 border border-red-400/40 text-xs transition-colors backdrop-blur-md"
+                                                            onClick={handleClearFile}
+                                                            className="px-3 py-1 rounded-xl bg-red-500/40 hover:bg-red-500/60 text-red-200 border border-red-400/40 text-xs transition-colors backdrop-blur-md font-semibold"
                                                         >
-                                                            Remove
+                                                            Remove File
                                                         </button>
                                                     </div>
                                                 </div>
@@ -818,16 +834,16 @@ export default function ImportTimetablePage() {
                                                 >
                                                     <Upload className="w-8 h-8 text-zinc-400 group-hover:text-white transition-colors mb-2" />
                                                     <p className="text-xs font-semibold text-zinc-200">
-                                                        Click or drop routine screenshot here
+                                                        Click or drop PDF document or routine image
                                                     </p>
                                                     <p className="text-[10px] text-zinc-400 mt-1">
-                                                        PNG, JPG, WEBP supported
+                                                        PDF, PNG, JPG, WEBP supported
                                                     </p>
                                                 </div>
                                             )}
                                         </div>
                                         <div className="text-[11px] text-zinc-400">
-                                            Gemini Multi-Modal Vision will OCR & analyze image
+                                            Gemini Multi-Modal Vision & Document Engine parses PDFs & Images
                                         </div>
                                     </div>
                                 </div>
@@ -843,7 +859,7 @@ export default function ImportTimetablePage() {
                                 <div className="flex justify-end pt-2">
                                     <button
                                         onClick={handleParse}
-                                        disabled={isLoading || (!rawText.trim() && !imageBase64)}
+                                        disabled={isLoading || (!rawText.trim() && !fileBase64)}
                                         className="px-8 py-3.5 rounded-full bg-white text-black hover:bg-zinc-100 font-bold text-xs shadow-[0_0_35px_rgba(255,255,255,0.45)] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
                                     >
                                         {isLoading ? (
@@ -1264,7 +1280,9 @@ export default function ImportTimetablePage() {
                                         onClick={() => {
                                             setParsedData(null);
                                             setRawText("");
-                                            setImageBase64(null);
+                                            setFileBase64(null);
+                                            setFileName(null);
+                                            setFileMimeType(null);
                                             setStep('INPUT');
                                         }}
                                         className="w-full sm:w-auto px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/25 backdrop-blur-xl transition-all shadow-md"

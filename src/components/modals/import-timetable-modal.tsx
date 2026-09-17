@@ -102,8 +102,9 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
 
     // Input state
     const [rawText, setRawText] = useState("");
-    const [imageBase64, setImageBase64] = useState<string | null>(null);
-    const [imageFileName, setImageFileName] = useState<string | null>(null);
+    const [fileBase64, setFileBase64] = useState<string | null>(null);
+    const [fileName, setFileName] = useState<string | null>(null);
+    const [fileMimeType, setFileMimeType] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [copiedPrompt, setCopiedPrompt] = useState(false);
@@ -260,36 +261,41 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
         setTimeout(() => setCopiedPrompt(false), 2500);
     };
 
-    // Handle File / Screenshot Selection
+    // Handle File / Screenshot / PDF Selection
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (!file.type.startsWith("image/")) {
-            setError("Please upload an image file (PNG, JPG, WEBP)");
+        const isImage = file.type.startsWith("image/");
+        const isPdf = file.type === "application/pdf" || file.name.endsWith(".pdf");
+
+        if (!isImage && !isPdf) {
+            setError("Please upload a PDF document (.pdf) or image file (PNG, JPG, WEBP)");
             return;
         }
 
-        setImageFileName(file.name);
+        setFileName(file.name);
+        setFileMimeType(isPdf ? "application/pdf" : file.type);
         setError(null);
 
         const reader = new FileReader();
         reader.onload = (event) => {
-            setImageBase64(event.target?.result as string);
+            setFileBase64(event.target?.result as string);
         };
         reader.readAsDataURL(file);
     };
 
-    const handleClearImage = () => {
-        setImageBase64(null);
-        setImageFileName(null);
+    const handleClearFile = () => {
+        setFileBase64(null);
+        setFileName(null);
+        setFileMimeType(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
     // Trigger Gemini API Parser
     const handleParse = async () => {
-        if (!rawText.trim() && !imageBase64) {
-            setError("Please paste text from ChatGPT/Claude or upload a timetable screenshot.");
+        if (!rawText.trim() && !fileBase64) {
+            setError("Please paste routine text or upload a PDF document / screenshot.");
             return;
         }
 
@@ -302,7 +308,8 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     text: rawText.trim() || undefined,
-                    imageBase64: imageBase64 || undefined
+                    fileBase64: fileBase64 || undefined,
+                    fileMimeType: fileMimeType || undefined
                 })
             });
 
@@ -518,8 +525,9 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
     const handleReset = () => {
         setStep('INPUT');
         setRawText("");
-        setImageBase64(null);
-        setImageFileName(null);
+        setFileBase64(null);
+        setFileName(null);
+        setFileMimeType(null);
         setParsedData(null);
         setError(null);
     };
@@ -655,30 +663,37 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                             />
                         </div>
 
-                        {/* Image Upload Input */}
+                        {/* Document & Image Upload Input */}
                         <div className="space-y-2">
                             <label className="text-xs uppercase tracking-widest text-zinc-400 font-mono flex items-center gap-2">
-                                <ImageIcon className="w-4 h-4 text-purple-400" />
-                                Or Upload Screenshot of AI Timetable
+                                <Upload className="w-4 h-4 text-purple-400" />
+                                Or Upload PDF Routine / Screenshot
                             </label>
                             <div className="relative border border-dashed border-white/15 hover:border-accent/40 rounded-2xl p-5 text-center transition-all bg-white/[0.02] hover:bg-white/[0.04] group">
                                 <input
                                     type="file"
                                     ref={fileInputRef}
                                     onChange={handleFileChange}
-                                    accept="image/*"
+                                    accept=".pdf,application/pdf,image/*"
                                     className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                                 />
-                                {imageBase64 ? (
+                                {fileBase64 ? (
                                     <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl">
                                         <div className="flex items-center gap-3 overflow-hidden">
-                                            <img src={imageBase64} alt="Screenshot preview" className="w-10 h-10 object-cover rounded-lg border border-white/10" />
-                                            <span className="text-sm font-mono text-zinc-300 truncate max-w-[200px]">{imageFileName}</span>
+                                            {fileMimeType === "application/pdf" ? (
+                                                <FileText className="w-8 h-8 text-rose-400 shrink-0" />
+                                            ) : (
+                                                <img src={fileBase64} alt="Routine screenshot preview" className="w-10 h-10 object-cover rounded-lg border border-white/10" />
+                                            )}
+                                            <div className="flex flex-col text-left overflow-hidden">
+                                                <span className="text-sm font-mono text-zinc-200 truncate max-w-[200px]">{fileName}</span>
+                                                <span className="text-[10px] text-emerald-400 font-semibold">{fileMimeType === "application/pdf" ? "PDF Document Ready" : "Image Ready"}</span>
+                                            </div>
                                         </div>
                                         <button
                                             type="button"
-                                            onClick={(e) => { e.stopPropagation(); handleClearImage(); }}
-                                            className="p-1 text-zinc-400 hover:text-red-400 z-20"
+                                            onClick={(e) => { e.stopPropagation(); handleClearFile(); }}
+                                            className="p-1.5 text-zinc-400 hover:text-red-400 z-20 transition-colors"
                                         >
                                             <X className="w-4 h-4" />
                                         </button>
@@ -686,8 +701,8 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                                 ) : (
                                     <div className="flex flex-col items-center gap-2">
                                         <Upload className="w-7 h-7 text-zinc-500 group-hover:text-accent transition-colors" />
-                                        <p className="text-sm text-zinc-300 font-medium">Click or drag screenshot to upload</p>
-                                        <p className="text-xs text-zinc-500">Supports PNG, JPG, WEBP</p>
+                                        <p className="text-sm text-zinc-300 font-medium">Click or drag PDF document or image</p>
+                                        <p className="text-xs text-zinc-500">Supports PDF, PNG, JPG, WEBP</p>
                                     </div>
                                 )}
                             </div>
