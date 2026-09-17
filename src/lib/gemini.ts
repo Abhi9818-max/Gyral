@@ -2,14 +2,12 @@ import { GoogleGenerativeAI, GenerationConfig } from '@google/generative-ai';
 
 const DEFAULT_CANDIDATE_MODELS = [
     process.env.GEMINI_MODEL,
-    'gemini-3.6-flash',
-    'gemini-3.7-flash',
-    'gemini-3.8-flash',
-    'gemini-2.5-flash',
-    'gemini-2.0-flash',
     'gemini-1.5-flash',
     'gemini-1.5-flash-latest',
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-exp',
     'gemini-1.5-pro',
+    'gemini-1.5-pro-latest',
     'gemini-pro',
 ].filter(Boolean) as string[];
 
@@ -52,12 +50,15 @@ export async function generateContentWithFallback(
             const isNotFound =
                 errStr.includes('404') ||
                 errStr.includes('not found') ||
+                errStr.includes('is not found') ||
+                errStr.includes('is not supported') ||
                 errStr.includes('ModelService.ListModels') ||
-                errStr.includes('is not found for API version');
+                errStr.includes('API version');
 
             const isMimeTypeError =
                 errStr.includes('responseMimeType') ||
-                errStr.includes('generationConfig');
+                errStr.includes('generationConfig') ||
+                errStr.includes('INVALID_ARGUMENT');
 
             if (isMimeTypeError && options?.generationConfig) {
                 // Retry without generationConfig if responseMimeType isn't supported by this model
@@ -72,12 +73,12 @@ export async function generateContentWithFallback(
             }
 
             if (isNotFound) {
-                console.warn(`[Gemini Fallback] Model '${modelName}' not found (404). Trying next model candidate...`);
+                console.warn(`[Gemini Fallback] Model '${modelName}' not found or unsupported. Trying next candidate...`);
                 lastError = err;
                 continue;
             }
 
-            // For rate limits (429) or other fatal errors, throw immediately or save lastError
+            // For rate limits (429) or other fatal errors, save lastError and try next if not 429
             lastError = err;
             if (errStr.includes('429') || errStr.includes('RESOURCE_EXHAUSTED')) {
                 throw err;

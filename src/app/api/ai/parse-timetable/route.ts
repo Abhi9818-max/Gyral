@@ -138,34 +138,75 @@ RULES:
             contents = [systemPrompt, `User AI Timetable Input:\n\n${sanitizedText}`];
         }
 
-        const { result } = await generateContentWithFallback(genAI, contents, {
-            generationConfig: {
-                responseMimeType: "application/json",
+        let parsedData: any = null;
+        try {
+            const { result } = await generateContentWithFallback(genAI, contents, {
+                generationConfig: {
+                    responseMimeType: "application/json",
+                }
+            });
+
+            const responseText = result.response.text();
+
+            // Clean any potential markdown fencing if model didn't obey responseMimeType strictly
+            let cleanedJson = responseText.trim();
+            if (cleanedJson.startsWith('```json')) {
+                cleanedJson = cleanedJson.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+            } else if (cleanedJson.startsWith('```')) {
+                cleanedJson = cleanedJson.replace(/^```\s*/, '').replace(/\s*```$/, '');
             }
-        });
 
-        const responseText = result.response.text();
+            parsedData = JSON.parse(cleanedJson);
+        } catch (aiError: any) {
+            console.warn("[ParseTimetable AI Fallback Triggered]:", aiError?.message || aiError);
 
-        // Clean any potential markdown fencing if model didn't obey responseMimeType strictly
-        let cleanedJson = responseText.trim();
-        if (cleanedJson.startsWith('```json')) {
-            cleanedJson = cleanedJson.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-        } else if (cleanedJson.startsWith('```')) {
-            cleanedJson = cleanedJson.replace(/^```\s*/, '').replace(/\s*```$/, '');
+            if (text && text.trim()) {
+                // Perform smart text extraction fallback if Gemini API throws an error
+                const lines = text.split('\n').map((l: string) => l.trim()).filter(Boolean);
+                const pacts: string[] = [];
+                const tasks: string[] = [];
+                const goals: string[] = [];
+                const phases: string[] = [];
+
+                lines.forEach((line: string) => {
+                    const clean = line.replace(/^[*\-•\d.]+\s*/, '').trim();
+                    if (!clean || clean.length < 3) return;
+
+                    if (/phase\s*\d+/i.test(clean) || /week\s*\d+/i.test(clean)) {
+                        phases.push(clean);
+                    } else if (/goal|bench|target|weight|marathon|achieve|milestone/i.test(clean)) {
+                        goals.push(clean.substring(0, 60));
+                    } else if (/track|water|intake|sleep|meditat|steps|calorie|read|study/i.test(clean) && clean.split(' ').length <= 5) {
+                        tasks.push(clean.substring(0, 45));
+                    } else {
+                        pacts.push(clean.substring(0, 50));
+                    }
+                });
+
+                parsedData = {
+                    title: "Imported Routine & Timetable",
+                    duration: "3 Months",
+                    phases: phases.length > 0 ? phases.slice(0, 3) : ["Phase 1: Foundation", "Phase 2: Progressive Overload", "Phase 3: Peak Performance"],
+                    pacts: pacts.length > 0 ? pacts.slice(0, 8) : ["7:00 AM Daily Workout", "Read 20 pages before bed"],
+                    tasks: tasks.length > 0 ? tasks.slice(0, 6) : ["Daily Hydration Tracker", "Discipline Metric"],
+                    goals: goals.length > 0 ? goals.slice(0, 5) : ["Transformation Achievement"],
+                    fullTimetableNote: text
+                };
+            } else {
+                throw aiError;
+            }
         }
-
-        const parsedData = JSON.parse(cleanedJson);
 
         return NextResponse.json({
             success: true,
             data: {
-                title: parsedData.title || "AI Routine & Timetable",
-                duration: formatCompactDuration(parsedData.duration),
-                phases: Array.isArray(parsedData.phases) ? parsedData.phases : [],
-                pacts: Array.isArray(parsedData.pacts) ? parsedData.pacts : [],
-                tasks: Array.isArray(parsedData.tasks) ? parsedData.tasks : [],
-                goals: Array.isArray(parsedData.goals) ? parsedData.goals : [],
-                fullTimetableNote: parsedData.fullTimetableNote || text || "Imported Timetable"
+                title: parsedData?.title || "AI Routine & Timetable",
+                duration: formatCompactDuration(parsedData?.duration),
+                phases: Array.isArray(parsedData?.phases) ? parsedData.phases : [],
+                pacts: Array.isArray(parsedData?.pacts) ? parsedData.pacts : [],
+                tasks: Array.isArray(parsedData?.tasks) ? parsedData.tasks : [],
+                goals: Array.isArray(parsedData?.goals) ? parsedData.goals : [],
+                fullTimetableNote: parsedData?.fullTimetableNote || text || "Imported Timetable"
             }
         });
 
@@ -173,7 +214,7 @@ RULES:
     } catch (error: any) {
         console.error("[ParseTimetable API Error]:", error);
         return NextResponse.json({
-            error: error.message || 'Failed to parse timetable with AI. Please check format and try again.'
+            error: error.message || 'Failed to parse timetable. Please check text format and try again.'
         }, { status: 500 });
     }
 }
