@@ -271,7 +271,7 @@ interface UserDataContextType {
 
     // Pacts
     pacts: PactsMap;
-    addPact: (text: string, date: string) => void;
+    addPact: (text: string, date: string, subTasks?: string[]) => void;
     togglePact: (id: string, date: string) => void;
     deletePact: (id: string, date: string) => void;
     shiftPact: (id: string, currentDate: string) => void;
@@ -1590,7 +1590,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
     const getRecordsForDate = (date: string) => records[date] || [];
 
-    const addPact = async (text: string, date: string) => {
+    const addPact = async (text: string, date: string, subTasks?: string[]) => {
         const cleanText = text.trim();
         if (!cleanText) return;
 
@@ -1600,12 +1600,24 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         }
 
         const createdAt = new Date().toISOString();
-        const newPact: Pact = { id: crypto.randomUUID(), text: cleanText, isCompleted: false, createdAt };
+        const formattedSubTasks: PactSubTask[] = (subTasks || [])
+            .map(st => ({ id: crypto.randomUUID(), text: st.trim(), isCompleted: false }))
+            .filter(st => st.text.length > 0);
+
+        const newPact: Pact = {
+            id: crypto.randomUUID(),
+            text: cleanText,
+            isCompleted: false,
+            createdAt,
+            subTasks: formattedSubTasks
+        };
+
         setPacts(prev => {
             const dayPacts = prev[date] || [];
             if (dayPacts.some(p => p.text.trim().toLowerCase() === cleanText.toLowerCase())) return prev;
             return { ...prev, [date]: [...dayPacts, newPact] };
         });
+
         if (user) {
             await supabase.from('pacts').insert({
                 id: newPact.id,
@@ -1613,7 +1625,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
                 text: cleanText,
                 date,
                 is_completed: false,
-                created_at: createdAt
+                created_at: createdAt,
+                sub_tasks: formattedSubTasks
             });
         }
     };

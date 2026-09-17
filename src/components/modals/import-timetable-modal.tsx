@@ -33,11 +33,17 @@ interface ImportTimetableModalProps {
     onClose: () => void;
 }
 
+export interface ParsedPactItem {
+    text: string;
+    subTasks?: string[];
+    phase?: string;
+}
+
 interface ParsedTimetableData {
     title: string;
     duration?: string;
     phases?: string[];
-    pacts: string[];
+    pacts: (string | ParsedPactItem)[];
     tasks: string[];
     goals: string[];
     fullTimetableNote: string;
@@ -127,7 +133,46 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
     const handleUpdatePact = (index: number, newText: string) => {
         if (!parsedData) return;
         const updated = [...parsedData.pacts];
-        updated[index] = newText;
+        const existing = updated[index];
+        if (typeof existing === 'string') {
+            updated[index] = { text: newText, subTasks: [] };
+        } else {
+            updated[index] = { ...existing, text: newText };
+        }
+        setParsedData({ ...parsedData, pacts: updated });
+    };
+
+    const handleUpdatePactSubTask = (pactIdx: number, subIdx: number, newText: string) => {
+        if (!parsedData) return;
+        const updated = [...parsedData.pacts];
+        const existing = updated[pactIdx];
+        const itemObj = typeof existing === 'string' ? { text: existing, subTasks: [] } : { ...existing };
+        const updatedSubs = [...(itemObj.subTasks || [])];
+        updatedSubs[subIdx] = newText;
+        itemObj.subTasks = updatedSubs;
+        updated[pactIdx] = itemObj;
+        setParsedData({ ...parsedData, pacts: updated });
+    };
+
+    const handleRemovePactSubTask = (pactIdx: number, subIdx: number) => {
+        if (!parsedData) return;
+        const updated = [...parsedData.pacts];
+        const existing = updated[pactIdx];
+        const itemObj = typeof existing === 'string' ? { text: existing, subTasks: [] } : { ...existing };
+        const updatedSubs = (itemObj.subTasks || []).filter((_, i) => i !== subIdx);
+        itemObj.subTasks = updatedSubs;
+        updated[pactIdx] = itemObj;
+        setParsedData({ ...parsedData, pacts: updated });
+    };
+
+    const handleAddPactSubTask = (pactIdx: number) => {
+        if (!parsedData) return;
+        const updated = [...parsedData.pacts];
+        const existing = updated[pactIdx];
+        const itemObj = typeof existing === 'string' ? { text: existing, subTasks: [] } : { ...existing };
+        const updatedSubs = [...(itemObj.subTasks || []), "New Exercise / Step"];
+        itemObj.subTasks = updatedSubs;
+        updated[pactIdx] = itemObj;
         setParsedData({ ...parsedData, pacts: updated });
     };
 
@@ -288,10 +333,14 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
             const importedTaskNames: string[] = [];
             const importedGoalTitles: string[] = [];
 
-            // 1. Add selected Pacts (Vows)
+            // 1. Add selected Pacts (with Sub-Tasks)
             const seenPacts = new Set<string>();
-            parsedData.pacts.forEach((pactText, idx) => {
-                if (selectedPacts[idx] && pactText.trim()) {
+            parsedData.pacts.forEach((pactObj, idx) => {
+                if (selectedPacts[idx]) {
+                    const pactText = typeof pactObj === 'string' ? pactObj : pactObj.text;
+                    const pactSubs = typeof pactObj === 'string' ? [] : pactObj.subTasks || [];
+                    if (!pactText.trim()) return;
+
                     const cleanPact = pactText.trim();
                     const lower = cleanPact.toLowerCase();
                     if (seenPacts.has(lower)) return;
@@ -301,7 +350,7 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                     if (makePactsRecurring) {
                         addDailyPact(cleanPact);
                     }
-                    addPact(cleanPact, todayStr);
+                    addPact(cleanPact, todayStr, pactSubs);
                 }
             });
 
@@ -712,42 +761,85 @@ export function ImportTimetableModal({ isOpen, onClose }: ImportTimetableModalPr
                                 />
                             </label>
 
-                            <div className="space-y-2">
-                                {parsedData.pacts.map((pact, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all ${
-                                            selectedPacts[idx]
-                                                ? 'bg-accent/10 border-accent/30 text-white'
-                                                : 'bg-white/5 border-white/5 text-zinc-500'
-                                        }`}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedPacts[idx] || false}
-                                            onChange={(e) => {
-                                                const updated = [...selectedPacts];
-                                                updated[idx] = e.target.checked;
-                                                setSelectedPacts(updated);
-                                            }}
-                                            className="rounded border-white/20 bg-black text-accent focus:ring-accent shrink-0"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={pact}
-                                            onChange={(e) => handleUpdatePact(idx, e.target.value)}
-                                            className={`flex-1 bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none border-b border-transparent focus:border-accent/40 py-0.5 ${!selectedPacts[idx] ? 'line-through opacity-40' : ''}`}
-                                            placeholder="Pact description..."
-                                        />
-                                        <button
-                                            onClick={() => handleRemovePact(idx)}
-                                            className="p-1 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                                            title="Remove pact"
+                            <div className="space-y-3">
+                                {parsedData.pacts.map((pactObj, idx) => {
+                                    const pactText = typeof pactObj === 'string' ? pactObj : pactObj.text;
+                                    const pactSubTasks = typeof pactObj === 'string' ? [] : pactObj.subTasks || [];
+                                    const pactPhase = typeof pactObj === 'string' ? undefined : pactObj.phase;
+
+                                    return (
+                                        <div
+                                            key={idx}
+                                            className={`p-3 rounded-2xl border transition-all space-y-2 ${
+                                                selectedPacts[idx]
+                                                    ? 'bg-accent/10 border-accent/30 text-white'
+                                                    : 'bg-white/5 border-white/5 text-zinc-500'
+                                            }`}
                                         >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                    </div>
-                                ))}
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedPacts[idx] || false}
+                                                    onChange={(e) => {
+                                                        const updated = [...selectedPacts];
+                                                        updated[idx] = e.target.checked;
+                                                        setSelectedPacts(updated);
+                                                    }}
+                                                    className="rounded border-white/20 bg-black text-accent focus:ring-accent shrink-0"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={pactText}
+                                                    onChange={(e) => handleUpdatePact(idx, e.target.value)}
+                                                    className={`flex-1 bg-transparent text-xs font-bold text-white placeholder-zinc-500 focus:outline-none border-b border-transparent focus:border-accent/40 py-0.5 ${!selectedPacts[idx] ? 'line-through opacity-40' : ''}`}
+                                                    placeholder="Pact description..."
+                                                />
+                                                {pactPhase && (
+                                                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-accent/20 text-accent border border-accent/30 shrink-0">
+                                                        {pactPhase}
+                                                    </span>
+                                                )}
+                                                <button
+                                                    onClick={() => handleRemovePact(idx)}
+                                                    className="p-1 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                                                    title="Remove pact"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+
+                                            {/* Sub-Tasks Checklist Section */}
+                                            <div className="pl-6 space-y-1.5 border-l-2 border-accent/20 ml-2">
+                                                {pactSubTasks.map((sub, sIdx) => (
+                                                    <div key={sIdx} className="flex items-center gap-2 text-xs">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-accent/60 shrink-0" />
+                                                        <input
+                                                            type="text"
+                                                            value={sub}
+                                                            onChange={(e) => handleUpdatePactSubTask(idx, sIdx, e.target.value)}
+                                                            placeholder="Sub-task / exercise step..."
+                                                            className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2.5 py-1 text-[11px] text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-accent/50"
+                                                        />
+                                                        <button
+                                                            onClick={() => handleRemovePactSubTask(idx, sIdx)}
+                                                            className="p-1 text-zinc-500 hover:text-red-400 transition-colors"
+                                                            title="Remove sub-task"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+
+                                                <button
+                                                    onClick={() => handleAddPactSubTask(idx)}
+                                                    className="text-[10px] font-mono text-accent/80 hover:text-accent flex items-center gap-1 pt-0.5 transition-colors"
+                                                >
+                                                    <Plus className="w-2.5 h-2.5" /> Add Sub-Task / Exercise
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 
