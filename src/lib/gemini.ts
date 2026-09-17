@@ -42,8 +42,9 @@ export async function generateContentWithFallback(
             });
 
             const result = await model.generateContent(contents);
-            return { result, modelName };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+            const errStr = String(err?.message || err);
             const isApiKeyError =
                 errStr.includes('API_KEY_INVALID') ||
                 errStr.includes('API key not valid') ||
