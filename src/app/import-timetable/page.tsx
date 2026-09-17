@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useUserData } from "@/context/user-data-context";
 import { useToday } from "@/hooks/use-today";
 import { createClient } from "@/utils/supabase/client";
+import { parseISO, format, isBefore, addDays, differenceInCalendarDays } from "date-fns";
 import {
     ChevronLeft,
     Sparkles,
@@ -71,6 +72,8 @@ export interface ParsedPactItem {
     text: string;
     subTasks?: string[];
     phase?: string;
+    startDate?: string;
+    endDate?: string;
 }
 
 interface ParsedTimetableData {

@@ -41,6 +41,70 @@ export interface ParsedPactItem {
     text: string;
     subTasks?: string[];
     phase?: string;
+    startDate?: string;
+    endDate?: string;
+}
+
+const MONTH_MAP: { [key: string]: number } = {
+    jan: 0, january: 0, feb: 1, february: 1, mar: 2, march: 2, apr: 3, april: 3,
+    may: 4, jun: 5, june: 5, jul: 6, july: 6, aug: 7, august: 7,
+    sep: 8, sept: 8, september: 8, oct: 9, october: 9, nov: 10, november: 10, dec: 11, december: 11
+};
+
+export function extractDateRangeFromText(text: string, currentYear: number = new Date().getFullYear()): { startDate?: string; endDate?: string } | null {
+    if (!text || typeof text !== 'string') return null;
+
+    // Pattern 1: "12 Sept to 25 Sept", "12 September - 25 October"
+    const matchA = text.match(/(\d{1,2})\s*([a-z]{3,9})\.?\s*(?:to|–|—|-|till|until|through)\s*(\d{1,2})\s*([a-z]{3,9})\.?/i);
+    if (matchA) {
+        const d1 = parseInt(matchA[1], 10);
+        const m1 = MONTH_MAP[matchA[2].toLowerCase().replace(/\.$/, '')];
+        const d2 = parseInt(matchA[3], 10);
+        const m2 = MONTH_MAP[matchA[4].toLowerCase().replace(/\.$/, '')];
+
+        if (m1 !== undefined && m2 !== undefined) {
+            const startDate = `${currentYear}-${String(m1 + 1).padStart(2, '0')}-${String(d1).padStart(2, '0')}`;
+            const endDate = `${currentYear}-${String(m2 + 1).padStart(2, '0')}-${String(d2).padStart(2, '0')}`;
+            return { startDate, endDate };
+        }
+    }
+
+    // Pattern 2: "Sept 12 to Oct 25", "September 12 - October 25"
+    const matchB = text.match(/([a-z]{3,9})\.?\s*(\d{1,2})\s*(?:to|–|—|-|till|until|through)\s*([a-z]{3,9})\.?\s*(\d{1,2})/i);
+    if (matchB) {
+        const m1 = MONTH_MAP[matchB[1].toLowerCase().replace(/\.$/, '')];
+        const d1 = parseInt(matchB[2], 10);
+        const m2 = MONTH_MAP[matchB[3].toLowerCase().replace(/\.$/, '')];
+        const d2 = parseInt(matchB[4], 10);
+
+        if (m1 !== undefined && m2 !== undefined) {
+            const startDate = `${currentYear}-${String(m1 + 1).padStart(2, '0')}-${String(d1).padStart(2, '0')}`;
+            const endDate = `${currentYear}-${String(m2 + 1).padStart(2, '0')}-${String(d2).padStart(2, '0')}`;
+            return { startDate, endDate };
+        }
+    }
+
+    // Pattern 3: ISO dates "2026-09-12 to 2026-09-25"
+    const matchC = text.match(/(\d{4}-\d{2}-\d{2})\s*(?:to|–|—|-|till|until|through)\s*(\d{4}-\d{2}-\d{2})/i);
+    if (matchC) {
+        return { startDate: matchC[1], endDate: matchC[2] };
+    }
+
+    // Pattern 4: "12 Sept to 25th" (Same month)
+    const matchD = text.match(/(\d{1,2})\s*(?:st|nd|rd|th)?\s*(?:to|–|—|-|till|until|through)\s*(\d{1,2})\s*(?:st|nd|rd|th)?\s*([a-z]{3,9})\.?/i);
+    if (matchD) {
+        const d1 = parseInt(matchD[1], 10);
+        const d2 = parseInt(matchD[2], 10);
+        const m = MONTH_MAP[matchD[3].toLowerCase().replace(/\.$/, '')];
+
+        if (m !== undefined) {
+            const startDate = `${currentYear}-${String(m + 1).padStart(2, '0')}-${String(d1).padStart(2, '0')}`;
+            const endDate = `${currentYear}-${String(m + 1).padStart(2, '0')}-${String(d2).padStart(2, '0')}`;
+            return { startDate, endDate };
+        }
+    }
+
+    return null;
 }
 
 // ── Month names regex fragment ──
