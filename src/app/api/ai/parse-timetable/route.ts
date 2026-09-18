@@ -215,8 +215,9 @@ function isJunkText(text: string): boolean {
     // Checkbox-only
     if (/^\[[ xX✓✗]\]\s*$/.test(t)) return true;
 
-    // Just a number, bullet, or punctuation
-    if (/^[\d.)\-*•:;,|/\\]+\s*$/.test(t)) return true;
+    // Just a bare number, bullet, or pure punctuation — but NOT "500ml" or "3×20" which have letters
+    // Only discard if the text is purely digits/symbols with NO alphabetic characters
+    if (/^[\d.)\-*•:;,|/\\]+\s*$/.test(t) && !/[a-zA-Z×xX]/.test(t)) return true;
 
     // Document headers / meta labels
     if (/^(table of contents|routine title|overview|introduction|summary|schedule|timetable|plan title|notes?|description|details?|comments?|remarks?)\s*:?\s*$/i.test(t)) return true;
@@ -247,14 +248,31 @@ function isJunkText(text: string): boolean {
 
 /**
  * Full cleaning pipeline for a single pact text:
- * 1. Strip numbered prefixes & bullet markers
- * 2. Strip boolean noise
- * 3. Strip date patterns (ranges & singles)
- * 4. Check if result is junk → discard
+ * 1. Strip labeled prefixes like "Pact 1:", "Task 2:", "Item 3:" but NOT leading quantity numbers
+ * 2. Strip bullet markers (*, -, •) at the start ONLY
+ * 3. Strip boolean noise
+ * 4. Strip date patterns (ranges & singles)
+ * 5. Check if result is junk → discard
+ *
+ * IMPORTANT: Do NOT strip leading numbers that are part of the content.
+ * "50 jumping jacks" → keep as-is
+ * "500ml water" → keep as-is
+ * "3 eggs morning" → keep as-is
+ * "15 pages" → keep as-is
+ * Only strip: "1. Push-ups" (numbered list prefix) → "Push-ups"
+ *             "• Push-ups" → "Push-ups"
+ *             "- Push-ups" → "Push-ups"
+ *             "Pact 1: Push-ups" → "Push-ups"
  */
 function cleanPactText(raw: string): string | null {
     let text = raw
-        .replace(/^(Pact\s*\d+:|Task\s*\d+:|Item\s*\d+:|Step\s*\d+:|[*\-•\d.)+]+\s*)/i, '')
+        // Strip labeled prefixes: "Pact 1:", "Task 2:", "Item 3:", "Step 4:"
+        .replace(/^(Pact|Task|Item|Step)\s*\d+:\s*/i, '')
+        // Strip bullet/symbol markers ONLY at the very start (*, -, •)
+        .replace(/^[\s]*[*\-•]\s+/, '')
+        // Strip numbered-list prefixes like "1. ", "2) ", "3. " but ONLY if the number is followed by a separator (. or ))
+        // This avoids stripping "50 push-ups" or "500ml water"
+        .replace(/^(\d{1,3})[.)]\s+/, '')
         .trim();
 
     text = stripBooleanNoise(text);
@@ -304,11 +322,16 @@ function cleanPactsData(rawPacts: any[]): ParsedPactItem[] {
             phase = cleanedPhase && cleanedPhase.length >= 3 ? cleanedPhase : undefined;
         }
 
-        // Clean sub-tasks with same pipeline
+        // Clean sub-tasks with same pipeline — preserve leading quantities
         const cleanedSubTasks = subTasks
             .map(st => {
                 if (typeof st !== 'string') return '';
-                let c = st.replace(/^[*\-•\d.)+]+\s*/, '').trim();
+                // Strip only bullet/symbol markers and "Pact 1:" style prefixes, NOT leading quantities
+                let c = st
+                    .replace(/^(Pact|Task|Item|Step)\s*\d+:\s*/i, '')
+                    .replace(/^[\s]*[*\-•]\s+/, '')
+                    .replace(/^(\d{1,3})[.)]\s+/, '')
+                    .trim();
                 c = stripBooleanNoise(c);
                 c = stripDatesFromText(c);
                 return c;
@@ -414,49 +437,68 @@ function tryParseOrRepairJson(rawStr: string): any {
     }
 }
 
-const SYSTEM_INSTRUCTION = `You are Gyral's Routine Intelligence Engine. You deeply analyze workout plans, study schedules, discipline routines, and multi-phase transformation programs up to 200,000 characters in length.
-
-Your job: extract ALL MEANINGFUL, ACTIONABLE pacts, sub-tasks, habit trackers, and goals from the user's raw plan text (which can span weeks or 3+ months).
+const SYSTEM_INSTRUCTION = `You are Gyral's Routine Intelligence Engine. You read and extract EXACTLY what is written in the user's plan/document — nothing more, nothing less.
 
 RETURN ONLY valid raw JSON. No markdown, no code fences, no commentary.
 
 JSON SCHEMA:
 {
-  "title": "Descriptive title (e.g. '12-Week Progressive Strength Program')",
-  "duration": "Total timeframe (e.g. '3 Months', '12 Weeks')",
-  "phases": [
-    "Phase 1 (Weeks 1-4): Foundation & Form",
-    "Phase 2 (Weeks 5-8): Progressive Overload",
-    "Phase 3 (Weeks 9-12): Peak Performance"
-  ],
+  "title": "Short descriptive title taken from the document",
+  "duration": "Total timeframe if mentioned (e.g. '3 Months', '12 Weeks'), or omit",
+  "phases": ["Phase 1: Foundation", "Phase 2: Overload", "Phase 3: Peak"],
   "pacts": [
     {
-      "text": "Upper Body Push Workout",
-      "phase": "Phase 1",
-      "subTasks": ["Bench Press 4x10", "Incline DB Press 3x12", "Cable Flyes 3x15"]
-    },
-    {
-      "text": "Lower Body Workout",
-      "phase": "Phase 1",
-      "subTasks": ["Squats 4x8", "Romanian Deadlifts 3x10", "Leg Press 3x12"]
+      "text": "Morning workout",
+      "phase": "Phase 1 (optional)",
+      "startDate": "2026-09-12 (optional, ISO format)",
+      "endDate": "2026-09-25 (optional, ISO format)",
+      "subTasks": ["Push-ups 3×max", "Squats 3×20", "Plank 2×max hold", "Run 20 mins"]
     }
   ],
-  "tasks": ["Water Intake (3L daily)", "Sleep 7+ Hours", "Morning Meditation"],
-  "goals": ["Bench Press 100kg by Week 12", "Lose 5kg body fat"],
-  "fullTimetableNote": "Executive summary of the program."
+  "tasks": [],
+  "goals": [],
+  "fullTimetableNote": "Short executive summary under 80 words."
 }
 
-ABSOLUTELY CRITICAL RULES:
+════════════ ABSOLUTELY CRITICAL RULES ════════════
 
-1. DATES ARE NOT PACTS! The input may contain lines like "12 Sept to 25 Sept: Push Ups" or "September 12 - October 3: Upper Body". The DATE RANGE is scheduling context, NOT the pact. The PACT is the ACTIVITY after the date — "Push Ups" or "Upper Body Workout". NEVER put date ranges, date strings, day numbers, or month names as pact text. STRIP ALL DATES from pact text!
+RULE 1 — EXTRACT ONLY WHAT IS LITERALLY WRITTEN:
+• ONLY extract pacts, tasks, and goals that are EXPLICITLY present in the document.
+• NEVER invent, infer, or hallucinate pacts, tasks, or goals not written in the source.
+• If the document has no habit trackers section, return tasks: []
+• If the document has no goals section, return goals: []
+• If a section heading (like "Morning workout", "Drink water", "Eat right", "Evening activity", "Read", "Skincare") is followed by indented sub-items, the HEADING becomes the pact text and the sub-items become its subTasks array.
 
-2. "WORKOUT: YES/NO" IS NOT A PACT! If input says "Workout: Yes/No" or "Push Ups: Yes/No" or "Running: Done", the pact is the ACTIVITY NAME only — "Workout", "Push Ups", "Running". NEVER include Yes, No, Yes/No, Done, Completed, True, False in pact text.
+RULE 2 — PRESERVE QUANTITIES EXACTLY:
+• NEVER strip numbers, quantities, units from activity text.
+• "500ml on wake" → keep as "500ml on wake" (not "ml on wake")
+• "50 jumping jacks" → keep as "50 jumping jacks" (not "jumping jacks")
+• "3 eggs morning" → keep as "3 eggs morning" (not "eggs morning")
+• "15 pages — Art of Seduction" → keep as "15 pages — Art of Seduction"
+• "Push-ups 3×max" → keep as "Push-ups 3×max"
+• NEVER remove leading numbers unless they are pure list numbering like "1. " or "2. "
 
-3. EXTRACT ALL DISTINCT ACTIVITIES ACROSS THE ENTIRE PLAN: If the plan spans 3 months with different workouts for different days/phases, extract each distinct workout (Push Day, Pull Day, Leg Day, Cardio, Mobility, etc.) as separate pacts with their exercises as subTasks. Do NOT skip items or combine unrelated workouts.
+RULE 3 — DATES ARE SCHEDULING CONTEXT, NOT PACTS:
+• Lines like "21 Sep — Mon" or "12 Sept to 25 Sept" are date headers, not pact names.
+• Use dates to set startDate/endDate on the pact, but strip the date from the pact text itself.
+• If a pact repeats across multiple dates in the document, include it ONCE with the earliest startDate and latest endDate.
 
-4. DO NOT OUTPUT FULL TIMETABLE MARKDOWN IN fullTimetableNote: Keep fullTimetableNote short (under 100 words) so response JSON does not get truncated!
+RULE 4 — STRUCTURE PACTS CORRECTLY:
+• Section headings with indented children → pact + subTasks
+• "Morning workout" with bullets below → pact text = "Morning workout", subTasks = all the exercise lines
+• "Drink water" with "500ml on wake, 500ml pre-lunch..." below → pact text = "Drink water", subTasks = ["500ml on wake", "500ml pre-lunch", "500ml afternoon", "500ml evening"]
+• "Eat right" with food items → pact text = "Eat right", subTasks = ["3 eggs morning", "Dal before rice", "Max 1.5 cups rice", "No puris"]
+• "Evening activity" with exercises → pact text = "Evening activity", subTasks = ["50 jumping jacks", "20 squats", "10 push-ups"]
 
-5. PLAN TITLES ARE NOT PACTS: Don't extract "3 Month Transformation", "My Fitness Plan", "Routine", "Schedule" as pact text.`;
+RULE 5 — NO BOOLEAN/STATUS NOISE:
+• Never include Yes, No, Yes/No, Done, Completed, True, False in any field.
+
+RULE 6 — PLAN TITLES ARE NOT PACTS:
+• Don't make "3 Month Transformation", "My Fitness Plan" a pact.
+
+RULE 7 — fullTimetableNote MUST BE SHORT:
+• Keep under 80 words total. Do NOT output a full timetable markdown in this field.`;
+
 
 export async function POST(req: NextRequest) {
     try {
@@ -512,14 +554,14 @@ export async function POST(req: NextRequest) {
 
             const isPdf = mimeType === 'application/pdf';
             const userPrompt = text
-                ? `Analyze this timetable/routine ${isPdf ? 'PDF document' : 'image'}. Extract ALL ACTIVITIES and EXERCISES across all months/phases as pacts — strip all dates, day names, and boolean statuses. Additional context:\n${sanitizeLargeInput(text, 200000)}`
-                : `Analyze this timetable/routine ${isPdf ? 'PDF document' : 'image'}. Extract ALL ACTIVITIES and EXERCISES across all months/phases as pacts — strip all dates, day names, and boolean statuses.`;
+                ? `Extract ONLY what is literally written in this ${isPdf ? 'PDF document' : 'image'}. Follow all rules strictly: preserve all quantities (500ml, 50 jumping jacks, 3 eggs, 15 pages, etc.), use section headings as pact names with their sub-items as subTasks, return empty arrays for tasks and goals if not present in the document, never hallucinate pacts not shown. Additional context:\n${sanitizeLargeInput(text, 200000)}`
+                : `Extract ONLY what is literally written in this ${isPdf ? 'PDF document' : 'image'}. Follow all rules strictly: preserve all quantities (500ml, 50 jumping jacks, 3 eggs, 15 pages, etc.), use section headings as pact names with their sub-items as subTasks, return empty arrays for tasks and goals if not present in the document, never hallucinate pacts not shown.`;
             contents = [SYSTEM_INSTRUCTION, userPrompt, filePart];
         } else {
             const sanitizedText = sanitizeLargeInput(text, 200000);
             contents = [
                 SYSTEM_INSTRUCTION,
-                `Here is the user's routine/plan (up to 200,000 characters). Extract ALL activities/exercises across all months/phases as pacts. Never put dates or "Yes/No" in pact text.\n\n---\n${sanitizedText}\n---`
+                `Extract ONLY what is literally written in the user's routine/plan below. Follow all rules strictly: preserve all quantities (500ml, 50 jumping jacks, etc.), use section headings as pact names, return empty arrays for tasks/goals if not present, never hallucinate.\n\n---\n${sanitizedText}\n---`
             ];
         }
 
